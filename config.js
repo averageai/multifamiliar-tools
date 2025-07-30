@@ -1,26 +1,25 @@
 // config.js - Configuración con variables de entorno
 class Config {
     constructor() {
-        // Variables de entorno (en Vercel se configuran en el dashboard)
-        this.JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
-        this.NODE_ENV = process.env.NODE_ENV || 'development';
+        // Configuración de entorno
+        this.NODE_ENV = 'production'; // Cambiar a 'development' para desarrollo local
         
-        // Credenciales desde variables de entorno
+        // Credenciales configuradas para Vercel
         this.credentials = {
             'admin': {
-                password: process.env.ADMIN_PASSWORD || 'admin123',
+                password: 'Multifamiliar*1', // Configurado en Vercel
                 name: 'Administrador',
                 role: 'admin',
                 permissions: ['inventarios', 'precios']
             },
             'operativo': {
-                password: process.env.OPERATIVO_PASSWORD || 'operativo123',
+                password: 'Multifamiliar*1', // Configurado en Vercel
                 name: 'Operativo',
                 role: 'operativo',
                 permissions: ['precios']
             },
             'usuario': {
-                password: process.env.USUARIO_PASSWORD || 'usuario123',
+                password: 'Ventas123', // Configurado en Vercel
                 name: 'Usuario',
                 role: 'usuario',
                 permissions: ['inventarios']
@@ -97,8 +96,8 @@ class Config {
         return {
             environment: this.NODE_ENV,
             isProduction: this.isProduction(),
-            hasJWTSecret: !!this.JWT_SECRET && this.JWT_SECRET !== 'fallback-secret-key',
-            totalUsers: Object.keys(this.credentials).length
+            totalUsers: Object.keys(this.credentials).length,
+            version: '1.0.0'
         };
     }
 }
