@@ -233,6 +233,11 @@
             color: white;
         }
 
+        .tool-card.scanner .tool-icon {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
         .tool-card h3 {
             color: #ffffff;
             margin-bottom: 10px;
@@ -263,6 +268,11 @@
         .tool-card.operativo .tool-badge {
             background: #fce4ec;
             color: #c2185b;
+        }
+
+        .tool-card.scanner .tool-badge {
+            background: #e8f5e8;
+            color: #2e7d32;
         }
 
         .logout-btn {
@@ -361,28 +371,32 @@
         </div>
 
         <div class="tools-grid">
-            <a href="Control de Inventarios (Administrativo).html" class="tool-card administrativo">
+            <!-- Control de Inventarios -->
+            <a href="Control de Inventarios (Administrativo).html" class="tool-card administrativo" id="tool-inventarios">
                 <div class="tool-icon">📦</div>
                 <h3>Control de Inventarios</h3>
                 <p>Sistema de redistribución de inventario entre bodegas. Optimiza el stock disponible y genera reportes de traslados recomendados.</p>
                 <span class="tool-badge">Administrativo</span>
             </a>
 
-            <a href="Sistema de Precios Afectados (Operativo).html" class="tool-card operativo">
+            <!-- Sistema de Precios -->
+            <a href="Sistema de Precios Afectados (Operativo).html" class="tool-card operativo" id="tool-precios">
                 <div class="tool-icon">💰</div>
                 <h3>Sistema de Precios</h3>
                 <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
                 <span class="tool-badge">Operativo</span>
             </a>
 
-            <a href="Sistema de Precios Afectados Manizales (Operativo).html" class="tool-card operativo">
-                <div class="tool-icon">💰</div>
+            <!-- Sistema de Precios Manizales -->
+            <a href="Sistema de Precios Afectados Manizales (Operativo).html" class="tool-card operativo" id="tool-precios-manizales">
+                <div class="tool-icon">🏪</div>
                 <h3>Sistema de Precios Manizales</h3>
-                <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
+                <p>Consulta de precios y márgenes específicos para Manizales. Control de inventario local y precios de referencia.</p>
                 <span class="tool-badge">Operativo</span>
             </a>
-             <!-- Validador de Precios -->
-             <a href="Validador de Precios.html" class="tool-card scanner" id="tool-validador">
+
+            <!-- Validador de Precios -->
+            <a href="Validador de Precios.html" class="tool-card scanner" id="tool-validador">
                 <div class="tool-icon">🏷️</div>
                 <h3>Validador de Precios</h3>
                 <p>Sistema de precios codificados compatible con pistolas de código de barras. Referencias invertidas para validación rápida.</p>
@@ -403,12 +417,12 @@
         </div>
 
         <div class="footer">
-            <p>Desarrollado por Humanos + IA en <a href="ai.average.lat" target="_blank">average</a></p>
+            <p>Desarrollado por Humanos + IA en <a href="https://ai.average.lat" target="_blank">average</a></p>
         </div>
     </div>
 
     <script>
-        // Configuración integrada (temporal)
+        // Configuración integrada
         class Config {
             constructor() {
                 // Configuración de entorno
@@ -567,42 +581,22 @@
                 return;
             }
             
-            const inventariosTool = document.querySelector('a[href*="Inventarios"]');
-            const preciosTool = document.querySelector('a[href*="Precios"]');
-            const preciosManizalesTool = document.querySelector('a[href*="Manizales"]');
-            const validadorPreciosTool = document.querySelector('a[href*="Validador"]');
-            const validadorPreciosV2Tool = document.querySelector('a[href*="ValidadorV2"]');
+            const toolPermissions = {
+                'tool-inventarios': 'inventarios',
+                'tool-precios': 'precios',
+                'tool-precios-manizales': 'preciosManizales',
+                'tool-validador': 'validadorPrecios',
+                'tool-validador-v2': 'validadorPreciosV2'
+            };
             
-            
-            if (inventariosTool) {
-                const hasPermission = config.hasPermission(currentUser.username, 'inventarios');
-                inventariosTool.style.display = hasPermission ? 'block' : 'none';
-                console.log('📦 Inventarios visible:', hasPermission);
-            }
-            
-            if (preciosTool) {
-                const hasPermission = config.hasPermission(currentUser.username, 'precios');
-                preciosTool.style.display = hasPermission ? 'block' : 'none';
-                console.log('💰 Precios visible:', hasPermission);
-            }
-
-            if (preciosManizalesTool) {
-                const hasPermission = config.hasPermission(currentUser.username, 'preciosManizales');
-                preciosManizalesTool.style.display = hasPermission ? 'block' : 'none';
-                console.log('💰 Precios Manizales visible:', hasPermission);
-            }
-
-            if (validadorPreciosTool) {
-                const hasPermission = config.hasPermission(currentUser.username, 'validadorPrecios');
-                validadorPreciosTool.style.display = hasPermission ? 'block' : 'none';
-                console.log('💰 Validador de Precios visible:', hasPermission);
-            }
-
-            if (validadorPreciosV2Tool) {
-                const hasPermission = config.hasPermission(currentUser.username, 'validadorPreciosV2');
-                validadorPreciosV2Tool.style.display = hasPermission ? 'block' : 'none';
-                console.log('💰 Validador de Precios V2 visible:', hasPermission);
-            }
+            Object.entries(toolPermissions).forEach(([toolId, permission]) => {
+                const toolElement = document.getElementById(toolId);
+                if (toolElement) {
+                    const hasPermission = config.hasPermission(currentUser.username, permission);
+                    toolElement.style.display = hasPermission ? 'block' : 'none';
+                    console.log(`🔧 ${toolId} visible:`, hasPermission);
+                }
+            });
         }
 
         // Mostrar información de seguridad
@@ -671,4 +665,4 @@
         document.getElementById('role').focus();
     </script>
 </body>
-</html> 
+</html>
