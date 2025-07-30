@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Precios Codificados - Pistola + Cámara</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .scanner-indicator {
+            background: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .upload-section {
+            background: #2a2a2a;
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .upload-section p {
+            font-size: 12px;
+            margin: 4px 0;
+            color: #a0a0a0;
+        }
+
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .scanner-section {
+            display: none;
+        }
+
+        /* Modo Toggle */
+        .mode-toggle {
+            display: flex;
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 15px;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: #a0a0a0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mode-btn.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #333;
+            color: #ffffff;
+        }
+
+        /* Scanner Manual */
+        .scanner-bar {
+            background: #1e3a2e;
+            border: 2px solid #4ade80;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .scanner-input {
+            width: 100%;
+            max-width: 350px;
+            padding: 12px 16px;
+            border: 2px solid #4ade80;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #2a2a2a;
+            color: #ffffff;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .scanner-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            background: #333;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .scanner-help {
+            margin-top: 10px;
+            color: #4ade80;
+            font-size: 12px;
+        }
+
+        /* Cámara Scanner */
+        .camera-section {
+            display: none;
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .camera-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .camera-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .camera-btn.stop {
+            background: #dc3545;
+        }
+
+        .camera-btn.stop:hover {
+            background: #c82333;
+        }
+
+        #camera-preview {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background: #1a1a1a;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .camera-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .price-display {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .no-product {
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .no-product-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .product-info {
+            width: 100%;
+            text-align: center;
+        }
+
+        .product-not-found {
+            background: #3d1f1f;
+            border: 2px solid #dc3545;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .not-found-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .not-found-code {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .not-found-message {
+            font-size: 14px;
+            color: #ffcccc;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #333;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .recent-searches {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .recent-header {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .recent-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .recent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+        }
+
+        .recent-code {
+            font-family: 'Courier New', monospace;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .recent-time {
+            color: #6c757d;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 3px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .clear-btn:hover {
+            background: #c82333;
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            .header {
+                padding: 8px 10px;
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+            }
+
+            .header p {
+                font-size: 11px;
+            }
+
+            .content {
+                padding: 10px;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .stat-value {
+                font-size: 16px;
+            }
+
+            .price-display {
+                padding: 15px;
+                min-height: 200px;
+            }
+
+            .scanner-input {
+                max-width: 100%;
+                font-size: 14px;
+            }
+
+            #camera-preview {
+                height: 250px;
+            }
+
+            .camera-controls {
+                justify-content: center;
+            }
+
+            .mode-btn {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 14px;
+            }
+            
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .price-display {
+                min-height: 180px;
+            }
+            
+            #camera-preview {
+                height: 200px;
+            }
+        }
+
+        /* Nuevos estilos para detección automática */
+        .detection-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: fadeInOut 2s;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏷️</div>
+            <div class="header-text">
+                <h1>Sistema de Precios Codificados</h1>
+                <p>Compatible con pistolas y cámara - Referencias invertidas</p>
+            </div>
+            <div class="scanner-indicator">
+                <span>🔫📷</span> Multi-Scanner
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h2>🗂️ Cargar Base de Datos de Productos</h2>
+                <p><strong>Origen:</strong> Productos > Exportar/Importar > Exportación Masiva</p>
+                <p>Formato: productos_[fecha]_[hora].xlsx</p>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    📁 Seleccionar Archivo
+                </button>
+                <div class="alert">
+                    <strong>Info:</strong> Compatible con pistolas de código de barras y lectura por cámara
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando base de datos...</p>
+                <p id="loadingDetail">Preparando sistema de códigos...</p>
+            </div>
+
+            <div class="scanner-section" id="scannerSection">
+                <!-- Toggle de Modos -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="pistolBtn" onclick="cambiarModo('pistol')">
+                        <span>🔫</span> Pistola
+                    </button>
+                    <button class="mode-btn" id="cameraBtn" onclick="cambiarModo('camera')">
+                        <span>📷</span> Cámara
+                    </button>
+                </div>
+
+                <!-- Modo Pistola -->
+                <div class="scanner-bar" id="pistolSection">
+                    <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px;">🔫 Lector de Códigos - Pistola</h3>
+                    <input type="text" id="scannerInput" class="scanner-input" 
+                           placeholder="Código de barras aquí..." 
+                           autofocus>
+                    <div class="scanner-help">
+                        <strong>Instrucciones:</strong> Apunte la pistola y escanee. El código se procesa automáticamente.
+                    </div>
+                </div>
+
+                <!-- Modo Cámara -->
+                <div class="camera-section" id="cameraSection">
+                    <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px; text-align: center;">📷 Lector de Códigos - Cámara</h3>
+                    <div class="camera-controls">
+                        <button class="camera-btn" id="startCameraBtn" onclick="iniciarCamera()">
+                            <span>▶️</span> Iniciar Cámara
+                        </button>
+                        <button class="camera-btn stop" id="stopCameraBtn" onclick="detenerCamera()" disabled>
+                            <span>⏹️</span> Detener
+                        </button>
+                    </div>
+                    <div id="camera-preview"></div>
+                    <div class="camera-status" id="cameraStatus">
+                        Cámara inactiva - Presione "Iniciar Cámara" para comenzar
+                    </div>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalProducts">0</div>
+                        <div class="stat-label">Productos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalScans">0</div>
+                        <div class="stat-label">Escaneos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="foundCount">0</div>
+                        <div class="stat-label">Encontrados</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="notFoundCount">0</div>
+                        <div class="stat-label">No Encontrados</div>
+                    </div>
+                </div>
+
+                <div class="price-display" id="priceDisplay">
+                    <div class="no-product">
+                        <div class="no-product-icon">🎯</div>
+                        <h3>Listo para escanear</h3>
+                        <p>Use pistola o cámara para leer códigos de barras</p>
+                    </div>
+                </div>
+
+                <div class="recent-searches" id="recentSearches">
+                    <div class="recent-header">
+                        <span>📋 Últimos Escaneos</span>
+                        <div>
+                            <button class="clear-btn" style="background: #ffc107; color: #000;" onclick="resetStats()">🔄 Reset</button>
+                            <button class="clear-btn" style="background: #28a745;" onclick="exportarReporte()">📊 Exportar</button>
+                            <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
+                        </div>
+                    </div>
+                    <div class="recent-list" id="recentList">
+                        <div style="text-align: center; color: #6c757d; padding: 15px;">
+                            No hay escaneos recientes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let productosData = [];
+        let recentScans = [];
+        let totalScans = 0;
+        let foundCount = 0;
+        let notFoundCount = 0;
+        let currentMode = 'pistol';
+        let cameraActive = false;
+
+        // Configurar carga de archivo
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#1e3a2e';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#333';
+            uploadSection.style.background = '#2a2a2a';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#333';
+            uploadSection.style.background = '#2a2a2a';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                procesarArchivo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                procesarArchivo(e.target.files[0]);
+            }
+        });
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        function procesarArchivo(archivo) {
+            console.log('Procesando:', archivo.name);
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    actualizarProgreso('Leyendo archivo Excel...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    actualizarProgreso('Extrayendo productos y precios...');
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    actualizarProgreso('Preparando códigos de referencia...');
+                    procesarDatosProductos(jsonData);
+                    
+                    actualizarProgreso('Activando sistema multi-scanner...');
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('scannerSection').style.display = 'block';
+                        if (currentMode === 'pistol') {
+                            document.getElementById('scannerInput').focus();
+                        }
+                        mostrarAlerta('✅ Sistema listo - Pistola y Cámara disponibles', 'success');
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarError('Error procesando archivo: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                }
+            };
+
+            reader.readAsArrayBuffer(archivo);
+        }
+
+        function procesarDatosProductos(jsonData) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            console.log('Total filas de datos:', dataRows.length);
+            
+            const indices = {
+                codigoInterno: 0,
+                nombre: 2,
+                costo: 5,
+                precioMayorista: 11,
+                precioMinorista: 12,
+                precioEstandar: 13,
+                porcentajeMayorista: 8,
+                porcentajeMinorista: 9,
+                porcentajeEstandar: 10,
+                stockTotal: 14,
+                proveedor: 16,
+                codigosBarras: 17
+            };
+            
+            productosData = dataRows.map(row => {
+                if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                    return null;
+                }
+                
+                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                
+                let codigosBarras = [];
+                if (row[indices.codigosBarras]) {
+                    codigosBarras = row[indices.codigosBarras]
+                        .toString()
+                        .split(',')
+                        .map(codigo => codigo.trim())
+                        .filter(codigo => codigo.length > 0);
+                }
+                
+                return {
+                    codigoInterno: row[indices.codigoInterno].toString().trim(),
+                    nombre: row[indices.nombre].trim(),
+                    costo: parseFloat(row[indices.costo]) || 0,
+                    precioMayorista: precioMayorista,
+                    precioMinorista: precioMinorista,
+                    precioEstandar: parseFloat(row[indices.precioEstandar]) || 0,
+                    margenMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0,
+                    margenMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0,
+                    margenEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,
+                    stockTotal: parseInt(row[indices.stockTotal]) || 0,
+                    proveedor: row[indices.proveedor] || '',
+                    codigosBarras: codigosBarras,
+                    refMayorista: generarCodigoInvertido(precioMayorista),
+                    refMinorista: generarCodigoInvertido(precioMinorista)
+                };
+            }).filter(p => p !== null);
+            
+            console.log('Productos procesados:', productosData.length);
+            actualizarEstadisticas();
+        }
+
+        function generarCodigoInvertido(precio) {
+            if (!precio || precio === 0) return '000';
+            
+            const precioStr = Math.floor(precio).toString();
+            let primerosTres = precioStr.substring(0, 3);
+            
+            while (primerosTres.length < 3) {
+                primerosTres = '0' + primerosTres;
+            }
+            
+            return primerosTres.split('').reverse().join('');
+        }
+
+        function actualizarEstadisticas() {
+            document.getElementById('totalProducts').textContent = productosData.length.toLocaleString();
+            document.getElementById('totalScans').textContent = totalScans;
+            document.getElementById('foundCount').textContent = foundCount;
+            document.getElementById('notFoundCount').textContent = notFoundCount;
+        }
+
+        // Cambiar entre modos
+        function cambiarModo(modo) {
+            if (modo === currentMode) return;
+            
+            currentMode = modo;
+            
+            if (modo === 'pistol') {
+                document.getElementById('pistolBtn').classList.add('active');
+                document.getElementById('cameraBtn').classList.remove('active');
+                document.getElementById('pistolSection').style.display = 'block';
+                document.getElementById('cameraSection').style.display = 'none';
+                
+                // Detener cámara si está activa
+                if (cameraActive) {
+                    detenerCamera();
+                }
+                
+                // Enfocar input
+                setTimeout(() => {
+                    document.getElementById('scannerInput').focus();
+                }, 100);
+                
+            } else if (modo === 'camera') {
+                document.getElementById('pistolBtn').classList.remove('active');
+                document.getElementById('cameraBtn').classList.add('active');
+                document.getElementById('pistolSection').style.display = 'none';
+                document.getElementById('cameraSection').style.display = 'block';
+            }
+        }
+
+        // Configurar el input del scanner
+        document.addEventListener('DOMContentLoaded', function() {
+            const scannerInput = document.getElementById('scannerInput');
+            
+            scannerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    procesarCodigoEscaneado();
+                }
+            });
+
+            scannerInput.addEventListener('blur', function() {
+                setTimeout(() => {
+                    if (currentMode === 'pistol' && 
+                        document.getElementById('scannerSection').style.display !== 'none') {
+                        scannerInput.focus();
+                    }
+                }, 100);
+            });
+        });
+
+        // Funciones de cámara
+        function iniciarCamera() {
+            const preview = document.getElementById('camera-preview');
+            const status = document.getElementById('cameraStatus');
+            const startBtn = document.getElementById('startCameraBtn');
+            const stopBtn = document.getElementById('stopCameraBtn');
+
+            status.textContent = 'Inicializando cámara...';
+            startBtn.disabled = true;
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: preview,
+                    constraints: {
+                        width: 400,
+                        height: 300,
+                        facingMode: "environment" // Cámara trasera en móviles
+                    }
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                },
+                numOfWorkers: 2,
+                decoder: {
+                    readers: [
+                        "code_128_reader",
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_39_reader",
+                        "code_39_vin_reader",
+                        "codabar_reader",
+                        "upc_reader",
+                        "upc_e_reader",
+                        "i2of5_reader"
+                    ]
+                },
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error('Error inicializando cámara:', err);
+                    status.textContent = 'Error: No se pudo acceder a la cámara';
+                    startBtn.disabled = false;
+                    mostrarError('No se pudo acceder a la cámara. Verifique permisos.');
+                    return;
+                }
+                
+                console.log('Cámara inicializada correctamente');
+                Quagga.start();
+                cameraActive = true;
+                status.textContent = '✅ Cámara activa - Apunte al código de barras';
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                // Mostrar indicador de detección
+                mostrarIndicadorDeteccion();
+            });
+
+            // Listener para códigos detectados
+            Quagga.onDetected(function(result) {
+                const codigo = result.codeResult.code;
+                console.log('Código detectado por cámara:', codigo);
+                
+                // Vibrar si está disponible
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
+                }
+                
+                // Procesar código igual que pistola
+                procesarCodigoDetectado(codigo);
+                
+                // Mostrar indicador visual
+                mostrarDeteccionExitosa();
+            });
+        }
+
+        function detenerCamera() {
+            if (cameraActive) {
+                Quagga.stop();
+                cameraActive = false;
+                
+                const status = document.getElementById('cameraStatus');
+                const startBtn = document.getElementById('startCameraBtn');
+                const stopBtn = document.getElementById('stopCameraBtn');
+                
+                status.textContent = 'Cámara detenida';
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                
+                // Limpiar preview
+                const preview = document.getElementById('camera-preview');
+                preview.innerHTML = '';
+                
+                console.log('Cámara detenida');
+            }
+        }
+
+        function mostrarIndicadorDeteccion() {
+            const indicator = document.createElement('div');
+            indicator.className = 'detection-indicator';
+            indicator.textContent = '📷 Buscando códigos...';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.remove();
+                }
+            }, 3000);
+        }
+
+        function mostrarDeteccionExitosa() {
+            const indicator = document.createElement('div');
+            indicator.className = 'detection-indicator';
+            indicator.style.background = '#28a745';
+            indicator.textContent = '✅ ¡Código detectado!';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.remove();
+                }
+            }, 1500);
+        }
+
+        function buscarProducto(codigo) {
+            console.log('Buscando código:', codigo);
+            
+            // PASO 1: Buscar por Código Interno
+            let producto = productosData.find(p => p.codigoInterno === codigo);
+            if (producto) {
+                console.log('Encontrado por Código Interno:', producto.codigoInterno);
+                return producto;
+            }
+            
+            // PASO 2: Buscar en Códigos de Barras
+            producto = productosData.find(p => 
+                p.codigosBarras && p.codigosBarras.includes(codigo)
+            );
+            if (producto) {
+                console.log('Encontrado por Código de Barras en:', producto.codigosBarras);
+                return producto;
+            }
+            
+            console.log('Código no encontrado');
+            return null;
+        }
+
+        function procesarCodigoEscaneado() {
+            const codigo = document.getElementById('scannerInput').value.trim();
+            if (!codigo) return;
+            
+            procesarCodigoDetectado(codigo);
+            
+            document.getElementById('scannerInput').value = '';
+            document.getElementById('scannerInput').focus();
+        }
+
+        function procesarCodigoDetectado(codigo) {
+            console.log('Procesando código:', codigo);
+            totalScans++;
+            
+            let producto = buscarProducto(codigo);
+            
+            if (producto) {
+                console.log('Producto encontrado:', producto.nombre);
+                foundCount++;
+                mostrarProductoEncontrado(producto);
+                agregarAHistorial(codigo, producto.nombre, true);
+            } else {
+                console.log('Producto no encontrado para código:', codigo);
+                notFoundCount++;
+                mostrarProductoNoEncontrado(codigo);
+                agregarAHistorial(codigo, 'NO ENCONTRADO', false);
+            }
+            
+            actualizarEstadisticas();
+        }
+
+        function mostrarProductoEncontrado(producto) {
+            console.log('Mostrando producto con colores:', producto.nombre);
+            const display = document.getElementById('priceDisplay');
+            
+            display.innerHTML = '';
+            
+            const nuevoContenido = document.createElement('div');
+            nuevoContenido.className = 'product-info';
+            nuevoContenido.style.cssText = 'width: 100%; text-align: center;';
+            
+            nuevoContenido.innerHTML = `
+                <div style="font-size: 16px; margin-bottom: 15px; color: #3498db; font-family: 'Courier New', monospace; font-weight: bold;">
+                    ${producto.codigoInterno}
+                </div>
+                
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin: 15px 0;
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+                    transform: translateZ(0);
+                ">
+                    <div style="
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #ffffff;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                        line-height: 1.2;
+                    ">
+                        ${producto.nombre}
+                    </div>
+                </div>
+                
+                <div style="
+                    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                    padding: 25px;
+                    border-radius: 15px;
+                    margin: 20px 0;
+                    box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5);
+                    transform: translateZ(0);
+                ">
+                    <div style="
+                        font-size: 42px;
+                        font-weight: bold;
+                        color: #ffffff;
+                        text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+                    ">
+                        $${producto.precioEstandar.toLocaleString('es-CO')}
+                    </div>
+                </div>
+                
+                <div style="
+                    background: linear-gradient(135deg, #ff0844 0%, #ff4757 100%);
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    margin-top: 20px;
+                    box-shadow: 0 6px 20px rgba(255, 8, 68, 0.6);
+                    border: 2px solid #ff6b6b;
+                    transform: translateZ(0);
+                ">
+                    <div style="
+                        color: #ffffff;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                        text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+                    ">
+                        Ref:
+                    </div>
+                    <div style="
+                        font-family: 'Courier New', monospace;
+                        font-weight: bold;
+                        color: #ffffff;
+                        font-size: 20px;
+                        letter-spacing: 2px;
+                        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+                    ">
+                        ${producto.refMayorista}/${producto.refMinorista}
+                    </div>
+                </div>
+            `;
+            
+            display.appendChild(nuevoContenido);
+            display.offsetHeight;
+            
+            console.log('Producto mostrado con bloques de color');
+        }
+
+        function mostrarProductoNoEncontrado(codigo) {
+            const display = document.getElementById('priceDisplay');
+            
+            display.innerHTML = `
+                <div class="product-not-found">
+                    <div class="not-found-icon">❌</div>
+                    <div class="not-found-code">${codigo}</div>
+                    <div class="not-found-message">
+                        <strong>Producto No Encontrado</strong><br>
+                        <span>Código no registrado en el sistema</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function agregarAHistorial(codigo, nombre, encontrado) {
+            const tiempo = new Date().toLocaleTimeString();
+            const fuente = currentMode === 'pistol' ? '🔫' : '📷';
+            
+            recentScans.unshift({
+                codigo: codigo,
+                nombre: `${fuente} ${nombre}`,
+                encontrado: encontrado,
+                tiempo: tiempo
+            });
+            
+            if (recentScans.length > 10) {
+                recentScans = recentScans.slice(0, 10);
+            }
+            
+            actualizarHistorial();
+        }
+
+        function actualizarHistorial() {
+            const lista = document.getElementById('recentList');
+            
+            if (recentScans.length === 0) {
+                lista.innerHTML = `
+                    <div style="text-align: center; color: #6c757d; padding: 15px;">
+                        No hay escaneos recientes
+                    </div>
+                `;
+                return;
+            }
+            
+            lista.innerHTML = recentScans.map(scan => `
+                <div class="recent-item">
+                    <div>
+                        <span class="recent-code">${scan.codigo}</span> - 
+                        <span style="color: ${scan.encontrado ? '#28a745' : '#dc3545'};">
+                            ${scan.nombre.substring(0, 25)}${scan.nombre.length > 25 ? '...' : ''}
+                        </span>
+                    </div>
+                    <span class="recent-time">${scan.tiempo}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (recentScans.length === 0) return;
+            
+            if (confirm('¿Limpiar el historial de escaneos?')) {
+                recentScans = [];
+                actualizarHistorial();
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-warning';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+
+        function resetStats() {
+            if (confirm('¿Reiniciar estadísticas de escaneo?')) {
+                totalScans = 0;
+                foundCount = 0;
+                notFoundCount = 0;
+                actualizarEstadisticas();
+                mostrarAlerta('✅ Estadísticas reiniciadas', 'success');
+            }
+        }
+
+        function exportarReporte() {
+            if (recentScans.length === 0) {
+                mostrarAlerta('⚠️ No hay escaneos para exportar', 'warning');
+                return;
+            }
+
+            const fecha = new Date().toISOString().slice(0,10);
+            const hora = new Date().toLocaleTimeString();
+            
+            let reporte = '';
+            reporte += '================================================\n';
+            reporte += '      REPORTE DE ESCANEOS - MULTI-SCANNER       \n';
+            reporte += '================================================\n';
+            reporte += `Fecha: ${fecha} | Hora: ${hora}\n`;
+            reporte += `Total escaneos: ${totalScans}\n`;
+            reporte += `Encontrados: ${foundCount} | No encontrados: ${notFoundCount}\n`;
+            reporte += '================================================\n\n';
+            
+            recentScans.forEach((scan, index) => {
+                reporte += `${(index + 1).toString().padStart(2)}. ${scan.codigo}\n`;
+                reporte += `    ${scan.nombre}\n`;
+                reporte += `    Estado: ${scan.encontrado ? 'ENCONTRADO' : 'NO ENCONTRADO'}\n`;
+                reporte += `    Hora: ${scan.tiempo}\n`;
+                reporte += '    ----------------------------------------\n';
+            });
+            
+            reporte += '\n================================================\n';
+            reporte += '  Sistema de Precios Codificados Multi-Scanner   \n';
+            reporte += '================================================\n';
+
+            const blob = new Blob([reporte], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_multi_scanner_${fecha}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            mostrarAlerta('✅ Reporte exportado', 'success');
+        }
+
+        // Atajos de teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F5' && e.ctrlKey) {
+                e.preventDefault();
+                resetStats();
+            }
+            
+            if (e.key === 'F9') {
+                e.preventDefault();
+                exportarReporte();
+            }
+            
+            if (e.key === 'Escape') {
+                const display = document.getElementById('priceDisplay');
+                display.innerHTML = `
+                    <div class="no-product">
+                        <div class="no-product-icon">🎯</div>
+                        <h3>Listo para escanear</h3>
+                        <p>Use pistola o cámara para leer códigos de barras</p>
+                    </div>
+                `;
+                if (currentMode === 'pistol') {
+                    document.getElementById('scannerInput').focus();
+                }
+            }
+            
+            // Atajo para cambiar modo (Ctrl + Tab)
+            if (e.key === 'Tab' && e.ctrlKey) {
+                e.preventDefault();
+                cambiarModo(currentMode === 'pistol' ? 'camera' : 'pistol');
+            }
+        });
+
+        // Mantener conexión activa para pistolas USB
+        setInterval(() => {
+            if (currentMode === 'pistol') {
+                const scannerInput = document.getElementById('scannerInput');
+                if (document.getElementById('scannerSection').style.display !== 'none' && 
+                    document.activeElement !== scannerInput) {
+                    scannerInput.focus();
+                }
+            }
+        }, 2000);
+
+        // Cleanup al salir
+        window.addEventListener('beforeunload', function() {
+            if (cameraActive) {
+                detenerCamera();
+            }
+        });
+    </script>
+</body>
+</html>

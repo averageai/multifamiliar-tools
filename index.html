@@ -405,19 +405,19 @@
                         password: 'Multifamiliar*1',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios']
+                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2']
                     },
                     'operativo': {
                         password: 'Admin1*',
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: ['precios', 'preciosManizales', 'validadorPrecios']
+                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2']
                     },
                     'usuario': {
                         password: 'Ventas123',
                         name: 'Usuario',
                         role: 'usuario',
-                        permissions: ['validadorPrecios']
+                        permissions: ['validadorPrecios', 'validadorPreciosV2']
                     }
                 };
             }
@@ -556,6 +556,7 @@
             const preciosTool = document.querySelector('a[href*="Precios"]');
             const preciosManizalesTool = document.querySelector('a[href*="Manizales"]');
             const validadorPreciosTool = document.querySelector('a[href*="Validador"]');
+            const validadorPreciosV2Tool = document.querySelector('a[href*="ValidadorV2"]');
             
             
             if (inventariosTool) {
@@ -580,6 +581,12 @@
                 const hasPermission = config.hasPermission(currentUser.username, 'validadorPrecios');
                 validadorPreciosTool.style.display = hasPermission ? 'block' : 'none';
                 console.log('💰 Validador de Precios visible:', hasPermission);
+            }
+
+            if (validadorPreciosV2Tool) {
+                const hasPermission = config.hasPermission(currentUser.username, 'validadorPreciosV2');
+                validadorPreciosV2Tool.style.display = hasPermission ? 'block' : 'none';
+                console.log('💰 Validador de Precios V2 visible:', hasPermission);
             }
         }
 
