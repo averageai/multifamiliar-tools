@@ -735,8 +735,7 @@
                 // Agregar a la lista
                 productosEnLista.push({
                     ...producto,
-                    encontrado: true,
-                    fechaBusqueda: new Date().toLocaleTimeString()
+                    encontrado: true
                 });
                 
                 productsFound++;
@@ -748,7 +747,7 @@
                     codigoInterno: codigo,
                     nombre: 'PRODUCTO NO ENCONTRADO',
                     encontrado: false,
-                    fechaBusqueda: new Date().toLocaleTimeString()
+                    fechaActualizacion: 'N/A'
                 });
                 
                 productsNotFound++;
@@ -790,7 +789,7 @@
                             <th>Precio Estándar</th>
                             <th>Margen Est.</th>
                             <th>Stock</th>
-                            <th>Hora</th>
+                            <th>Última Actualización</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -814,7 +813,7 @@
                             <td class="precio-estandar">$${producto.precioEstandar.toLocaleString('es-CO')}</td>
                             <td><span class="margin-badge">${producto.margenEstandar.toFixed(1)}%</span></td>
                             <td>${producto.stockTotal}</td>
-                            <td>${producto.fechaBusqueda}</td>
+                            <td>${producto.fechaActualizacion || 'N/A'}</td>
                             <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
                         </tr>
                     `;
@@ -827,7 +826,7 @@
                             <td colspan="8" style="text-align: center; color: #dc3545; font-weight: bold;">
                                 PRODUCTO NUEVO - Sin precios de referencia
                             </td>
-                            <td>${producto.fechaBusqueda}</td>
+                            <td>${producto.fechaActualizacion || 'N/A'}</td>
                             <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
                         </tr>
                     `;
@@ -901,13 +900,13 @@
                     contenidoPOS += `    MAYORISTA: ${producto.precioMayorista.toLocaleString('es-CO')} (${producto.margenMayorista}%)\n`;
                     contenidoPOS += `    MINORISTA: ${producto.precioMinorista.toLocaleString('es-CO')} (${producto.margenMinorista}%)\n`;
                     contenidoPOS += `    ESTANDAR:  ${producto.precioEstandar.toLocaleString('es-CO')} (${producto.margenEstandar}%)\n`;
-                    contenidoPOS += `    Stock: ${producto.stockTotal} | ${producto.fechaBusqueda}\n`;
+                    contenidoPOS += `    Stock: ${producto.stockTotal} | ${producto.fechaActualizacion || 'N/A'}\n`;
                     contenidoPOS += '    ----------------------------------------\n';
                 } else {
                     contenidoPOS += `${(index + 1).toString().padStart(2)}. ${producto.codigoInterno} - PRODUCTO NUEVO\n`;
                     contenidoPOS += `    ${producto.nombre}\n`;
                     contenidoPOS += `    SIN PRECIOS DE REFERENCIA\n`;
-                    contenidoPOS += `    ${producto.fechaBusqueda}\n`;
+                    contenidoPOS += `    ${producto.fechaActualizacion || 'N/A'}\n`;
                     contenidoPOS += '    ----------------------------------------\n';
                 }
             });
@@ -975,7 +974,7 @@
                         `${producto.margenEstandar}%`,
                         producto.stockTotal,
                         'ENCONTRADO',
-                        producto.fechaBusqueda
+                        producto.fechaActualizacion || 'N/A'
                     ]);
                 } else {
                     datosCompletos.push([
@@ -990,7 +989,7 @@
                         'N/A',
                         'N/A',
                         'PRODUCTO NUEVO',
-                        producto.fechaBusqueda
+                        producto.fechaActualizacion || 'N/A'
                     ]);
                 }
             });
@@ -1161,8 +1160,7 @@
                 if (producto) {
                     productosEnLista.push({
                         ...producto,
-                        encontrado: true,
-                        fechaBusqueda: new Date().toLocaleTimeString()
+                        encontrado: true
                     });
                     encontrados++;
                     productsFound++;
@@ -1171,7 +1169,7 @@
                         codigoInterno: codigo,
                         nombre: 'PRODUCTO NO ENCONTRADO',
                         encontrado: false,
-                        fechaBusqueda: new Date().toLocaleTimeString()
+                        fechaActualizacion: 'N/A'
                     });
                     noEncontrados++;
                     productsNotFound++;
@@ -1222,8 +1220,7 @@
                 // Agregar a la lista
                 productosEnLista.push({
                     ...producto,
-                    encontrado: true,
-                    fechaBusqueda: new Date().toLocaleTimeString()
+                    encontrado: true
                 });
                 
                 productsFound++;
@@ -1235,7 +1232,7 @@
                     codigoInterno: codigo,
                     nombre: 'PRODUCTO NO ENCONTRADO',
                     encontrado: false,
-                    fechaBusqueda: new Date().toLocaleTimeString()
+                    fechaActualizacion: 'N/A'
                 });
                 
                 productsNotFound++;
