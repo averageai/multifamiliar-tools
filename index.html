@@ -410,6 +410,13 @@
                 <p>Sistema avanzado con pistola y cámara. Lectura automática de códigos de barras por cámara web y pistola scanner.</p>
                 <span class="tool-badge">Scanner</span>
             </a>
+            <!-- Validador V2 Conectado -->
+            <a href="Validador de Precios (Conectado).html" class="tool-card scanner" id="tool-validador-v2-conectado">
+                <div class="tool-icon">📷</div>
+                <h3>Validador V2 Conectado</h3>
+                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos locales con selector de sede automático.</p>
+                <span class="tool-badge">Conectado</span>
+            </a>
         </div>
 
         <div style="text-align: center;">
@@ -434,19 +441,19 @@
                         password: 'Multifamiliar*1',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2']
+                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
                     },
                     'operativo': {
                         password: 'Admin1*',
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2']
+                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
                     },
                     'usuario': {
                         password: 'Ventas123',
                         name: 'Usuario',
                         role: 'usuario',
-                        permissions: ['validadorPrecios', 'validadorPreciosV2']
+                        permissions: ['validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
                     }
                 };
             }
