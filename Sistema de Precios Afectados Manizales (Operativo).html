@@ -850,4 +850,117 @@
                             <th>Acción</th>
                         </tr>
                     </thead>
-                    
+                    <tbody>
+            `;
+
+            productosEnLista.forEach((producto, index) => {
+                const rowClass = producto.encontrado ? 'producto-encontrado' : 'producto-no-encontrado';
+                
+                if (producto.encontrado) {
+                    tableHTML += `
+                        <tr class="${rowClass}">
+                            <td>${index + 1}</td>
+                            <td><span class="code">${producto.codigo}</span></td>
+                            <td>${producto.producto}</td>
+                            <td>$${producto.costo.toLocaleString('es-CO')}</td>
+                            <td class="precio-estandar">$${producto.precioEstandar.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenEstandar.toFixed(1)}%</span></td>
+                            <td class="precio-minorista">$${producto.precioMinorista.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenMinorista.toFixed(1)}%</span></td>
+                            <td class="precio-mayorista">$${producto.precioMayorista.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenMayorista.toFixed(1)}%</span></td>
+                            <td>${producto.existencia}</td>
+                            <td>${producto.fechaBusqueda}</td>
+                            <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
+                        </tr>
+                    `;
+                } else {
+                    tableHTML += `
+                        <tr class="${rowClass}">
+                            <td>${index + 1}</td>
+                            <td><span class="code">${producto.codigo}</span></td>
+                            <td>${producto.producto}</td>
+                            <td colspan="8" style="text-align: center; color: #dc3545; font-weight: bold;">
+                                PRODUCTO NUEVO - Sin precios de referencia
+                            </td>
+                            <td>${producto.fechaBusqueda}</td>
+                            <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        function eliminarDeLista(index) {
+            const producto = productosEnLista[index];
+            if (producto.encontrado) {
+                productsFound--;
+            } else {
+                productsNotFound--;
+            }
+            
+            productosEnLista.splice(index, 1);
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        function limpiarLista() {
+            if (productosEnLista.length === 0) {
+                mostrarAlerta('⚠️ La lista ya está vacía', 'warning');
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres limpiar toda la lista?')) {
+                productosEnLista = [];
+                productsFound = 0;
+                productsNotFound = 0;
+                actualizarTablaProductos();
+                actualizarEstadisticas();
+                mostrarAlerta('✅ Lista limpiada', 'success');
+            }
+        }
+
+        function limpiarBusqueda() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                buscarYAgregar();
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+    </script>
+</body>
+</html>
