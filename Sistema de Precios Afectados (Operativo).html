@@ -14,15 +14,16 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
+            background: #0f0f0f;
             font-size: 13px;
             line-height: 1.4;
+            color: #ffffff;
         }
 
         .container {
             max-width: 1800px;
             margin: 0 auto;
-            background: white;
+            background: #1a1a1a;
             min-height: 100vh;
         }
 
@@ -34,6 +35,26 @@
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
         }
 
         .logo {
@@ -69,9 +90,9 @@
         }
 
         .upload-section {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 4px;
+            background: #2a2a2a;
+            border: 2px dashed #333;
+            border-radius: 8px;
             padding: 20px;
             text-align: center;
             margin-bottom: 15px;
@@ -80,11 +101,13 @@
         .upload-section h2 {
             font-size: 16px;
             margin-bottom: 8px;
+            color: #ffffff;
         }
 
         .upload-section p {
             font-size: 12px;
             margin: 4px 0;
+            color: #a0a0a0;
         }
 
         .upload-btn {
@@ -111,9 +134,9 @@
         }
 
         .top-bar {
-            background: #e8f5e8;
-            border: 1px solid #28a745;
-            border-radius: 3px;
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 8px;
             padding: 10px 15px;
             margin-bottom: 15px;
             display: flex;
@@ -125,7 +148,7 @@
 
         .system-info {
             font-weight: 600;
-            color: #28a745;
+            color: #4ade80;
         }
 
         .stats-chips {
@@ -145,9 +168,9 @@
         .search-bar {
             display: flex;
             gap: 8px;
-            background: #f8f9fa;
+            background: #2a2a2a;
             padding: 8px 15px;
-            border-radius: 3px;
+            border-radius: 8px;
             margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: center;
@@ -157,14 +180,17 @@
             flex: 1;
             min-width: 200px;
             padding: 6px 12px;
-            border: 1px solid #dee2e6;
-            border-radius: 3px;
+            border: 1px solid #333;
+            border-radius: 6px;
             font-size: 12px;
+            background: #1a1a1a;
+            color: #ffffff;
         }
 
         .search-input:focus {
             outline: none;
             border-color: #3498db;
+            background: #333;
         }
 
         .btn {
@@ -212,6 +238,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 8px 8px 0 0;
         }
 
         .action-buttons {
@@ -221,10 +248,11 @@
         }
 
         .table-container {
-            background: white;
-            border: 1px solid #dee2e6;
+            background: #1a1a1a;
+            border: 1px solid #333;
             max-height: 500px;
             overflow-y: auto;
+            border-radius: 0 0 8px 8px;
         }
 
         table {
@@ -234,23 +262,25 @@
         }
 
         th {
-            background: #f8f9fa;
+            background: #2a2a2a;
             padding: 6px 8px;
             text-align: left;
             font-weight: 600;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #333;
             position: sticky;
             top: 0;
             z-index: 10;
+            color: #ffffff;
         }
 
         td {
             padding: 4px 8px;
-            border-bottom: 1px solid #f1f3f4;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
         }
 
         tr:hover {
-            background: #f8f9fa;
+            background: #2a2a2a;
         }
 
         .price-badge {
@@ -400,7 +430,7 @@
 
         .footer {
             background: #2c3e50;
-            color: white;
+            color: #a0a0a0;
             text-align: center;
             padding: 15px;
             font-size: 12px;
@@ -408,12 +438,13 @@
         }
 
         .footer a {
-            color: #3498db;
+            color: #667eea;
             text-decoration: none;
         }
 
         .footer a:hover {
             text-decoration: underline;
+            color: #ffffff;
         }
     </style>
 </head>
@@ -425,6 +456,7 @@
                 <h1>Sistema de Consulta de Precios</h1>
                 <p>Control de márgenes y precios anteriores para evitar pérdidas</p>
             </div>
+            <a href="../index.html" class="back-btn">← Volver al Hub</a>
         </div>
 
         <div class="content">
