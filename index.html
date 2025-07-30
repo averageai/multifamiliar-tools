@@ -365,6 +365,9 @@
 
         // Mostrar dashboard
         function showDashboard(username) {
+            console.log('🔐 Iniciando sesión para:', username);
+            console.log('👤 Usuario actual:', currentUser);
+            
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('currentUser').textContent = currentUser.name;
@@ -383,15 +386,24 @@
 
         // Actualizar visibilidad de herramientas según permisos
         function updateToolVisibility() {
+            if (!currentUser) {
+                console.error('❌ No hay usuario actual');
+                return;
+            }
+            
             const inventariosTool = document.querySelector('a[href*="Inventarios"]');
             const preciosTool = document.querySelector('a[href*="Precios"]');
             
             if (inventariosTool) {
-                inventariosTool.style.display = config.hasPermission(currentUser.username, 'inventarios') ? 'block' : 'none';
+                const hasPermission = config.hasPermission(currentUser.username, 'inventarios');
+                inventariosTool.style.display = hasPermission ? 'block' : 'none';
+                console.log('📦 Inventarios visible:', hasPermission);
             }
             
             if (preciosTool) {
-                preciosTool.style.display = config.hasPermission(currentUser.username, 'precios') ? 'block' : 'none';
+                const hasPermission = config.hasPermission(currentUser.username, 'precios');
+                preciosTool.style.display = hasPermission ? 'block' : 'none';
+                console.log('💰 Precios visible:', hasPermission);
             }
         }
 
@@ -413,13 +425,18 @@
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             
+            console.log('🔑 Intentando login:', username);
+            
             const result = config.authenticate(username, password);
+            console.log('✅ Resultado autenticación:', result);
             
             if (result.success) {
                 currentUser = result.user;
+                console.log('👤 Usuario autenticado:', currentUser);
                 errorMessage.style.display = 'none';
                 showDashboard(username);
             } else {
+                console.log('❌ Autenticación fallida:', result.message);
                 errorMessage.style.display = 'block';
                 document.getElementById('password').value = '';
             }
