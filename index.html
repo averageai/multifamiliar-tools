@@ -373,6 +373,13 @@
                 <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
                 <span class="tool-badge">Operativo</span>
             </a>
+
+            <a href="Sistema de Precios Afectados Manizales (Operativo).html" class="tool-card operativo">
+                <div class="tool-icon">💰</div>
+                <h3>Sistema de Precios Manizales</h3>
+                <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
+                <span class="tool-badge">Operativo</span>
+            </a>
         </div>
 
         <div style="text-align: center;">
@@ -380,7 +387,7 @@
         </div>
 
         <div class="footer">
-            <p>Desarrollado por Humanos + IA en <a href="#" target="_blank">average</a></p>
+            <p>Desarrollado por Humanos + IA en <a href="ai.average.lat" target="_blank">average</a></p>
         </div>
     </div>
 
@@ -397,19 +404,19 @@
                         password: 'Multifamiliar*1',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: ['inventarios', 'precios']
+                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios']
                     },
                     'operativo': {
-                        password: 'Multifamiliar*1',
+                        password: 'Admin1*',
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: ['precios']
+                        permissions: ['precios', 'preciosManizales', 'validadorPrecios']
                     },
                     'usuario': {
                         password: 'Ventas123',
                         name: 'Usuario',
                         role: 'usuario',
-                        permissions: ['precios']
+                        permissions: ['validadorPrecios']
                     }
                 };
             }
@@ -546,6 +553,9 @@
             
             const inventariosTool = document.querySelector('a[href*="Inventarios"]');
             const preciosTool = document.querySelector('a[href*="Precios"]');
+            const preciosManizalesTool = document.querySelector('a[href*="Manizales"]');
+            const validadorPreciosTool = document.querySelector('a[href*="Validador"]');
+            
             
             if (inventariosTool) {
                 const hasPermission = config.hasPermission(currentUser.username, 'inventarios');
@@ -557,6 +567,18 @@
                 const hasPermission = config.hasPermission(currentUser.username, 'precios');
                 preciosTool.style.display = hasPermission ? 'block' : 'none';
                 console.log('💰 Precios visible:', hasPermission);
+            }
+
+            if (preciosManizalesTool) {
+                const hasPermission = config.hasPermission(currentUser.username, 'preciosManizales');
+                preciosManizalesTool.style.display = hasPermission ? 'block' : 'none';
+                console.log('💰 Precios Manizales visible:', hasPermission);
+            }
+
+            if (validadorPreciosTool) {
+                const hasPermission = config.hasPermission(currentUser.username, 'validadorPrecios');
+                validadorPreciosTool.style.display = hasPermission ? 'block' : 'none';
+                console.log('💰 Validador de Precios visible:', hasPermission);
             }
         }
 

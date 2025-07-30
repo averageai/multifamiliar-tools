@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Consulta de Precios - Inventario Manizales</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-section p {
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .search-section {
+            display: none;
+        }
+
+        .top-bar {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 3px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .system-info {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .stats-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .stat-chip {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 6px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid #dee2e6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .price-badge {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .margin-badge {
+            background: #6f42c1;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left-color: #dc3545;
+            font-size: 12px;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .summary-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                margin-bottom: 8px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .producto-encontrado {
+            background: #d4edda !important;
+        }
+
+        .producto-no-encontrado {
+            background: #f8d7da !important;
+        }
+
+        .precio-estandar { color: #dc3545; font-weight: bold; }
+        .precio-minorista { color: #ffc107; font-weight: bold; }
+        .precio-mayorista { color: #28a745; font-weight: bold; }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏪</div>
+            <div class="header-text">
+                <h1>Sistema de Consulta de Precios - Manizales</h1>
+                <p>Control de márgenes y precios de inventario para evitar pérdidas</p>
+            </div>
+            <a href="../index.html" class="back-btn">← Volver al Hub</a>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h2>Cargar Inventario Manizales</h2>
+                <p><strong>Archivo:</strong> Inventario Manizales.xlsx</p>
+                <p>Arrastra el archivo aquí o haz clic para seleccionar</p>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar Archivo
+                </button>
+                <div class="alert">
+                    <strong>Info:</strong> Carga automáticamente productos con 3 tipos de precios (Estándar, Minorista, Mayorista)
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando inventario...</p>
+                <p id="loadingDetail">Analizando productos...</p>
+            </div>
+
+            <div class="search-section" id="searchSection">
+                <div class="top-bar">
+                    <div class="system-info" id="systemInfo">
+                        Inventario Manizales Cargado
+                    </div>
+                    <div class="stats-chips" id="statsChips">
+                        <!-- Stats aquí -->
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="Buscar por código de producto (ej: 3719, 2513)..." 
+                           onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary" onclick="buscarYAgregar()">🔍 Buscar y Agregar</button>
+                    <button class="btn" onclick="limpiarBusqueda()">🗑️ Limpiar Input</button>
+                </div>
+
+                <div class="summary-info" id="summaryInfo">
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalInList">0</div>
+                        <div class="summary-label">En Lista</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalSearches">0</div>
+                        <div class="summary-label">Búsquedas</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productsFound">0</div>
+                        <div class="summary-label">Encontrados</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productsNotFound">0</div>
+                        <div class="summary-label">No Encontrados</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>Lista de Productos Consultados - Manizales</span>
+                        <div class="action-buttons">
+                            <button class="btn" onclick="imprimirListaCompleta()">📊 Imprimir Lista Completa</button>
+                            <button class="btn btn-warning" onclick="imprimirSinPrecios()">📋 Imprimir Sin Precios</button>
+                            <button class="btn" onclick="limpiarLista()">🗑️ Limpiar Lista</button>
+                            <button class="btn" onclick="exportarSoloEncontrados()">📊 Solo con Precios</button>
+                            <button class="btn btn-warning" onclick="reiniciarSistema()">🔄 Reiniciar Sistema</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="productListContainer">
+                        <div class="no-products">
+                            <h3>📝 Lista vacía</h3>
+                            <p>Busca productos para agregarlos a la lista de consultas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="#" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let productosData = [];
+        let productosEnLista = [];
+        let totalSearches = 0;
+        let productsFound = 0;
+        let productsNotFound = 0;
+
+        // Configurar drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#e3f2fd';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                procesarArchivo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                procesarArchivo(e.target.files[0]);
+            }
+        });
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        function procesarArchivo(archivo) {
+            console.log('Iniciando procesamiento del archivo:', archivo.name);
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    actualizarProgreso('Leyendo archivo Excel...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    actualizarProgreso('Extrayendo datos de inventario...');
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    actualizarProgreso('Procesando precios y márgenes...');
+                    procesarDatosInventario(jsonData);
+                    
+                    actualizarProgreso('Inicializando sistema...');
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('searchSection').style.display = 'block';
+                        mostrarAlerta('✅ Inventario Manizales cargado correctamente', 'success');
+                        document.getElementById('searchInput').focus();
+                    }, 300);
+                    
+                } catch (error) {
+                    console.error('Error completo:', error);
+                    mostrarError('Error procesando archivo: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                }
+            };
+
+            reader.onerror = function() {
+                console.error('Error leyendo el archivo');
+                mostrarError('Error leyendo el archivo');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            };
+
+            reader.readAsArrayBuffer(archivo);
+        }
+
+        function procesarDatosInventario(jsonData) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            console.log('Total filas de datos:', dataRows.length);
+            
+            // Mapeo de índices basado en la estructura del inventario Manizales
+            const indices = {
+                codigo: 0,              // "Codigo"
+                producto: 1,            // "Producto"
+                precioEstandar: 5,      // "precio_venta"
+                margenEstandar: 6,      // "margen_venta"
+                precioMinorista: 7,     // "precio#2"
+                margenMinorista: 8,     // "margen_#2"
+                precioMayorista: 9,     // "precio#3"
+                margenMayorista: 10,    // "margen_#4" (error en encabezado, es margen_#3)
+                costo: 12,              // "costo (antes de Iva)"
+                iva: 13,                // "iva"
+                existencia: 14          // "existencia"
+            };
+            
+            productosData = dataRows.map((row, index) => {
+                if (!row[indices.codigo] || !row[indices.producto]) {
+                    return null;
+                }
+                
+                const codigo = row[indices.codigo].toString().trim();
+                const producto = row[indices.producto].toString().trim();
+                const costo = parseFloat(row[indices.costo]) || 0;
+                const iva = parseFloat(row[indices.iva]) || 0;
+                const existencia = parseInt(row[indices.existencia]) || 0;
+                
+                // Precios
+                const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                
+                // Márgenes (usar los del archivo directamente, convertir a porcentaje)
+                const margenEstandar = (parseFloat(row[indices.margenEstandar]) || 0) * 100;
+                const margenMinorista = (parseFloat(row[indices.margenMinorista]) || 0) * 100;
+                const margenMayorista = (parseFloat(row[indices.margenMayorista]) || 0) * 100;
+                
+                return {
+                    codigo: codigo,
+                    producto: producto,
+                    costo: costo,
+                    iva: iva,
+                    existencia: existencia,
+                    precioEstandar: precioEstandar,
+                    precioMinorista: precioMinorista,
+                    precioMayorista: precioMayorista,
+                    margenEstandar: margenEstandar,
+                    margenMinorista: margenMinorista,
+                    margenMayorista: margenMayorista
+                };
+            }).filter(p => p !== null);
+            
+            console.log('Productos procesados:', productosData.length);
+            actualizarEstadisticas();
+        }
+
+        function actualizarEstadisticas() {
+            // Actualizar chips de estadísticas
+            document.getElementById('statsChips').innerHTML = `
+                <span class="stat-chip">${productosData.length.toLocaleString()} productos</span>
+                <span class="stat-chip">Manizales</span>
+                <span class="stat-chip">Sistema activo</span>
+            `;
+            
+            // Actualizar contadores de la lista
+            document.getElementById('totalInList').textContent = productosEnLista.length;
+            document.getElementById('totalSearches').textContent = totalSearches;
+            document.getElementById('productsFound').textContent = productsFound;
+            document.getElementById('productsNotFound').textContent = productsNotFound;
+        }
+
+        // Función original de búsqueda simple
+        function buscarYAgregarOriginal() {
+            const codigo = document.getElementById('searchInput').value.trim();
+            if (!codigo) {
+                mostrarAlerta('⚠️ Por favor ingresa un código de producto', 'warning');
+                return;
+            }
+            
+            // Incrementar contador de búsquedas
+            totalSearches++;
+            
+            // Buscar el producto
+            const producto = productosData.find(p => p.codigo === codigo);
+            
+            if (producto) {
+                // Verificar si ya está en la lista
+                const yaExiste = productosEnLista.find(p => p.codigo === codigo);
+                if (yaExiste) {
+                    mostrarAlerta('⚠️ Este producto ya está en la lista', 'warning');
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchInput').focus();
+                    return;
+                }
+                
+                // Agregar a la lista
+                productosEnLista.push({
+                    ...producto,
+                    encontrado: true,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsFound++;
+                mostrarAlerta('✅ Producto encontrado y agregado a la lista', 'success');
+                
+            } else {
+                // Agregar como no encontrado
+                productosEnLista.push({
+                    codigo: codigo,
+                    producto: 'PRODUCTO NO ENCONTRADO',
+                    encontrado: false,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsNotFound++;
+                mostrarAlerta('❌ Producto no encontrado, agregado como nuevo', 'warning');
+            }
+            
+            // Limpiar input y actualizar visualización
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        function buscarMultiples() {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) {
+                mostrarAlerta('⚠️ Por favor ingresa uno o más códigos de producto', 'warning');
+                return;
+            }
+            
+            // Separar por comas, saltos de línea, espacios
+            const codigos = input.split(/[,\n\s]+/).filter(c => c.trim().length > 0);
+            
+            if (codigos.length === 0) {
+                mostrarAlerta('⚠️ No se encontraron códigos válidos', 'warning');
+                return;
+            }
+            
+            let agregados = 0;
+            let duplicados = 0;
+            let encontrados = 0;
+            let noEncontrados = 0;
+            
+            codigos.forEach(codigo => {
+                codigo = codigo.trim();
+                
+                // Verificar si ya está en la lista
+                const yaExiste = productosEnLista.find(p => p.codigo === codigo);
+                if (yaExiste) {
+                    duplicados++;
+                    return;
+                }
+                
+                totalSearches++;
+                const producto = productosData.find(p => p.codigo === codigo);
+                
+                if (producto) {
+                    productosEnLista.push({
+                        ...producto,
+                        encontrado: true,
+                        fechaBusqueda: new Date().toLocaleTimeString()
+                    });
+                    encontrados++;
+                    productsFound++;
+                } else {
+                    productosEnLista.push({
+                        codigo: codigo,
+                        producto: 'PRODUCTO NO ENCONTRADO',
+                        encontrado: false,
+                        fechaBusqueda: new Date().toLocaleTimeString()
+                    });
+                    noEncontrados++;
+                    productsNotFound++;
+                }
+                agregados++;
+            });
+            
+            // Mostrar resultado
+            let mensaje = `✅ Procesados ${codigos.length} códigos: `;
+            if (agregados > 0) mensaje += `${agregados} agregados`;
+            if (duplicados > 0) mensaje += `${agregados > 0 ? ', ' : ''}${duplicados} duplicados`;
+            if (encontrados > 0) mensaje += `${(agregados > 0 || duplicados > 0) ? ', ' : ''}${encontrados} encontrados`;
+            if (noEncontrados > 0) mensaje += `${(agregados > 0 || duplicados > 0 || encontrados > 0) ? ', ' : ''}${noEncontrados} nuevos`;
+            
+            mostrarAlerta(mensaje, agregados > 0 ? 'success' : 'warning');
+            
+            // Limpiar y actualizar
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        // Función mejorada para detectar múltiples códigos
+        function buscarYAgregarMejorado() {
+            const input = document.getElementById('searchInput').value.trim();
+            
+            // Detectar si hay múltiples códigos (contiene comas, saltos de línea o múltiples espacios)
+            if (input.includes(',') || input.includes('\n') || input.split(/\s+/).length > 1) {
+                buscarMultiples();
+            } else {
+                buscarYAgregarOriginal();
+            }
+        }
+
+        // Asignar la función mejorada
+        window.buscarYAgregar = buscarYAgregarMejorado;
+
+        function actualizarTablaProductos() {
+            const container = document.getElementById('productListContainer');
+            
+            if (productosEnLista.length === 0) {
+                container.innerHTML = `
+                    <div class="no-products">
+                        <h3>📝 Lista vacía</h3>
+                        <p>Busca productos para agregarlos a la lista de consultas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Costo</th>
+                            <th>Precio Estándar</th>
+                            <th>Margen Est.</th>
+                            <th>Precio Minorista</th>
+                            <th>Margen Min.</th>
+                            <th>Precio Mayorista</th>
+                            <th>Margen May.</th>
+                            <th>Existencia</th>
+                            <th>Hora</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    
