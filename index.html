@@ -92,6 +92,30 @@
             color: #666;
         }
 
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #2a2a2a;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #333;
+        }
+
+        .form-group select option {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 8px;
+        }
+
         .login-btn {
             width: 100%;
             background: #ffffff;
@@ -308,8 +332,12 @@
         
         <form id="loginForm">
             <div class="form-group">
-                <label for="username">Usuario</label>
-                <input type="text" id="username" name="username" required>
+                <label for="role">Rol</label>
+                <select id="role" name="role" required>
+                    <option value="">Seleccionar rol...</option>
+                    <option value="admin">Administrador</option>
+                    <option value="usuario">Usuario</option>
+                </select>
             </div>
             
             <div class="form-group">
@@ -546,20 +574,26 @@
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const role = document.getElementById('role').value;
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             
-            console.log('🔑 Intentando login:', username);
+            if (!role) {
+                errorMessage.textContent = 'Por favor selecciona un rol';
+                errorMessage.style.display = 'block';
+                return;
+            }
             
-            const result = config.authenticate(username, password);
+            console.log('🔑 Intentando login:', role);
+            
+            const result = config.authenticate(role, password);
             console.log('✅ Resultado autenticación:', result);
             
             if (result.success) {
                 currentUser = result.user;
                 console.log('👤 Usuario autenticado:', currentUser);
                 errorMessage.style.display = 'none';
-                showDashboard(username);
+                showDashboard(role);
             } else {
                 console.log('❌ Autenticación fallida:', result.message);
                 errorMessage.style.display = 'block';
@@ -588,8 +622,8 @@
             }
         });
 
-        // Enfoque automático en el campo de usuario
-        document.getElementById('username').focus();
+        // Enfoque automático en el menú de rol
+        document.getElementById('role').focus();
     </script>
 </body>
 </html> 
