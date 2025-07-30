@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Consulta de Precios - Control de Márgenes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-section p {
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .search-section {
+            display: none;
+        }
+
+        .top-bar {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 3px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .system-info {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .stats-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .stat-chip {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 6px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid #dee2e6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .price-badge {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .margin-badge {
+            background: #6f42c1;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left-color: #dc3545;
+            font-size: 12px;
+        }
+
+        .no-products {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .summary-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                margin-bottom: 8px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .producto-encontrado {
+            background: #d4edda !important;
+        }
+
+        .producto-no-encontrado {
+            background: #f8d7da !important;
+        }
+
+        .precio-mayorista { color: #28a745; font-weight: bold; }
+        .precio-minorista { color: #ffc107; font-weight: bold; }
+        .precio-estandar { color: #dc3545; font-weight: bold; }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">💰</div>
+            <div class="header-text">
+                <h1>Sistema de Consulta de Precios</h1>
+                <p>Control de márgenes y precios anteriores para evitar pérdidas</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h2>Cargar Archivo de Productos</h2>
+                <p><strong>Origen:</strong> Productos > Exportar/Importar > Exportación Masiva</p>
+                <p>Formato: productos_[fecha]_[hora].xlsx</p>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar Archivo
+                </button>
+                <div class="alert">
+                    <strong>Info:</strong> Carga automáticamente todos los productos con precios y márgenes
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando archivo...</p>
+                <p id="loadingDetail">Analizando productos...</p>
+            </div>
+
+            <div class="search-section" id="searchSection">
+                <div class="top-bar">
+                    <div class="system-info" id="systemInfo">
+                        Sistema Cargado
+                    </div>
+                    <div class="stats-chips" id="statsChips">
+                        <!-- Stats aquí -->
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="Buscar por código de producto..." 
+                           onkeypress="handleKeyPress(event)">
+                    <button class="btn btn-primary" onclick="buscarYAgregar()">🔍 Buscar y Agregar</button>
+                    <button class="btn" onclick="limpiarBusqueda()">🗑️ Limpiar Input</button>
+                </div>
+
+                <div class="summary-info" id="summaryInfo">
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalInList">0</div>
+                        <div class="summary-label">En Lista</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalSearches">0</div>
+                        <div class="summary-label">Búsquedas</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productsFound">0</div>
+                        <div class="summary-label">Encontrados</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productsNotFound">0</div>
+                        <div class="summary-label">No Encontrados</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>Lista de Productos Consultados</span>
+                        <div class="action-buttons">
+                            <button class="btn" onclick="imprimirListaCompleta()">📊 Imprimir Lista Completa</button>
+                            <button class="btn btn-warning" onclick="imprimirSinPrecios()">📋 Imprimir Sin Precios</button>
+                            <button class="btn" onclick="limpiarLista()">🗑️ Limpiar Lista</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="productListContainer">
+                        <div class="no-products">
+                            <h3>📝 Lista vacía</h3>
+                            <p>Busca productos para agregarlos a la lista de consultas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="#" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let productosData = [];
+        let productosEnLista = [];
+        let totalSearches = 0;
+        let productsFound = 0;
+        let productsNotFound = 0;
+
+        // Configurar drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#e3f2fd';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                procesarArchivo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                procesarArchivo(e.target.files[0]);
+            }
+        });
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        function procesarArchivo(archivo) {
+            console.log('Iniciando procesamiento del archivo:', archivo.name);
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    actualizarProgreso('Leyendo archivo Excel...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    actualizarProgreso('Extrayendo datos de productos...');
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    actualizarProgreso('Procesando precios y márgenes...');
+                    procesarDatosProductos(jsonData);
+                    
+                    actualizarProgreso('Inicializando sistema...');
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('searchSection').style.display = 'block';
+                        mostrarAlerta('✅ Sistema cargado correctamente', 'success');
+                        document.getElementById('searchInput').focus();
+                    }, 300);
+                    
+                } catch (error) {
+                    console.error('Error completo:', error);
+                    mostrarError('Error procesando archivo: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                }
+            };
+
+            reader.onerror = function() {
+                console.error('Error leyendo el archivo');
+                mostrarError('Error leyendo el archivo');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
+            };
+
+            reader.readAsArrayBuffer(archivo);
+        }
+
+        function procesarDatosProductos(jsonData) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            console.log('Total filas de datos:', dataRows.length);
+            
+            // Mapeo de índices basado en la estructura real
+            const indices = {
+                codigoInterno: 0,      // "Código Interno"
+                nombre: 2,             // "Nombre"
+                costo: 5,              // "Costo"
+                porcentajeMayorista: 8, // "Porcentaje Mayorista"
+                porcentajeMinorista: 9, // "Porcentaje Minorista"
+                porcentajeEstandar: 10, // "Porcentaje Estándar"
+                precioMayorista: 11,   // "Precio Mayorista"
+                precioMinorista: 12,   // "Precio Minorista"
+                precioEstandar: 13,    // "Precio Estándar"
+                stockTotal: 14,        // "Stock Total"
+                proveedor: 16,         // "Proveedor"
+                fechaActualizacion: 20 // "Última Actualización"
+            };
+            
+            productosData = dataRows.map((row, index) => {
+                if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                    return null;
+                }
+                
+                const costo = parseFloat(row[indices.costo]) || 0;
+                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+                
+                // Calcular márgenes reales (pero mostrar los configurados)
+                const margenMayorista = costo > 0 ? ((precioMayorista - costo) / costo * 100) : 0;
+                const margenMinorista = costo > 0 ? ((precioMinorista - costo) / costo * 100) : 0;
+                const margenEstandar = costo > 0 ? ((precioEstandar - costo) / costo * 100) : 0;
+                
+                return {
+                    codigoInterno: row[indices.codigoInterno].toString().trim(),
+                    nombre: row[indices.nombre].trim(),
+                    costo: costo,
+                    porcentajeMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0,
+                    porcentajeMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0,
+                    porcentajeEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,
+                    precioMayorista: precioMayorista,
+                    precioMinorista: precioMinorista,
+                    precioEstandar: precioEstandar,
+                    margenMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0, // Usar columna I
+                    margenMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0, // Usar columna J
+                    margenEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,   // Usar columna K
+                    stockTotal: parseInt(row[indices.stockTotal]) || 0,
+                    proveedor: row[indices.proveedor] || '',
+                    fechaActualizacion: row[indices.fechaActualizacion] || ''
+                };
+            }).filter(p => p !== null);
+            
+            console.log('Productos procesados:', productosData.length);
+            actualizarEstadisticas();
+        }
+
+        function actualizarEstadisticas() {
+            // Actualizar chips de estadísticas
+            document.getElementById('statsChips').innerHTML = `
+                <span class="stat-chip">${productosData.length.toLocaleString()} productos</span>
+                <span class="stat-chip">Sistema activo</span>
+            `;
+            
+            // Actualizar contadores de la lista
+            document.getElementById('totalInList').textContent = productosEnLista.length;
+            document.getElementById('totalSearches').textContent = totalSearches;
+            document.getElementById('productsFound').textContent = productsFound;
+            document.getElementById('productsNotFound').textContent = productsNotFound;
+        }
+
+        function buscarYAgregar() {
+            const codigo = document.getElementById('searchInput').value.trim();
+            if (!codigo) {
+                mostrarAlerta('⚠️ Por favor ingresa un código de producto', 'warning');
+                return;
+            }
+            
+            // Incrementar contador de búsquedas
+            totalSearches++;
+            
+            // Buscar el producto
+            const producto = productosData.find(p => p.codigoInterno === codigo);
+            
+            if (producto) {
+                // Verificar si ya está en la lista
+                const yaExiste = productosEnLista.find(p => p.codigoInterno === codigo);
+                if (yaExiste) {
+                    mostrarAlerta('⚠️ Este producto ya está en la lista', 'warning');
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchInput').focus();
+                    return;
+                }
+                
+                // Agregar a la lista
+                productosEnLista.push({
+                    ...producto,
+                    encontrado: true,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsFound++;
+                mostrarAlerta('✅ Producto encontrado y agregado a la lista', 'success');
+                
+            } else {
+                // Agregar como no encontrado
+                productosEnLista.push({
+                    codigoInterno: codigo,
+                    nombre: 'PRODUCTO NO ENCONTRADO',
+                    encontrado: false,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsNotFound++;
+                mostrarAlerta('❌ Producto no encontrado, agregado como nuevo', 'warning');
+            }
+            
+            // Limpiar input y actualizar visualización
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        function actualizarTablaProductos() {
+            const container = document.getElementById('productListContainer');
+            
+            if (productosEnLista.length === 0) {
+                container.innerHTML = `
+                    <div class="no-products">
+                        <h3>📝 Lista vacía</h3>
+                        <p>Busca productos para agregarlos a la lista de consultas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Costo</th>
+                            <th>Precio Mayorista</th>
+                            <th>Margen M.</th>
+                            <th>Precio Minorista</th>
+                            <th>Margen Min.</th>
+                            <th>Precio Estándar</th>
+                            <th>Margen Est.</th>
+                            <th>Stock</th>
+                            <th>Hora</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            productosEnLista.forEach((producto, index) => {
+                const rowClass = producto.encontrado ? 'producto-encontrado' : 'producto-no-encontrado';
+                
+                if (producto.encontrado) {
+                    tableHTML += `
+                        <tr class="${rowClass}">
+                            <td>${index + 1}</td>
+                            <td><span class="code">${producto.codigoInterno}</span></td>
+                            <td>${producto.nombre}</td>
+                            <td>$${producto.costo.toLocaleString('es-CO')}</td>
+                            <td class="precio-mayorista">$${producto.precioMayorista.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenMayorista.toFixed(1)}%</span></td>
+                            <td class="precio-minorista">$${producto.precioMinorista.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenMinorista.toFixed(1)}%</span></td>
+                            <td class="precio-estandar">$${producto.precioEstandar.toLocaleString('es-CO')}</td>
+                            <td><span class="margin-badge">${producto.margenEstandar.toFixed(1)}%</span></td>
+                            <td>${producto.stockTotal}</td>
+                            <td>${producto.fechaBusqueda}</td>
+                            <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
+                        </tr>
+                    `;
+                } else {
+                    tableHTML += `
+                        <tr class="${rowClass}">
+                            <td>${index + 1}</td>
+                            <td><span class="code">${producto.codigoInterno}</span></td>
+                            <td>${producto.nombre}</td>
+                            <td colspan="8" style="text-align: center; color: #dc3545; font-weight: bold;">
+                                PRODUCTO NUEVO - Sin precios de referencia
+                            </td>
+                            <td>${producto.fechaBusqueda}</td>
+                            <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarDeLista(${index})">❌</button></td>
+                        </tr>
+                    `;
+                }
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        function eliminarDeLista(index) {
+            const producto = productosEnLista[index];
+            if (producto.encontrado) {
+                productsFound--;
+            } else {
+                productsNotFound--;
+            }
+            
+            productosEnLista.splice(index, 1);
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        function limpiarLista() {
+            if (productosEnLista.length === 0) {
+                mostrarAlerta('⚠️ La lista ya está vacía', 'warning');
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres limpiar toda la lista?')) {
+                productosEnLista = [];
+                productsFound = 0;
+                productsNotFound = 0;
+                actualizarTablaProductos();
+                actualizarEstadisticas();
+                mostrarAlerta('✅ Lista limpiada', 'success');
+            }
+        }
+
+        function limpiarBusqueda() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                buscarYAgregar();
+            }
+        }
+
+        function imprimirListaCompleta() {
+            if (productosEnLista.length === 0) {
+                mostrarAlerta('⚠️ No hay productos en la lista para imprimir', 'warning');
+                return;
+            }
+
+            // Crear contenido para impresora POS 80mm (48 caracteres por línea)
+            let contenidoPOS = '';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '       CONSULTA DE PRECIOS - LISTA COMPLETA    \n';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += `Fecha: ${new Date().toLocaleDateString().padEnd(15)} Hora: ${new Date().toLocaleTimeString()}\n`;
+            contenidoPOS += `Total productos: ${productosEnLista.length}\n`;
+            contenidoPOS += '================================================\n';
+            
+            productosEnLista.forEach((producto, index) => {
+                if (producto.encontrado) {
+                    contenidoPOS += `${(index + 1).toString().padStart(2)}. ${producto.codigoInterno}\n`;
+                    contenidoPOS += `    ${producto.nombre.substring(0, 44)}\n`;
+                    contenidoPOS += `    Costo: ${producto.costo.toLocaleString('es-CO')}\n`;
+                    contenidoPOS += `    MAYORISTA: ${producto.precioMayorista.toLocaleString('es-CO')} (${producto.margenMayorista}%)\n`;
+                    contenidoPOS += `    MINORISTA: ${producto.precioMinorista.toLocaleString('es-CO')} (${producto.margenMinorista}%)\n`;
+                    contenidoPOS += `    ESTANDAR:  ${producto.precioEstandar.toLocaleString('es-CO')} (${producto.margenEstandar}%)\n`;
+                    contenidoPOS += `    Stock: ${producto.stockTotal} | ${producto.fechaBusqueda}\n`;
+                    contenidoPOS += '    ----------------------------------------\n';
+                } else {
+                    contenidoPOS += `${(index + 1).toString().padStart(2)}. ${producto.codigoInterno} - PRODUCTO NUEVO\n`;
+                    contenidoPOS += `    ${producto.nombre}\n`;
+                    contenidoPOS += `    SIN PRECIOS DE REFERENCIA\n`;
+                    contenidoPOS += `    ${producto.fechaBusqueda}\n`;
+                    contenidoPOS += '    ----------------------------------------\n';
+                }
+            });
+            
+            contenidoPOS += '================================================\n';
+            contenidoPOS += `RESUMEN: Total: ${productosEnLista.length} | OK: ${productsFound} | Nuevos: ${productsNotFound}\n`;
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '   IMPORTANTE: NO ingresar precios menores     \n';
+            contenidoPOS += '   a los mostrados para mantener margenes      \n';
+            contenidoPOS += '================================================\n';
+
+            // Crear archivo de texto para impresora POS
+            const blob = new Blob([contenidoPOS], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fecha = new Date().toISOString().slice(0,10);
+            a.download = `consulta_precios_pos_80mm_${fecha}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            // También crear el Excel completo como respaldo
+            const wb = XLSX.utils.book_new();
+            
+            const datosCompletos = [];
+            datosCompletos.push([
+                'LISTA DE CONSULTA DE PRECIOS - COMPLETA',
+                '', '', '', '', '', '', '', '', '', '', ''
+            ]);
+            datosCompletos.push([
+                `Fecha: ${new Date().toLocaleDateString()}`,
+                `Hora: ${new Date().toLocaleTimeString()}`,
+                `Total Productos: ${productosEnLista.length}`,
+                '', '', '', '', '', '', '', '', ''
+            ]);
+            datosCompletos.push(['', '', '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push([
+                'Código',
+                'Nombre',
+                'Costo',
+                'Precio Mayorista',
+                'Margen Mayorista',
+                'Precio Minorista', 
+                'Margen Minorista',
+                'Precio Estándar',
+                'Margen Estándar',
+                'Stock',
+                'Estado',
+                'Hora Búsqueda'
+            ]);
+            
+            productosEnLista.forEach(producto => {
+                if (producto.encontrado) {
+                    datosCompletos.push([
+                        producto.codigoInterno,
+                        producto.nombre,
+                        producto.costo,
+                        producto.precioMayorista,
+                        `${producto.margenMayorista}%`,
+                        producto.precioMinorista,
+                        `${producto.margenMinorista}%`,
+                        producto.precioEstandar,
+                        `${producto.margenEstandar}%`,
+                        producto.stockTotal,
+                        'ENCONTRADO',
+                        producto.fechaBusqueda
+                    ]);
+                } else {
+                    datosCompletos.push([
+                        producto.codigoInterno,
+                        producto.nombre,
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'N/A',
+                        'PRODUCTO NUEVO',
+                        producto.fechaBusqueda
+                    ]);
+                }
+            });
+            
+            // Agregar resumen al final
+            datosCompletos.push(['', '', '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push(['RESUMEN', '', '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push(['Total en lista:', productosEnLista.length, '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push(['Productos encontrados:', productsFound, '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push(['Productos nuevos:', productsNotFound, '', '', '', '', '', '', '', '', '', '']);
+            datosCompletos.push(['Total búsquedas:', totalSearches, '', '', '', '', '', '', '', '', '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(datosCompletos);
+            XLSX.utils.book_append_sheet(wb, ws, 'Lista Completa');
+            
+            XLSX.writeFile(wb, `consulta_precios_completa_${fecha}.xlsx`);
+            
+            mostrarAlerta('✅ Lista POS 80mm (.txt) y Excel (.xlsx) descargados', 'success');
+        }
+
+        function imprimirSinPrecios() {
+            if (productosEnLista.length === 0) {
+                mostrarAlerta('⚠️ No hay productos en la lista para imprimir', 'warning');
+                return;
+            }
+
+            // Crear contenido para impresora POS 80mm (48 caracteres por línea)
+            let contenidoPOS = '';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '         LISTA DE PRODUCTOS CONSULTADOS        \n';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += `Fecha: ${new Date().toLocaleDateString().padEnd(15)} Hora: ${new Date().toLocaleTimeString()}\n`;
+            contenidoPOS += `Total productos: ${productosEnLista.length}\n`;
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '#  CODIGO      NOMBRE                    ESTADO\n';
+            contenidoPOS += '------------------------------------------------\n';
+            
+            productosEnLista.forEach((producto, index) => {
+                const num = (index + 1).toString().padStart(2);
+                const codigo = producto.codigoInterno.padEnd(10).substring(0, 10);
+                const nombre = producto.nombre.padEnd(20).substring(0, 20);
+                const estado = producto.encontrado ? 'OK' : 'NUEVO';
+                contenidoPOS += `${num} ${codigo} ${nombre} ${estado}\n`;
+            });
+            
+            contenidoPOS += '------------------------------------------------\n';
+            contenidoPOS += `RESUMEN:\n`;
+            contenidoPOS += `Total: ${productosEnLista.length}  |  Existentes: ${productsFound}  |  Nuevos: ${productsNotFound}\n`;
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '          Sistema de Consulta de Precios       \n';
+            contenidoPOS += '================================================\n';
+
+            // Crear archivo de texto para impresora POS
+            const blob = new Blob([contenidoPOS], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fecha = new Date().toISOString().slice(0,10);
+            a.download = `lista_pos_80mm_${fecha}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            // También crear el Excel como respaldo
+            const wb = XLSX.utils.book_new();
+            
+            const datosSinPrecios = [];
+            datosSinPrecios.push([
+                'LISTA DE PRODUCTOS CONSULTADOS - SOLO CÓDIGOS Y NOMBRES',
+                '', '', ''
+            ]);
+            datosSinPrecios.push([
+                `Fecha: ${new Date().toLocaleDateString()}`,
+                `Hora: ${new Date().toLocaleTimeString()}`,
+                `Total: ${productosEnLista.length}`,
+                ''
+            ]);
+            datosSinPrecios.push(['', '', '', '']);
+            datosSinPrecios.push(['#', 'Código', 'Nombre', 'Estado']);
+            
+            productosEnLista.forEach((producto, index) => {
+                datosSinPrecios.push([
+                    index + 1,
+                    producto.codigoInterno,
+                    producto.nombre,
+                    producto.encontrado ? 'Existente' : 'Nuevo'
+                ]);
+            });
+            
+            // Agregar resumen
+            datosSinPrecios.push(['', '', '', '']);
+            datosSinPrecios.push(['RESUMEN', '', '', '']);
+            datosSinPrecios.push(['Total productos:', productosEnLista.length, '', '']);
+            datosSinPrecios.push(['Existentes:', productsFound, '', '']);
+            datosSinPrecios.push(['Nuevos:', productsNotFound, '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(datosSinPrecios);
+            XLSX.utils.book_append_sheet(wb, ws, 'Solo Códigos y Nombres');
+            
+            XLSX.writeFile(wb, `lista_productos_sin_precios_${fecha}.xlsx`);
+            
+            mostrarAlerta('✅ Lista POS 80mm (.txt) y Excel (.xlsx) descargados', 'success');
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+
+        // Función para buscar múltiples códigos separados por comas o saltos de línea
+        function buscarMultiples() {
+            const input = document.getElementById('searchInput').value.trim();
+            if (!input) {
+                mostrarAlerta('⚠️ Por favor ingresa uno o más códigos de producto', 'warning');
+                return;
+            }
+            
+            // Separar por comas, saltos de línea, espacios
+            const codigos = input.split(/[,\n\s]+/).filter(c => c.trim().length > 0);
+            
+            if (codigos.length === 0) {
+                mostrarAlerta('⚠️ No se encontraron códigos válidos', 'warning');
+                return;
+            }
+            
+            let agregados = 0;
+            let duplicados = 0;
+            let encontrados = 0;
+            let noEncontrados = 0;
+            
+            codigos.forEach(codigo => {
+                codigo = codigo.trim();
+                
+                // Verificar si ya está en la lista
+                const yaExiste = productosEnLista.find(p => p.codigoInterno === codigo);
+                if (yaExiste) {
+                    duplicados++;
+                    return;
+                }
+                
+                totalSearches++;
+                const producto = productosData.find(p => p.codigoInterno === codigo);
+                
+                if (producto) {
+                    productosEnLista.push({
+                        ...producto,
+                        encontrado: true,
+                        fechaBusqueda: new Date().toLocaleTimeString()
+                    });
+                    encontrados++;
+                    productsFound++;
+                } else {
+                    productosEnLista.push({
+                        codigoInterno: codigo,
+                        nombre: 'PRODUCTO NO ENCONTRADO',
+                        encontrado: false,
+                        fechaBusqueda: new Date().toLocaleTimeString()
+                    });
+                    noEncontrados++;
+                    productsNotFound++;
+                }
+                agregados++;
+            });
+            
+            // Mostrar resultado
+            let mensaje = `✅ Procesados ${codigos.length} códigos: `;
+            if (agregados > 0) mensaje += `${agregados} agregados`;
+            if (duplicados > 0) mensaje += `${agregados > 0 ? ', ' : ''}${duplicados} duplicados`;
+            if (encontrados > 0) mensaje += `${(agregados > 0 || duplicados > 0) ? ', ' : ''}${encontrados} encontrados`;
+            if (noEncontrados > 0) mensaje += `${(agregados > 0 || duplicados > 0 || encontrados > 0) ? ', ' : ''}${noEncontrados} nuevos`;
+            
+            mostrarAlerta(mensaje, agregados > 0 ? 'success' : 'warning');
+            
+            // Limpiar y actualizar
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        // Función original de búsqueda simple
+        function buscarYAgregarOriginal() {
+            const codigo = document.getElementById('searchInput').value.trim();
+            if (!codigo) {
+                mostrarAlerta('⚠️ Por favor ingresa un código de producto', 'warning');
+                return;
+            }
+            
+            // Incrementar contador de búsquedas
+            totalSearches++;
+            
+            // Buscar el producto
+            const producto = productosData.find(p => p.codigoInterno === codigo);
+            
+            if (producto) {
+                // Verificar si ya está en la lista
+                const yaExiste = productosEnLista.find(p => p.codigoInterno === codigo);
+                if (yaExiste) {
+                    mostrarAlerta('⚠️ Este producto ya está en la lista', 'warning');
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchInput').focus();
+                    return;
+                }
+                
+                // Agregar a la lista
+                productosEnLista.push({
+                    ...producto,
+                    encontrado: true,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsFound++;
+                mostrarAlerta('✅ Producto encontrado y agregado a la lista', 'success');
+                
+            } else {
+                // Agregar como no encontrado
+                productosEnLista.push({
+                    codigoInterno: codigo,
+                    nombre: 'PRODUCTO NO ENCONTRADO',
+                    encontrado: false,
+                    fechaBusqueda: new Date().toLocaleTimeString()
+                });
+                
+                productsNotFound++;
+                mostrarAlerta('❌ Producto no encontrado, agregado como nuevo', 'warning');
+            }
+            
+            // Limpiar input y actualizar visualización
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarEstadisticas();
+        }
+
+        // Función mejorada para detectar múltiples códigos
+        function buscarYAgregarMejorado() {
+            const input = document.getElementById('searchInput').value.trim();
+            
+            // Detectar si hay múltiples códigos (contiene comas, saltos de línea o múltiples espacios)
+            if (input.includes(',') || input.includes('\n') || input.split(/\s+/).length > 1) {
+                buscarMultiples();
+            } else {
+                buscarYAgregarOriginal();
+            }
+        }
+
+        // Asignar la función mejorada
+        window.buscarYAgregar = buscarYAgregarMejorado;
+
+        // Agregar información sobre búsqueda múltiple
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.setAttribute('placeholder', 'Código de producto (o múltiples separados por comas)');
+            
+            // Agregar ayuda contextual
+            const searchBar = document.querySelector('.search-bar');
+            const helpText = document.createElement('div');
+            helpText.style.cssText = 'font-size: 11px; color: #6c757d; margin-top: 5px; width: 100%;';
+            helpText.innerHTML = '💡 <strong>Tip:</strong> Puedes buscar múltiples productos separándolos por comas';
+            searchBar.appendChild(helpText);
+        });
+
+        // Función de atajo para limpiar todo y empezar de nuevo
+        function reiniciarSistema() {
+            if (confirm('¿Estás seguro de que quieres reiniciar el sistema? Se perderán todos los datos de la lista actual.')) {
+                productosEnLista = [];
+                totalSearches = 0;
+                productsFound = 0;
+                productsNotFound = 0;
+                actualizarTablaProductos();
+                actualizarEstadisticas();
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchInput').focus();
+                mostrarAlerta('✅ Sistema reiniciado', 'success');
+            }
+        }
+
+        // Agregar funcionalidad de exportar solo productos encontrados
+        function exportarSoloEncontrados() {
+            const productosEncontrados = productosEnLista.filter(p => p.encontrado);
+            
+            if (productosEncontrados.length === 0) {
+                mostrarAlerta('⚠️ No hay productos encontrados para exportar', 'warning');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            
+            const datos = [];
+            datos.push(['PRODUCTOS ENCONTRADOS CON PRECIOS DE REFERENCIA', '', '', '', '', '', '', '', '', '', '']);
+            datos.push([`Fecha: ${new Date().toLocaleDateString()}`, `Total: ${productosEncontrados.length}`, '', '', '', '', '', '', '', '', '']);
+            datos.push(['', '', '', '', '', '', '', '', '', '', '']);
+            datos.push([
+                'Código', 'Nombre', 'Costo Base',
+                'Precio Mayorista', 'Margen M.', 
+                'Precio Minorista', 'Margen Min.',
+                'Precio Estándar', 'Margen Est.',
+                'Stock', 'Recomendación'
+            ]);
+            
+            productosEncontrados.forEach(producto => {
+                datos.push([
+                    producto.codigoInterno,
+                    producto.nombre,
+                    producto.costo,
+                    producto.precioMayorista,
+                    `${producto.margenMayorista.toFixed(1)}%`,
+                    producto.precioMinorista,
+                    `${producto.margenMinorista.toFixed(1)}%`,
+                    producto.precioEstandar,
+                    `${producto.margenEstandar.toFixed(1)}%`,
+                    producto.stockTotal,
+                    'NO ingresar precios menores a los mostrados'
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(datos);
+            XLSX.utils.book_append_sheet(wb, ws, 'Productos con Precios');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `productos_con_precios_referencia_${fecha}.xlsx`);
+            
+            mostrarAlerta('✅ Productos con precios exportados', 'success');
+        }
+
+        // Mejorar los botones de acción
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar botones adicionales después de un momento
+            setTimeout(() => {
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) {
+                    const extraBtn = document.createElement('button');
+                    extraBtn.className = 'btn';
+                    extraBtn.innerHTML = '📊 Solo con Precios';
+                    extraBtn.onclick = exportarSoloEncontrados;
+                    actionButtons.appendChild(extraBtn);
+                    
+                    const resetBtn = document.createElement('button');
+                    resetBtn.className = 'btn btn-warning';
+                    resetBtn.innerHTML = '🔄 Reiniciar Sistema';
+                    resetBtn.onclick = reiniciarSistema;
+                    actionButtons.appendChild(resetBtn);
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

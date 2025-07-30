@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Redistribución de Inventario - Operativo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-section p {
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .top-bar {
+            background: #e8f5e8;
+            border: 1px solid #28a745;
+            border-radius: 3px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .city-info {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .bodegas-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .bodega-chip {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .table-container {
+            background: white;
+            border: 1px solid #dee2e6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .priority-badge {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .route-badge {
+            background: #6f42c1;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+
+        .quantity-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .error-badge {
+            background: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #dc3545;
+            font-size: 12px;
+        }
+
+        .compact-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .summary-box {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            padding: 10px;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .compact-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        .no-transfers {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .transfer-summary {
+            background: #f8f9fa;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable:hover {
+            background: #e9ecef;
+        }
+
+        .expand-icon {
+            display: inline-block;
+            transition: transform 0.3s;
+            margin-right: 5px;
+            font-size: 10px;
+        }
+
+        .expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .product-details {
+            display: none;
+            background: #f8f9fa;
+            border-left: 3px solid #3498db;
+            margin-top: 5px;
+        }
+
+        .product-details.show {
+            display: block;
+        }
+
+        .product-details table {
+            margin: 0;
+            font-size: 11px;
+        }
+
+        .product-details th {
+            background: #e9ecef;
+            padding: 4px 8px;
+        }
+
+        .product-details td {
+            padding: 3px 8px;
+        }
+
+        .bodega-group {
+            margin-bottom: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+        }
+
+        .bodega-group-header {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bodega-total {
+            color: #dc3545;
+            font-size: 12px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">L</div>
+            <div class="header-text">
+                <h1>Sistema de Redistribución de Inventario</h1>
+                <p>Herramienta operativa para optimización de traslados entre bodegas</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="upload-section" id="uploadSection">
+                <h2>Cargar Archivo de Productos</h2>
+                <p><strong>Origen:</strong> Productos > Exportar/Importar > Exportación Masiva</p>
+                <p>Formato: productos_[fecha]_[hora].xlsx</p>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar Archivo
+                </button>
+                <div class="alert">
+                    <strong>Info:</strong> Detecta automáticamente las bodegas de la ciudad y extrae datos de "Stock por Sede"
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando archivo...</p>
+                <p id="loadingDetail">Analizando datos...</p>
+            </div>
+
+            <div class="results" id="results">
+                <div class="top-bar">
+                    <div class="city-info" id="cityInfo">
+                        <!-- Info ciudad aquí -->
+                    </div>
+                    <div class="bodegas-chips" id="bodegasChips">
+                        <!-- Chips bodegas aquí -->
+                    </div>
+                </div>
+
+                <div class="stats-bar" id="statsBar">
+                    <!-- Stats aquí -->
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>Traslados Recomendados (Por Prioridad)</span>
+                        <div class="action-buttons">
+                            <button class="btn" onclick="descargarExcelCompleto()">Excel Completo</button>
+                            <button class="btn" onclick="descargarResumenEjecutivo()">Resumen Ejecutivo</button>
+                            <button class="btn" onclick="descargarPorBodega()">Por Bodega</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="transfersContainer">
+                        <!-- Tabla traslados aquí -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>Productos Requieren Ajuste de Entrada</span>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="descargarProductosSinStock()">Lista de Ajustes</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="productosAjusteContainer">
+                        <!-- Tabla productos sin stock aquí -->
+                    </div>
+                </div>
+
+                <div class="compact-summary">
+                    <div class="summary-box">
+                        <div class="summary-title">Resumen de Eficiencia</div>
+                        <div id="efficiencySummary">
+                            <!-- Resumen eficiencia aquí -->
+                        </div>
+                    </div>
+                    <div class="summary-box">
+                        <div class="summary-title">Movimiento por Bodega</div>
+                        <div id="warehouseMovement">
+                            <!-- Movimiento bodegas aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="#" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let datosGlobales = null;
+        let resultadoGlobal = null;
+        let bodegas = [];
+        let ciudadDetectada = '';
+
+        // Configurar drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#e3f2fd';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                procesarArchivo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                procesarArchivo(e.target.files[0]);
+            }
+        });
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        function procesarArchivo(archivo) {
+            console.log('Iniciando procesamiento del archivo:', archivo.name);
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    actualizarProgreso('Leyendo archivo Excel...');
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    actualizarProgreso('Extrayendo datos de productos...');
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    actualizarProgreso('Detectando bodegas de la ciudad...');
+                    const productos = procesarDatosReales(jsonData);
+                    datosGlobales = productos;
+                    
+                    actualizarProgreso('Calculando redistribución óptima...');
+                    const resultado = redistribuirInventario(productos);
+                    resultadoGlobal = resultado;
+                    
+                    actualizarProgreso('Generando reportes...');
+                    setTimeout(() => {
+                        mostrarResultados(resultado);
+                        document.getElementById('loading').style.display = 'none';
+                    }, 300);
+                    
+                } catch (error) {
+                    console.error('Error completo:', error);
+                    mostrarError('Error procesando archivo: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                }
+            };
+
+            reader.onerror = function() {
+                console.error('Error leyendo el archivo');
+                mostrarError('Error leyendo el archivo');
+                document.getElementById('loading').style.display = 'none';
+            };
+
+            reader.readAsArrayBuffer(archivo);
+        }
+
+        function parsearStockPorSede(stockString) {
+            if (!stockString || typeof stockString !== 'string') {
+                return {};
+            }
+            
+            const stock = {};
+            // Regex actualizado para capturar nombres que terminan en letra o número
+            const regex = /([A-Z\s\d]+[A-Z\d])\s*:\s*(-?\d+)/g;
+            let match;
+            
+            while ((match = regex.exec(stockString)) !== null) {
+                let bodega = match[1].trim();
+                const cantidad = parseInt(match[2]);
+                
+                // Normalizar nombres conocidos
+                if (bodega === 'Multifamiliar 2') {
+                    bodega = 'Multifamiliar 2';
+                } else if (bodega === 'Multifamiliar') {
+                    bodega = 'Multifamiliar';
+                }
+                
+                stock[bodega] = (stock[bodega] || 0) + cantidad;
+            }
+            
+            return stock;
+        }
+
+        function detectarCiudad(bodegasEncontradas) {
+            console.log('Bodegas encontradas en el archivo:', bodegasEncontradas);
+            
+            // Definir las bodegas de cada ciudad
+            const ciudad1 = ['Bodega', 'Multifamiliar', 'El Hogar', 'Surtitodo'];
+            const ciudad2 = ['Bodega', 'Multifamiliar 2', 'Mi Hogar'];
+            
+            // Verificar cuántas bodegas coinciden con cada ciudad
+            const coincidenciasCiudad1 = bodegasEncontradas.filter(b => ciudad1.includes(b)).length;
+            const coincidenciasCiudad2 = bodegasEncontradas.filter(b => ciudad2.includes(b)).length;
+            
+            console.log('Coincidencias Ciudad 1:', coincidenciasCiudad1);
+            console.log('Coincidencias Ciudad 2:', coincidenciasCiudad2);
+            
+            if (coincidenciasCiudad1 > coincidenciasCiudad2) {
+                return {
+                    nombre: 'Ciudad 1',
+                    bodegas: ciudad1.filter(b => bodegasEncontradas.includes(b))
+                };
+            } else if (coincidenciasCiudad2 > 0) {
+                return {
+                    nombre: 'Ciudad 2', 
+                    bodegas: ciudad2.filter(b => bodegasEncontradas.includes(b))
+                };
+            } else {
+                // Si no hay coincidencias claras, usar todas las bodegas encontradas
+                return {
+                    nombre: 'Ciudad (Detectada automáticamente)',
+                    bodegas: bodegasEncontradas
+                };
+            }
+        }
+
+        function procesarDatosReales(jsonData) {
+            console.log('Datos JSON extraídos:', jsonData.length, 'filas');
+            
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            
+            // Encontrar índices de columnas importantes
+            const codigoIndex = headers.findIndex(h => h === 'Código Interno');
+            const nombreIndex = headers.findIndex(h => h === 'Nombre');
+            const stockPorSedeIndex = headers.findIndex(h => h === 'Stock por Sede');
+            
+            console.log('Índices encontrados:', { codigoIndex, nombreIndex, stockPorSedeIndex });
+            
+            if (codigoIndex === -1 || nombreIndex === -1 || stockPorSedeIndex === -1) {
+                throw new Error('No se encontraron las columnas requeridas en el archivo. Columnas encontradas: ' + headers.join(', '));
+            }
+            
+            // Recopilar todas las bodegas únicas
+            const bodegasSet = new Set();
+            
+            const productos = dataRows.map((row, index) => {
+                const codigoInterno = row[codigoIndex];
+                const nombre = row[nombreIndex];
+                const stockString = row[stockPorSedeIndex];
+                
+                if (!codigoInterno || !nombre) {
+                    console.log(`Saltando fila ${index + 2} por datos faltantes`);
+                    return null;
+                }
+                
+                const stockPorBodega = parsearStockPorSede(stockString);
+                
+                // Agregar bodegas al set
+                Object.keys(stockPorBodega).forEach(bodega => bodegasSet.add(bodega));
+                
+                return {
+                    CodigoInterno: codigoInterno,
+                    Nombre: nombre.trim(),
+                    StockOriginal: stockString,
+                    ...stockPorBodega
+                };
+            }).filter(p => p !== null);
+
+            const bodegasEncontradas = Array.from(bodegasSet);
+            
+            // Detectar ciudad y filtrar bodegas
+            const ciudadInfo = detectarCiudad(bodegasEncontradas);
+            ciudadDetectada = ciudadInfo.nombre;
+            bodegas = ciudadInfo.bodegas;
+            
+            console.log('Ciudad detectada:', ciudadDetectada);
+            console.log('Bodegas de la ciudad:', bodegas);
+            console.log('Total productos procesados:', productos.length);
+            
+            return productos;
+        }
+
+        function redistribuirInventario(productos) {
+            const traslados = [];
+            const resumen = [];
+            const productosSinStock = []; // Nueva lista para productos sin stock positivo
+            let totalProductosConFaltantes = 0;
+            let totalFaltantesEliminados = 0;
+            
+            productos.forEach(producto => {
+                const { CodigoInterno, Nombre } = producto;
+                const inventarios = {};
+                
+                // Inicializar inventarios solo para las bodegas de esta ciudad
+                bodegas.forEach(bodega => {
+                    inventarios[bodega] = producto[bodega] || 0;
+                });
+                
+                // Identificar faltantes y excedentes
+                const faltantes = [];
+                const excedentes = [];
+                let totalFaltante = 0;
+                let totalExcedente = 0;
+                let tieneNegativos = false;
+                
+                for (const bodega of bodegas) {
+                    if (inventarios[bodega] < 0) {
+                        faltantes.push({ bodega, cantidad: Math.abs(inventarios[bodega]) });
+                        totalFaltante += Math.abs(inventarios[bodega]);
+                        tieneNegativos = true;
+                    } else if (inventarios[bodega] > 0) {
+                        excedentes.push({ bodega, cantidad: inventarios[bodega] });
+                        totalExcedente += inventarios[bodega];
+                    }
+                }
+                
+                if (tieneNegativos) {
+                    totalProductosConFaltantes++;
+                }
+                
+                // Verificar si el producto no tiene stock positivo en ninguna bodega
+                const tieneStockPositivo = bodegas.some(bodega => inventarios[bodega] > 0);
+                const tieneFaltantes = bodegas.some(bodega => inventarios[bodega] < 0);
+                
+                if (!tieneStockPositivo && tieneFaltantes) {
+                    // Producto sin stock positivo pero con faltantes - requiere ajuste de entrada
+                    const totalFaltanteProducto = faltantes.reduce((sum, f) => sum + f.cantidad, 0);
+                    productosSinStock.push({
+                        CodigoInterno,
+                        Nombre,
+                        TotalFaltante: totalFaltanteProducto,
+                        DetalleFaltantes: faltantes.map(f => `${f.bodega}: ${f.cantidad}`).join(', '),
+                        StockOriginal: producto.StockOriginal
+                    });
+                }
+                
+                // Calcular traslados si hay faltantes
+                if (faltantes.length > 0 && excedentes.length > 0) {
+                    const trasladosProducto = calcularTraslados(CodigoInterno, Nombre, faltantes, excedentes);
+                    traslados.push(...trasladosProducto);
+                    
+                    // Calcular inventario final
+                    const inventarioFinal = { ...inventarios };
+                    trasladosProducto.forEach(t => {
+                        inventarioFinal[t.desde] -= t.cantidad;
+                        inventarioFinal[t.hacia] += t.cantidad;
+                    });
+                    
+                    const faltanteRestante = Math.max(0, totalFaltante - totalExcedente);
+                    if (faltanteRestante < totalFaltante) {
+                        totalFaltantesEliminados += (totalFaltante - faltanteRestante);
+                    }
+                    
+                    resumen.push({
+                        CodigoInterno,
+                        Nombre,
+                        ...inventarioFinal,
+                        FaltanteOriginal: totalFaltante,
+                        FaltanteRestante: faltanteRestante,
+                        StockOriginal: producto.StockOriginal
+                    });
+                } else {
+                    resumen.push({
+                        CodigoInterno,
+                        Nombre,
+                        ...inventarios,
+                        FaltanteOriginal: totalFaltante,
+                        FaltanteRestante: totalFaltante,
+                        StockOriginal: producto.StockOriginal
+                    });
+                }
+            });
+            
+            return {
+                traslados: agruparTraslados(traslados),
+                resumen,
+                productosSinStock, // Agregar la nueva lista
+                estadisticas: calcularEstadisticas(productos, resumen, totalProductosConFaltantes, totalFaltantesEliminados)
+            };
+        }
+
+        function calcularTraslados(codigoInterno, nombre, faltantes, excedentes) {
+            const traslados = [];
+            
+            // Ordenar por cantidad (mayor primero)
+            faltantes.sort((a, b) => b.cantidad - a.cantidad);
+            excedentes.sort((a, b) => b.cantidad - a.cantidad);
+            
+            for (const faltante of faltantes) {
+                let cantidadPendiente = faltante.cantidad;
+                
+                for (const excedente of excedentes) {
+                    if (cantidadPendiente <= 0 || excedente.cantidad <= 0) continue;
+                    
+                    const cantidadTraslado = Math.min(cantidadPendiente, excedente.cantidad);
+                    
+                    if (cantidadTraslado > 0) {
+                        traslados.push({
+                            codigoInterno,
+                            nombre,
+                            desde: excedente.bodega,
+                            hacia: faltante.bodega,
+                            cantidad: cantidadTraslado
+                        });
+                        
+                        cantidadPendiente -= cantidadTraslado;
+                        excedente.cantidad -= cantidadTraslado;
+                    }
+                }
+            }
+            
+            return traslados;
+        }
+
+        function agruparTraslados(traslados) {
+            const grupos = {};
+            
+            traslados.forEach(traslado => {
+                const clave = `${traslado.desde}_${traslado.hacia}`;
+                
+                if (!grupos[clave]) {
+                    grupos[clave] = {
+                        desde: traslado.desde,
+                        hacia: traslado.hacia,
+                        productos: [],
+                        totalItems: 0,
+                        productosUnicos: 0
+                    };
+                }
+                
+                grupos[clave].productos.push({
+                    codigoInterno: traslado.codigoInterno,
+                    nombre: traslado.nombre,
+                    cantidad: traslado.cantidad
+                });
+                
+                grupos[clave].totalItems += traslado.cantidad;
+                grupos[clave].productosUnicos = grupos[clave].productos.length;
+            });
+            
+            return Object.values(grupos).sort((a, b) => {
+                // Priorizar por número de productos únicos
+                const difProductos = b.productosUnicos - a.productosUnicos;
+                if (difProductos !== 0) return difProductos;
+                
+                // Luego por cantidad total
+                return b.totalItems - a.totalItems;
+            });
+        }
+
+        function calcularEstadisticas(productos, resumen, totalProductosConFaltantes, totalFaltantesEliminados) {
+            const productosConFaltantesRestantes = resumen.filter(p => p.FaltanteRestante > 0);
+            const eficiencia = totalProductosConFaltantes > 0 ? 
+                ((totalProductosConFaltantes - productosConFaltantesRestantes.length) / totalProductosConFaltantes * 100).toFixed(1) : 100;
+            
+            return {
+                totalProductos: productos.length,
+                productosConFaltantes: totalProductosConFaltantes,
+                productosConFaltantesRestantes: productosConFaltantesRestantes.length,
+                faltantesEliminados: totalFaltantesEliminados,
+                eficiencia: eficiencia,
+                bodegas: bodegas.length
+            };
+        }
+
+        function mostrarResultados(resultado) {
+            const { traslados, resumen, productosSinStock, estadisticas } = resultado;
+            
+            // Mostrar información de la ciudad
+            document.getElementById('cityInfo').innerHTML = `${ciudadDetectada} (${bodegas.length} bodegas)`;
+            document.getElementById('bodegasChips').innerHTML = bodegas.map(bodega => 
+                `<span class="bodega-chip">${bodega}</span>`).join('');
+            
+            // Mostrar estadísticas
+            document.getElementById('statsBar').innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.totalProductos}</div>
+                    <div class="stat-label">Total Productos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.productosConFaltantes}</div>
+                    <div class="stat-label">Con Faltantes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${traslados.length}</div>
+                    <div class="stat-label">Rutas Traslado</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.eficiencia}%</div>
+                    <div class="stat-label">Eficiencia</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${productosSinStock.length}</div>
+                    <div class="stat-label">Requieren Ajuste</div>
+                </div>
+            `;
+            
+            // Mostrar traslados en tabla
+            mostrarTrasladosTabla(traslados);
+            
+            // Mostrar productos sin stock en tabla
+            mostrarProductosSinStockTabla(productosSinStock);
+            
+            // Mostrar resúmenes compactos
+            mostrarResumenCompacto(estadisticas, traslados);
+            
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function mostrarTrasladosTabla(traslados) {
+            const container = document.getElementById('transfersContainer');
+            
+            if (traslados.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✓ Sin traslados requeridos</strong> - Todos los productos tienen inventario suficiente en sus ubicaciones.
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prioridad</th>
+                            <th>Ruta</th>
+                            <th>Productos</th>
+                            <th>Unidades</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            traslados.forEach((grupo, index) => {
+                tableHTML += `
+                    <tr class="expandable" onclick="toggleProductDetails(${index})">
+                        <td><span class="priority-badge">#${index + 1}</span></td>
+                        <td>
+                            <span class="route-badge">${grupo.desde}</span> → 
+                            <span class="route-badge">${grupo.hacia}</span>
+                        </td>
+                        <td>
+                            <span class="expand-icon" id="icon-${index}">▶</span>
+                            ${grupo.productosUnicos} productos
+                        </td>
+                        <td><span class="quantity-badge">${grupo.totalItems}</span></td>
+                        <td>
+                            <button class="btn" style="font-size: 10px; padding: 3px 8px;" 
+                                    onclick="event.stopPropagation(); descargarRutaEspecifica(${index})">
+                                Exportar Ruta
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="padding: 0;">
+                            <div class="product-details" id="details-${index}">
+                                <table style="width: 100%; margin: 10px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Desde</th>
+                                            <th>Hacia</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${grupo.productos.map(p => `
+                                            <tr>
+                                                <td><span class="code">${p.codigoInterno}</span></td>
+                                                <td>${p.nombre}</td>
+                                                <td><span class="quantity-badge">${p.cantidad}</span></td>
+                                                <td><span class="route-badge">${grupo.desde}</span></td>
+                                                <td><span class="route-badge">${grupo.hacia}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        function toggleProductDetails(index) {
+            const details = document.getElementById(`details-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+            
+            if (details.classList.contains('show')) {
+                details.classList.remove('show');
+                icon.classList.remove('expanded');
+            } else {
+                details.classList.add('show');
+                icon.classList.add('expanded');
+            }
+        }
+
+        function descargarRutaEspecifica(index) {
+            if (!resultadoGlobal || !resultadoGlobal.traslados[index]) return;
+            
+            const ruta = resultadoGlobal.traslados[index];
+            const wb = XLSX.utils.book_new();
+            
+            const rutaData = [];
+            rutaData.push([`TRASLADO ESPECÍFICO - ${ruta.desde} → ${ruta.hacia}`, '', '', '', '']);
+            rutaData.push([`Ciudad: ${ciudadDetectada}`, '', '', '', '']);
+            rutaData.push([`Prioridad: #${index + 1}`, '', '', '', '']);
+            rutaData.push(['', '', '', '', '']);
+            rutaData.push(['Código', 'Producto', 'Cantidad', 'Desde', 'Hacia']);
+            
+            ruta.productos.forEach(producto => {
+                rutaData.push([
+                    producto.codigoInterno,
+                    producto.nombre,
+                    producto.cantidad,
+                    ruta.desde,
+                    ruta.hacia
+                ]);
+            });
+            
+            rutaData.push(['', '', '', '', '']);
+            rutaData.push(['RESUMEN DE RUTA', '', '', '', '']);
+            rutaData.push(['Total productos:', ruta.productosUnicos, '', '', '']);
+            rutaData.push(['Total unidades:', ruta.totalItems, '', '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(rutaData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Traslado Específico');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const rutaNombre = `${ruta.desde}_${ruta.hacia}`.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `traslado_${rutaNombre}_${fecha}.xlsx`);
+        }
+
+        function mostrarProductosSinStockTabla(productosSinStock) {
+            const container = document.getElementById('productosAjusteContainer');
+            
+            if (productosSinStock.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✓ Sin ajustes requeridos</strong> - Todos los productos con faltantes tienen stock disponible para redistribuir.
+                    </div>
+                `;
+                return;
+            }
+
+            console.log('Productos sin stock:', productosSinStock); // Debug
+
+            // Agrupar productos por bodega
+            const productosPorBodega = {};
+            
+            productosSinStock.forEach(producto => {
+                console.log('Procesando producto:', producto.CodigoInterno, producto.DetalleFaltantes); // Debug
+                
+                // Parsear el detalle de faltantes para obtener bodega y cantidad
+                const faltantes = producto.DetalleFaltantes.split(', ');
+                faltantes.forEach(faltante => {
+                    const partes = faltante.split(': ');
+                    if (partes.length === 2) {
+                        const bodega = partes[0].trim();
+                        const cantidad = parseInt(partes[1]);
+                        
+                        console.log('Bodega:', bodega, 'Cantidad:', cantidad); // Debug
+                        
+                        if (!productosPorBodega[bodega]) {
+                            productosPorBodega[bodega] = [];
+                        }
+                        productosPorBodega[bodega].push({
+                            CodigoInterno: producto.CodigoInterno,
+                            Nombre: producto.Nombre,
+                            CantidadEspecifica: cantidad,
+                            TotalFaltante: producto.TotalFaltante,
+                            DetalleFaltantes: producto.DetalleFaltantes
+                        });
+                    }
+                });
+            });
+
+            console.log('Productos agrupados por bodega:', productosPorBodega); // Debug
+
+            let containerHTML = '';
+
+            if (Object.keys(productosPorBodega).length === 0) {
+                containerHTML = `
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Error en agrupación</strong> - No se pudieron agrupar los productos por bodega. 
+                        Revisa el formato de los datos.
+                    </div>
+                `;
+            } else {
+                Object.entries(productosPorBodega).forEach(([bodega, productos]) => {
+                    const totalFaltante = productos.reduce((sum, p) => sum + p.CantidadEspecifica, 0);
+                    
+                    containerHTML += `
+                        <div class="bodega-group">
+                            <div class="bodega-group-header">
+                                <span><strong>${bodega}</strong> - Ajuste de Entrada</span>
+                                <div>
+                                    <span class="bodega-total">Total: ${totalFaltante} unidades</span>
+                                    <button class="btn btn-warning" style="font-size: 10px; padding: 3px 8px; margin-left: 10px;" 
+                                            onclick="descargarAjustePorBodega('${bodega.replace(/'/g, "\\'")}')">
+                                        Exportar Ajuste
+                                    </button>
+                                </div>
+                            </div>
+                            <table style="margin: 0;">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad Faltante</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    productos.forEach(producto => {
+                        containerHTML += `
+                            <tr>
+                                <td><span class="code">${producto.CodigoInterno}</span></td>
+                                <td>${producto.Nombre}</td>
+                                <td><span class="error-badge">+${producto.CantidadEspecifica}</span></td>
+                                <td style="font-size: 11px;">Ajuste entrada +${producto.CantidadEspecifica}</td>
+                            </tr>
+                        `;
+                    });
+
+                    containerHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = containerHTML;
+        }
+
+        function descargarAjustePorBodega(bodega) {
+            if (!resultadoGlobal || !resultadoGlobal.productosSinStock) return;
+            
+            console.log('Descargando ajuste para bodega:', bodega); // Debug
+            
+            // Filtrar productos para esta bodega específica
+            const productosEspecificos = [];
+            resultadoGlobal.productosSinStock.forEach(producto => {
+                console.log('Revisando producto:', producto.CodigoInterno, producto.DetalleFaltantes); // Debug
+                
+                const faltantes = producto.DetalleFaltantes.split(', ');
+                faltantes.forEach(faltante => {
+                    const partes = faltante.split(': ');
+                    if (partes.length === 2) {
+                        const bodegaFaltante = partes[0].trim();
+                        const cantidad = parseInt(partes[1]);
+                        
+                        console.log('Comparando:', bodegaFaltante, 'con', bodega); // Debug
+                        
+                        if (bodegaFaltante === bodega) {
+                            productosEspecificos.push({
+                                CodigoInterno: producto.CodigoInterno,
+                                Nombre: producto.Nombre,
+                                CantidadEspecifica: cantidad,
+                                TotalFaltante: producto.TotalFaltante
+                            });
+                        }
+                    }
+                });
+            });
+
+            console.log('Productos específicos encontrados:', productosEspecificos); // Debug
+
+            if (productosEspecificos.length === 0) {
+                alert('No se encontraron productos para esta bodega');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            
+            const ajusteData = [];
+            ajusteData.push([`AJUSTE DE ENTRADA - ${bodega}`, '', '', '']);
+            ajusteData.push([`Ciudad: ${ciudadDetectada}`, '', '', '']);
+            ajusteData.push(['', '', '', '']);
+            ajusteData.push(['Código', 'Producto', 'Cantidad Ajuste', 'Motivo']);
+            
+            productosEspecificos.forEach(producto => {
+                ajusteData.push([
+                    producto.CodigoInterno,
+                    producto.Nombre,
+                    producto.CantidadEspecifica,
+                    'Faltante sin stock disponible para redistribución'
+                ]);
+            });
+            
+            ajusteData.push(['', '', '', '']);
+            ajusteData.push(['RESUMEN AJUSTE', '', '', '']);
+            ajusteData.push(['Bodega:', bodega, '', '']);
+            ajusteData.push(['Total productos:', productosEspecificos.length, '', '']);
+            ajusteData.push(['Total unidades:', productosEspecificos.reduce((sum, p) => sum + p.CantidadEspecifica, 0), '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(ajusteData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Ajuste de Entrada');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const bodegaNombre = bodega.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `ajuste_entrada_${bodegaNombre}_${fecha}.xlsx`);
+        }
+
+        function mostrarResumenCompacto(estadisticas, traslados) {
+            // Resumen de eficiencia
+            document.getElementById('efficiencySummary').innerHTML = `
+                <div class="summary-grid">
+                    <div>Productos resueltos:</div>
+                    <div><strong>${estadisticas.productosConFaltantes - estadisticas.productosConFaltantesRestantes}</strong></div>
+                    <div>Faltantes eliminados:</div>
+                    <div><strong>${estadisticas.faltantesEliminados}</strong> unidades</div>
+                    <div>Productos pendientes:</div>
+                    <div><strong>${estadisticas.productosConFaltantesRestantes}</strong></div>
+                    <div>Eficiencia total:</div>
+                    <div><strong>${estadisticas.eficiencia}%</strong></div>
+                </div>
+            `;
+
+            // Análisis de movimiento por bodega
+            const analisisPorBodega = {};
+            traslados.forEach(grupo => {
+                // Bodegas que envían
+                if (!analisisPorBodega[grupo.desde]) {
+                    analisisPorBodega[grupo.desde] = { envia: 0, recibe: 0 };
+                }
+                analisisPorBodega[grupo.desde].envia += grupo.totalItems;
+                
+                // Bodegas que reciben
+                if (!analisisPorBodega[grupo.hacia]) {
+                    analisisPorBodega[grupo.hacia] = { envia: 0, recibe: 0 };
+                }
+                analisisPorBodega[grupo.hacia].recibe += grupo.totalItems;
+            });
+
+            let movementHTML = '';
+            if (Object.keys(analisisPorBodega).length > 0) {
+                movementHTML = '<div class="summary-grid">';
+                Object.entries(analisisPorBodega).forEach(([bodega, datos]) => {
+                    const tipo = datos.envia > datos.recibe ? 'Donante' : 
+                                datos.recibe > datos.envia ? 'Receptora' : 'Equilibrada';
+                    const color = datos.envia > datos.recibe ? '#dc3545' : 
+                                 datos.recibe > datos.envia ? '#28a745' : '#6c757d';
+                    
+                    movementHTML += `
+                        <div style="color: ${color}; font-weight: 600;">${bodega}:</div>
+                        <div>${tipo} (E:${datos.envia} R:${datos.recibe})</div>
+                    `;
+                });
+                movementHTML += '</div>';
+            } else {
+                movementHTML = '<div style="text-align: center; color: #6c757d; font-style: italic;">Sin movimientos</div>';
+            }
+
+            document.getElementById('warehouseMovement').innerHTML = movementHTML;
+        }
+
+        function descargarExcelCompleto() {
+            if (!resultadoGlobal) return;
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Hoja 1: Traslados detallados
+            const trasladosData = [];
+            trasladosData.push(['Ciudad', 'Prioridad', 'Desde', 'Hacia', 'Código Producto', 'Nombre Producto', 'Cantidad', 'Tipo Traslado']);
+            
+            resultadoGlobal.traslados.forEach((grupo, index) => {
+                grupo.productos.forEach(producto => {
+                    trasladosData.push([
+                        ciudadDetectada,
+                        index + 1,
+                        grupo.desde,
+                        grupo.hacia,
+                        producto.codigoInterno,
+                        producto.nombre,
+                        producto.cantidad,
+                        'Redistribución Interna'
+                    ]);
+                });
+            });
+            
+            const wsTraslados = XLSX.utils.aoa_to_sheet(trasladosData);
+            XLSX.utils.book_append_sheet(wb, wsTraslados, 'Traslados Detallados');
+            
+            // Hoja 2: Resumen por ruta
+            const resumenRutasData = [];
+            resumenRutasData.push(['Ciudad', 'Prioridad', 'Ruta', 'Desde', 'Hacia', 'Productos Únicos', 'Total Unidades', 'Eficiencia']);
+            
+            resultadoGlobal.traslados.forEach((grupo, index) => {
+                resumenRutasData.push([
+                    ciudadDetectada,
+                    index + 1,
+                    `${grupo.desde} → ${grupo.hacia}`,
+                    grupo.desde,
+                    grupo.hacia,
+                    grupo.productosUnicos,
+                    grupo.totalItems,
+                    'Alta'
+                ]);
+            });
+            
+            const wsRutas = XLSX.utils.aoa_to_sheet(resumenRutasData);
+            XLSX.utils.book_append_sheet(wb, wsRutas, 'Resumen por Ruta');
+            
+            // Hoja 3: Inventario final
+            const inventarioFinalData = [];
+            const headersFinal = ['Código', 'Nombre'];
+            bodegas.forEach(bodega => headersFinal.push(bodega));
+            headersFinal.push('Faltante Original', 'Faltante Restante', 'Estado');
+            inventarioFinalData.push(headersFinal);
+            
+            resultadoGlobal.resumen.forEach(producto => {
+                const row = [producto.CodigoInterno, producto.Nombre];
+                bodegas.forEach(bodega => {
+                    row.push(producto[bodega] || 0);
+                });
+                row.push(
+                    producto.FaltanteOriginal || 0,
+                    producto.FaltanteRestante || 0,
+                    (producto.FaltanteRestante || 0) === 0 ? 'Resuelto' : 'Pendiente'
+                );
+                inventarioFinalData.push(row);
+            });
+            
+            const wsInventario = XLSX.utils.aoa_to_sheet(inventarioFinalData);
+            XLSX.utils.book_append_sheet(wb, wsInventario, 'Inventario Final');
+            
+            // Hoja 4: Estadísticas
+            const estadisticasData = [
+                ['Métrica', 'Valor'],
+                ['Ciudad Analizada', ciudadDetectada],
+                ['Bodegas Detectadas', bodegas.join(', ')],
+                ['Total Productos', resultadoGlobal.estadisticas.totalProductos],
+                ['Productos con Faltantes Iniciales', resultadoGlobal.estadisticas.productosConFaltantes],
+                ['Productos con Faltantes Restantes', resultadoGlobal.estadisticas.productosConFaltantesRestantes],
+                ['Rutas de Traslado Requeridas', resultadoGlobal.traslados.length],
+                ['Eficiencia de Solución (%)', resultadoGlobal.estadisticas.eficiencia],
+                ['Bodegas Activas', resultadoGlobal.estadisticas.bodegas],
+                ['Faltantes Eliminados (unidades)', resultadoGlobal.estadisticas.faltantesEliminados]
+            ];
+            
+            const wsEstadisticas = XLSX.utils.aoa_to_sheet(estadisticasData);
+            XLSX.utils.book_append_sheet(wb, wsEstadisticas, 'Estadísticas');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const ciudadArchivo = ciudadDetectada.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `redistribucion_inventario_${ciudadArchivo}_${fecha}.xlsx`);
+        }
+
+        function descargarResumenEjecutivo() {
+            if (!resultadoGlobal) return;
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Resumen ejecutivo
+            const resumenData = [];
+            resumenData.push([`RESUMEN EJECUTIVO - REDISTRIBUCIÓN DE INVENTARIO`, '', '', '']);
+            resumenData.push([`${ciudadDetectada}`, '', '', '']);
+            resumenData.push(['', '', '', '']);
+            resumenData.push(['Métrica Clave', 'Valor', 'Impacto', 'Acción Requerida']);
+            resumenData.push(['Ciudad Analizada', ciudadDetectada, 'Ubicación específica', 'Ninguna']);
+            resumenData.push(['Bodegas Activas', bodegas.join(', '), 'Red de distribución', 'Verificar conectividad']);
+            resumenData.push(['Total Productos Analizados', resultadoGlobal.estadisticas.totalProductos, 'Base de análisis', 'Ninguna']);
+            resumenData.push(['Productos con Faltantes', resultadoGlobal.estadisticas.productosConFaltantes, 'Problema identificado', 'Redistribuir']);
+            resumenData.push(['Eficiencia de Solución', resultadoGlobal.estadisticas.eficiencia + '%', 'Nivel de resolución', 'Ejecutar traslados']);
+            resumenData.push(['Rutas de Traslado', resultadoGlobal.traslados.length, 'Operaciones requeridas', 'Planificar logística']);
+            resumenData.push(['', '', '', '']);
+            resumenData.push(['TOP 5 TRASLADOS PRIORITARIOS', '', '', '']);
+            resumenData.push(['Prioridad', 'Ruta', 'Productos', 'Unidades']);
+            
+            resultadoGlobal.traslados.slice(0, 5).forEach((grupo, index) => {
+                resumenData.push([
+                    index + 1,
+                    `${grupo.desde} → ${grupo.hacia}`,
+                    grupo.productosUnicos,
+                    grupo.totalItems
+                ]);
+            });
+            
+            const wsResumen = XLSX.utils.aoa_to_sheet(resumenData);
+            XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Ejecutivo');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const ciudadArchivo = ciudadDetectada.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `resumen_ejecutivo_${ciudadArchivo}_${fecha}.xlsx`);
+        }
+
+        function descargarPorBodega() {
+            if (!resultadoGlobal) return;
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Crear una hoja por bodega
+            bodegas.forEach(bodega => {
+                const bodegaData = [];
+                bodegaData.push([`REPORTE PARA: ${bodega} (${ciudadDetectada})`, '', '', '']);
+                bodegaData.push(['', '', '', '']);
+                bodegaData.push(['Código', 'Producto', 'Stock Actual', 'Acciones Requeridas']);
+                
+                // Productos que esta bodega debe enviar
+                const productosEnvio = [];
+                resultadoGlobal.traslados.forEach(grupo => {
+                    if (grupo.desde === bodega) {
+                        grupo.productos.forEach(p => {
+                            productosEnvio.push({
+                                codigo: p.codigoInterno,
+                                nombre: p.nombre,
+                                cantidad: p.cantidad,
+                                destino: grupo.hacia
+                            });
+                        });
+                    }
+                });
+                
+                // Productos que esta bodega debe recibir
+                const productosRecepcion = [];
+                resultadoGlobal.traslados.forEach(grupo => {
+                    if (grupo.hacia === bodega) {
+                        grupo.productos.forEach(p => {
+                            productosRecepcion.push({
+                                codigo: p.codigoInterno,
+                                nombre: p.nombre,
+                                cantidad: p.cantidad,
+                                origen: grupo.desde
+                            });
+                        });
+                    }
+                });
+                
+                // Agregar datos de envío
+                if (productosEnvio.length > 0) {
+                    bodegaData.push(['', '', '', '']);
+                    bodegaData.push(['PRODUCTOS A ENVIAR:', '', '', '']);
+                    productosEnvio.forEach(p => {
+                        bodegaData.push([p.codigo, p.nombre, `-${p.cantidad}`, `Enviar a ${p.destino}`]);
+                    });
+                }
+                
+                // Agregar datos de recepción
+                if (productosRecepcion.length > 0) {
+                    bodegaData.push(['', '', '', '']);
+                    bodegaData.push(['PRODUCTOS A RECIBIR:', '', '', '']);
+                    productosRecepcion.forEach(p => {
+                        bodegaData.push([p.codigo, p.nombre, `+${p.cantidad}`, `Recibir de ${p.origen}`]);
+                    });
+                }
+                
+                if (productosEnvio.length === 0 && productosRecepcion.length === 0) {
+                    bodegaData.push(['Sin movimientos', `Esta bodega no requiere traslados en ${ciudadDetectada}`, '', 'Ninguna']);
+                }
+                
+                const ws = XLSX.utils.aoa_to_sheet(bodegaData);
+                XLSX.utils.book_append_sheet(wb, ws, bodega.substring(0, 31)); // Excel limit for sheet names
+            });
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const ciudadArchivo = ciudadDetectada.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `reporte_por_bodega_${ciudadArchivo}_${fecha}.xlsx`);
+        }
+
+        function descargarProductosSinStock() {
+            if (!resultadoGlobal || !resultadoGlobal.productosSinStock) return;
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Hoja de productos sin stock
+            const productosData = [];
+            productosData.push(['PRODUCTOS QUE REQUIEREN AJUSTE DE ENTRADA', '', '', '', '']);
+            productosData.push([`Ciudad: ${ciudadDetectada}`, '', '', '', '']);
+            productosData.push(['', '', '', '', '']);
+            productosData.push(['Código Interno', 'Nombre Producto', 'Total Faltante', 'Detalle Faltantes', 'Acción Requerida']);
+            
+            resultadoGlobal.productosSinStock.forEach(producto => {
+                productosData.push([
+                    producto.CodigoInterno,
+                    producto.Nombre,
+                    producto.TotalFaltante,
+                    producto.DetalleFaltantes,
+                    `Ajuste de entrada por ${producto.TotalFaltante} unidades`
+                ]);
+            });
+            
+            // Agregar resumen al final
+            productosData.push(['', '', '', '', '']);
+            productosData.push(['RESUMEN', '', '', '', '']);
+            productosData.push(['Total productos afectados:', resultadoGlobal.productosSinStock.length, '', '', '']);
+            productosData.push(['Total unidades faltantes:', 
+                resultadoGlobal.productosSinStock.reduce((sum, p) => sum + p.TotalFaltante, 0), '', '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(productosData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Ajustes de Entrada');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            const ciudadArchivo = ciudadDetectada.toLowerCase().replace(/\s+/g, '_');
+            XLSX.writeFile(wb, `productos_ajuste_entrada_${ciudadArchivo}_${fecha}.xlsx`);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+    </script>
+</body>
+</html>

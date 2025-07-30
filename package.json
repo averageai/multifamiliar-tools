@@ -1,0 +1,27 @@
+{
+  "name": "multifamiliar-tools",
+  "version": "1.0.0",
+  "description": "Hub de herramientas administrativas y operativas con control de acceso",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "keywords": [
+    "herramientas",
+    "inventarios",
+    "precios",
+    "multifamiliar",
+    "dashboard"
+  ],
+  "author": "Humans + AI",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^latest"
+  }
+} 
