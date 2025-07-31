@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Precios - Sistema Multi-Sede</title>
+    <title>Sistema de Consulta de Precios - Control de Márgenes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -108,52 +108,6 @@
             font-size: 12px;
             margin: 4px 0;
             color: #a0a0a0;
-        }
-
-        .sede-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .sede-btn {
-            background: #2c3e50;
-            color: white;
-            border: 2px solid #3498db;
-            padding: 20px;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 200px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sede-btn:hover {
-            background: #3498db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-        }
-
-        .sede-icon {
-            font-size: 24px;
-        }
-
-        .sede-info {
-            text-align: left;
-        }
-
-        .sede-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .sede-desc {
-            font-size: 12px;
-            opacity: 0.8;
         }
 
         .upload-btn {
@@ -505,31 +459,20 @@
                 <h1>Sistema de Consulta de Precios</h1>
                 <p>Control de márgenes y precios anteriores para evitar pérdidas</p>
             </div>
-            <a href="../index.html" class="back-btn">← Volver al MENU</a>
+            <a href="index.html" class="back-btn">← Volver al MENU</a>
         </div>
 
         <div class="content">
-            <div class="upload-section" id="sedeSelector">
-                <h2>Seleccionar Sede</h2>
-                <p><strong>Conecta directamente con las bases de datos:</strong></p>
-                <div class="sede-buttons">
-                    <button class="sede-btn" onclick="cargarDatosSede('manizales')">
-                        <div class="sede-icon">🏢</div>
-                        <div class="sede-info">
-                            <div class="sede-name">Manizales</div>
-                            <div class="sede-desc">Inventario Manizales</div>
-                        </div>
-                    </button>
-                    <button class="sede-btn" onclick="cargarDatosSede('dorada')">
-                        <div class="sede-icon">🏪</div>
-                        <div class="sede-info">
-                            <div class="sede-name">Dorada</div>
-                            <div class="sede-desc">Productos Dorada</div>
-                        </div>
-                    </button>
-                </div>
+            <div class="upload-section" id="uploadSection">
+                <h2>Cargar Archivo de Productos</h2>
+                <p><strong>Origen:</strong> Productos > Exportar/Importar > Exportación Masiva</p>
+                <p>Formato: productos_[fecha]_[hora].xlsx</p>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar Archivo
+                </button>
                 <div class="alert">
-                    <strong>Info:</strong> Conexión automática a las bases de datos sin necesidad de cargar archivos
+                    <strong>Info:</strong> Carga automáticamente todos los productos con precios y márgenes
                 </div>
             </div>
 
@@ -606,114 +549,44 @@
         let totalSearches = 0;
         let productsFound = 0;
         let productsNotFound = 0;
-        let currentSede = null;
 
-        // Configuración de sedes
-        const sedesConfig = {
-            manizales: {
-                nombre: 'Manizales',
-                archivo: 'bases_datos/inventario_manizales.xlsx'
-            },
-            dorada: {
-                nombre: 'Dorada',
-                archivo: 'bases_datos/productos_dorada.xlsx'
+        // Configurar drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#e3f2fd';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                procesarArchivo(files[0]);
             }
-        };
+        });
 
-        // Función para cargar datos de sede
-        async function cargarDatosSede(sede) {
-            const config = sedesConfig[sede];
-            if (!config) {
-                mostrarError('Sede no encontrada');
-                return;
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                procesarArchivo(e.target.files[0]);
             }
-
-            console.log('📂 Cargando datos de:', config.nombre);
-
-            document.getElementById('sedeSelector').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
-
-            try {
-                actualizarProgreso(`Conectando con ${config.nombre}...`);
-
-                const datosReales = await cargarDatosReales(sede);
-
-                actualizarProgreso('Procesando productos y precios...');
-                procesarDatosSegunFormato(datosReales);
-
-                actualizarProgreso('Inicializando sistema...');
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('searchSection').style.display = 'block';
-
-                    currentSede = sede;
-                    actualizarInfoSede(config);
-
-                    document.getElementById('searchInput').focus();
-                    mostrarAlerta(`✅ ${config.nombre} conectado - Sistema listo`, 'success');
-                }, 500);
-
-            } catch (error) {
-                console.error('Error cargando sede:', error);
-                mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('sedeSelector').style.display = 'block';
-            }
-        }
-
-        // Función para cargar datos reales desde Excel
-        async function cargarDatosReales(sede) {
-            const config = sedesConfig[sede];
-            if (!config) {
-                throw new Error(`Sede '${sede}' no encontrada`);
-            }
-
-            try {
-                console.log(`📂 Cargando archivo: ${config.archivo}`);
-
-                const response = await fetch(config.archivo);
-                if (!response.ok) {
-                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
-                }
-
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
-                return jsonData;
-
-            } catch (error) {
-                console.error(`Error cargando base de datos ${sede}:`, error);
-                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
-            }
-        }
-
-        // Función para actualizar información de sede
-        function actualizarInfoSede(config) {
-            document.getElementById('systemInfo').innerHTML = `
-                <strong>${config.nombre}</strong> - Sistema Conectado
-            `;
-        }
+        });
 
         function actualizarProgreso(mensaje) {
             const detailElement = document.getElementById('loadingDetail');
             if (detailElement) {
                 detailElement.textContent = mensaje;
             }
-        }
-
-        function procesarDatosSegunFormato(jsonData) {
-            const headers = jsonData[0];
-            const dataRows = jsonData.slice(1);
-            
-            console.log('Headers encontrados:', headers);
-            console.log('Total filas de datos:', dataRows.length);
-            
-            // Usar el mismo procesamiento para ambas sedes
-            procesarDatosProductos(jsonData);
         }
 
         function procesarArchivo(archivo) {
@@ -822,14 +695,10 @@
             actualizarEstadisticas();
         }
 
-
-
         function actualizarEstadisticas() {
             // Actualizar chips de estadísticas
-            const sedeInfo = currentSede ? sedesConfig[currentSede].nombre : 'Sistema';
             document.getElementById('statsChips').innerHTML = `
                 <span class="stat-chip">${productosData.length.toLocaleString()} productos</span>
-                <span class="stat-chip">${sedeInfo}</span>
                 <span class="stat-chip">Sistema activo</span>
             `;
             
