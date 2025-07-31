@@ -634,53 +634,19 @@
                 // Determinar qué archivo cargar según la sede
                 let archivoBaseDatos = '';
                 if (sedeSeleccionada === 'manizales') {
-                    archivoBaseDatos = '/bases_datos/inventario_manizales.xlsx';
+                    archivoBaseDatos = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx';
                 } else if (sedeSeleccionada === 'dorada') {
-                    archivoBaseDatos = '/bases_datos/productos_dorada.xlsx';
+                    archivoBaseDatos = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx';
                 }
 
                 actualizarProgreso('Descargando datos de productos...');
                 
-                // Intentar diferentes rutas para cargar el archivo
-                const rutasAlternativas = [
-                    archivoBaseDatos,
-                    archivoBaseDatos.replace('/bases_datos/', 'bases_datos/'),
-                    archivoBaseDatos.replace('/bases_datos/', './bases_datos/'),
-                    archivoBaseDatos.replace('/bases_datos/', '../bases_datos/')
-                ];
-
-                let response = null;
-                let rutaExitoso = '';
-
-                for (let i = 0; i < rutasAlternativas.length; i++) {
-                    const ruta = rutasAlternativas[i];
-                    try {
-                        console.log(`📂 Intentando cargar archivo (intento ${i + 1}): ${ruta}`);
-                        
-                        // Asegurar que la URL esté correctamente codificada
-                        const url = new URL(ruta, window.location.href);
-                        console.log(`🔗 URL completa: ${url.href}`);
-
-                        response = await fetch(url.href);
-                        if (response.ok) {
-                            rutaExitoso = ruta;
-                            console.log(`✅ Archivo cargado exitosamente desde: ${ruta}`);
-                            break;
-                        } else {
-                            console.error(`❌ Error HTTP (intento ${i + 1}): ${response.status} ${response.statusText}`);
-                            console.error(`📁 Archivo solicitado: ${ruta}`);
-                            console.error(`🌐 URL completa: ${url.href}`);
-                        }
-                    } catch (error) {
-                        console.error(`❌ Error en intento ${i + 1}:`, error);
-                        if (i === rutasAlternativas.length - 1) {
-                            throw new Error(`No se pudo cargar la base de datos: ${error.message}`);
-                        }
-                    }
-                }
-
-                if (!response || !response.ok) {
-                    throw new Error(`Error al cargar la base de datos: ${response?.status} ${response?.statusText}`);
+                // Cargar archivo directamente desde GitHub Raw
+                console.log(`📂 Cargando archivo desde: ${archivoBaseDatos}`);
+                
+                const response = await fetch(archivoBaseDatos);
+                if (!response.ok) {
+                    throw new Error(`Error al cargar la base de datos: ${response.status} ${response.statusText}`);
                 }
 
                 actualizarProgreso('Procesando archivo Excel...');

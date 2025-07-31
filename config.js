@@ -111,3 +111,50 @@ class Config {
 
 // Exportar para uso global
 window.Config = Config; 
+
+// Configuración de rutas según el entorno
+const config = {
+    // Detectar si estamos en producción (Vercel) o desarrollo local
+    isProduction: window.location.hostname === 'tools.average.lat',
+    
+    // Rutas base para archivos Excel
+    getBasePath: function() {
+        return this.isProduction ? '/bases_datos/' : 'bases_datos/';
+    },
+    
+    // Obtener ruta completa para un archivo
+    getFilePath: function(filename) {
+        return this.getBasePath() + filename;
+    },
+    
+    // Configuración de sedes
+    sedes: {
+        manizales: {
+            nombre: 'Manizales',
+            archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+            icon: '🏪',
+            color: '#28a745'
+        },
+        dorada: {
+            nombre: 'Dorada',
+            archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+            icon: '🏬',
+            color: '#3498db'
+        }
+    }
+};
+
+// Función para obtener la configuración de una sede
+function getSedeConfig(sede) {
+    const sedeConfig = config.sedes[sede];
+    if (!sedeConfig) {
+        throw new Error(`Sede '${sede}' no encontrada`);
+    }
+    
+    return sedeConfig;
+}
+
+// Exportar para uso en otros archivos
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { config, getSedeConfig };
+} 

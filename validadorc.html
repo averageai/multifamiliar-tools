@@ -751,14 +751,14 @@
         const sedesConfig = {
             'manizales': {
                 nombre: 'Manizales',
-                archivo: '/bases_datos/inventario_manizales.xlsx',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
                 icon: '🏪',
                 color: '#28a745',
                 tipo: 'inventario'
             },
             'dorada': {
                 nombre: 'Dorada',
-                archivo: '/bases_datos/productos_dorada.xlsx',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
                 icon: '🏬',
                 color: '#3498db',
                 tipo: 'productos'
@@ -833,50 +833,26 @@
                 throw new Error(`Sede '${sede}' no encontrada`);
             }
 
-            // Intentar diferentes rutas para cargar el archivo
-            const rutasAlternativas = [
-                config.archivo,
-                config.archivo.replace('/bases_datos/', 'bases_datos/'),
-                config.archivo.replace('/bases_datos/', './bases_datos/'),
-                config.archivo.replace('/bases_datos/', '../bases_datos/')
-            ];
+            try {
+                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
 
-            for (let i = 0; i < rutasAlternativas.length; i++) {
-                const ruta = rutasAlternativas[i];
-                try {
-                    console.log(`📂 Intentando cargar archivo (intento ${i + 1}): ${ruta}`);
-
-                    // Asegurar que la URL esté correctamente codificada
-                    const url = new URL(ruta, window.location.href);
-                    console.log(`🔗 URL completa: ${url.href}`);
-
-                    const response = await fetch(url.href);
-                    if (!response.ok) {
-                        console.error(`❌ Error HTTP (intento ${i + 1}): ${response.status} ${response.statusText}`);
-                        console.error(`📁 Archivo solicitado: ${ruta}`);
-                        console.error(`🌐 URL completa: ${url.href}`);
-                        continue; // Intentar siguiente ruta
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    const data = new Uint8Array(arrayBuffer);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                    console.log(`✅ Archivo cargado exitosamente: ${jsonData.length} filas`);
-                    return jsonData;
-
-                } catch (error) {
-                    console.error(`❌ Error en intento ${i + 1}:`, error);
-                    if (i === rutasAlternativas.length - 1) {
-                        // Si es el último intento, lanzar el error
-                        console.error(`Error cargando base de datos ${sede}:`, error);
-                        console.error(`📂 Archivo que falló: ${config.archivo}`);
-                        throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
-                    }
-                    // Continuar con el siguiente intento
+                const response = await fetch(config.archivo);
+                if (!response.ok) {
+                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
                 }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
+                return jsonData;
+
+            } catch (error) {
+                console.error(`Error cargando base de datos ${sede}:`, error);
+                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
             }
         }
 
