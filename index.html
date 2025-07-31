@@ -426,65 +426,63 @@
             <!-- Control de Precios V2 -->
             <a href="#" class="tool-card operativo" id="tool-control-v2" onclick="navigateTo('/controlv2'); return false;">
                 <div class="tool-icon">🎯</div>
-                <h3>Control de Precios V2</h3>
+                <h3>Control de Inventarios V2</h3>
                 <p>Sistema multi-sede con conexión directa a bases de datos. Selector automático de sede (Manizales/Dorada).</p>
                 <span class="tool-badge">Multi-Sede</span>
             </a>
 
-            <!-- Sistema de Precios V2 -->
+            <!-- Control de Precios V2 -->
             <a href="#" class="tool-card operativo" id="tool-spav2" onclick="navigateTo('/spav2'); return false;">
                 <div class="tool-icon">💎</div>
-                <h3>Sistema de Precios V2</h3>
-                <p>Sistema de consulta de precios con selector de sede y conexión directa a bases de datos. Manizales (Inventario) y Dorada (Productos).</p>
+                <h3>Control de Precios V2</h3>
+                <p>Sistema de consulta de precios con selector de sede y conexión directa a bases de datos. Manizales y Dorada.</p>
                 <span class="tool-badge">Multi-Sede</span>
             </a>
-
+            <!-- Validador V2 Conectado -->
+            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc'); return false;">
+                <div class="tool-icon">📷</div>
+                <h3>Validador V2</h3>
+                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos en nube con selector de sede automático.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
             <!-- Sistema de Precios -->
             <a href="#" class="tool-card operativo" id="tool-precios" onclick="navigateTo('/spa'); return false;">
                 <div class="tool-icon">💰</div>
                 <h3>Sistema de Precios</h3>
                 <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
-                <span class="tool-badge">Operativo</span>
+                <span class="tool-badge">Manual</span>
             </a>
 
             <!-- Sistema de Precios Manizales -->
             <a href="#" class="tool-card operativo" id="tool-precios-manizales" onclick="navigateTo('/spam'); return false;">
                 <div class="tool-icon">🏪</div>
-                <h3>Sistema de Precios Manizales</h3>
-                <p>Consulta de precios y márgenes específicos para Manizales. Control de inventario local y precios de referencia.</p>
-                <span class="tool-badge">Operativo</span>
+                <h3>Sistema de Margenes Manizales</h3>
+                <p>Consulta de precios y márgenes viejos para Manizales. Control de margenes viejos y precios de referencia.</p>
+                <span class="tool-badge">Manual</span>
             </a>
 
             <!-- Control de Inventarios -->
             <a href="#" class="tool-card administrativo" id="tool-inventarios" onclick="navigateTo('/control'); return false;">
                 <div class="tool-icon">📦</div>
                 <h3>Control de Inventarios</h3>
-                <p>Gestión administrativa de inventarios. Control de stock, proveedores y movimientos de mercancía.</p>
-                <span class="tool-badge">Administrativo</span>
+                <p>Gestión administrativa de inventarios. Control de stock, proveedores y movimientos de mercancía. Con carga de archivos manual.</p>
+                <span class="tool-badge">Manual</span>
             </a>
 
             <!-- Validador de Precios -->
             <a href="#" class="tool-card scanner" id="tool-validador" onclick="navigateTo('/validador'); return false;">
                 <div class="tool-icon">🏷️</div>
                 <h3>Validador de Precios</h3>
-                <p>Sistema de precios codificados compatible con pistolas de código de barras. Referencias invertidas para validación rápida.</p>
-                <span class="tool-badge">Scanner</span>
+                <p>Sistema de precios codificados compatible con pistolas de código de barras. Referencias invertidas para validación rápida. Con carga de archivos manual.</p>
+                <span class="tool-badge">Manual</span>
             </a>
 
             <!-- Validador de Precios V2 -->
             <a href="#" class="tool-card scanner" id="tool-validador-v2" onclick="navigateTo('/validadorv2'); return false;">
                 <div class="tool-icon">📷</div>
-                <h3>Validador de Precios V2</h3>
-                <p>Sistema avanzado con pistola y cámara. Lectura automática de códigos de barras por cámara web y pistola scanner.</p>
-                <span class="tool-badge">Scanner</span>
-            </a>
-
-            <!-- Validador V2 Conectado -->
-            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc'); return false;">
-                <div class="tool-icon">📷</div>
-                <h3>Validador V2 Conectado</h3>
-                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos locales con selector de sede automático.</p>
-                <span class="tool-badge">Conectado</span>
+                <h3>Validador de Precios + Camara</h3>
+                <p>Sistema avanzado con pistola y cámara. Lectura automática de códigos de barras por cámara web y pistola scanner. Con carga de archivos manual.</p>
+                <span class="tool-badge">Manual</span>
             </a>
 
         </div>
@@ -507,19 +505,19 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado', 'controlV2', 'spav2']
+                        permissions: ['control-v2', 'spav2', 'validador-v2-conectado', 'precios', 'precios-manizales', 'inventarios', 'validador','validador-v2']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado', 'controlV2', 'spav2']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
                         name: 'Usuario',
                         role: 'usuario',
-                        permissions: ['validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
+                        permissions: [ 'validador-v2-conectado']
                     }
                 };
             }

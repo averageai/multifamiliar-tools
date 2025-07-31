@@ -430,15 +430,14 @@
 
         <div class="content">
             <div class="upload-section" id="uploadSection">
-                <h2>Cargar Inventario Manizales</h2>
-                <p><strong>Archivo:</strong> Inventario Manizales.xlsx</p>
-                <p>Arrastra el archivo aquí o haz clic para seleccionar</p>
-                <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" />
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    Seleccionar Archivo
+                <h2>🏪 Inventario Manizales</h2>
+                <p><strong>Fuente:</strong> Base de datos en nube</p>
+                <p>Conexión directa a inventario actualizado</p>
+                <button class="upload-btn" onclick="cargarInventarioManizales()">
+                    🔄 Cargar Inventario
                 </button>
                 <div class="alert">
-                    <strong>Info:</strong> Carga automáticamente productos con 3 tipos de precios (Estándar, Minorista, Mayorista)
+                    <strong>Info:</strong> Carga automática desde GitHub Raw - Inventario Manizales actualizado
                 </div>
             </div>
 
@@ -451,7 +450,7 @@
             <div class="search-section" id="searchSection">
                 <div class="top-bar">
                     <div class="system-info" id="systemInfo">
-                        Inventario Manizales Cargado
+                        🏪 Inventario Manizales - Conectado
                     </div>
                     <div class="stats-chips" id="statsChips">
                         <!-- Stats aquí -->
@@ -487,7 +486,7 @@
 
                 <div class="section">
                     <div class="section-header">
-                        <span>Lista de Productos Consultados - Manizales</span>
+                        <span>🏪 Lista de Productos Consultados - Manizales</span>
                         <div class="action-buttons">
                             <button class="btn" onclick="imprimirListaCompleta()">📊 Imprimir Lista Completa</button>
                             <button class="btn btn-warning" onclick="imprimirSinPrecios()">📋 Imprimir Sin Precios</button>
@@ -518,42 +517,65 @@
         let productsFound = 0;
         let productsNotFound = 0;
 
-        // Configurar drag and drop
-        const uploadSection = document.getElementById('uploadSection');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#3498db';
-            uploadSection.style.background = '#e3f2fd';
-        });
-
-        uploadSection.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#dee2e6';
-            uploadSection.style.background = '#f8f9fa';
-        });
-
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#dee2e6';
-            uploadSection.style.background = '#f8f9fa';
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                procesarArchivo(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                procesarArchivo(e.target.files[0]);
-            }
+        // Cargar automáticamente al abrir la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Iniciando carga automática de inventario Manizales...');
+            setTimeout(() => {
+                cargarInventarioManizales();
+            }, 500);
         });
 
         function actualizarProgreso(mensaje) {
             const detailElement = document.getElementById('loadingDetail');
             if (detailElement) {
                 detailElement.textContent = mensaje;
+            }
+        }
+
+        // Función para cargar inventario desde GitHub Raw
+        async function cargarInventarioManizales() {
+            console.log('📂 Cargando inventario Manizales desde GitHub Raw...');
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+
+            try {
+                actualizarProgreso('Conectando con base de datos...');
+                
+                const url = 'https://raw.githubusercontent.com/averageai/files-source/main/Inventario_Manizales.xlsx';
+                console.log(`🔗 URL: ${url}`);
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Error cargando inventario: ${response.status} ${response.statusText}`);
+                }
+
+                actualizarProgreso('Descargando datos de inventario...');
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                
+                actualizarProgreso('Procesando archivo Excel...');
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                actualizarProgreso('Extrayendo datos de inventario...');
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                
+                actualizarProgreso('Procesando precios y márgenes...');
+                procesarDatosInventario(jsonData);
+                
+                actualizarProgreso('Inicializando sistema...');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('searchSection').style.display = 'block';
+                    mostrarAlerta('✅ Inventario Manizales cargado correctamente', 'success');
+                    document.getElementById('searchInput').focus();
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error cargando inventario:', error);
+                mostrarError('Error cargando inventario: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadSection').style.display = 'block';
             }
         }
 
