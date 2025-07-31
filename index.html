@@ -649,20 +649,25 @@
             const toolPermissions = {
                 'tool-inventarios': 'inventarios',
                 'tool-precios': 'precios',
-                'tool-precios-manizales': 'preciosManizales',
-                'tool-validador': 'validadorPrecios',
-                'tool-validador-v2': 'validadorPreciosV2',
-                'tool-validador-v2-conectado': 'validadorPreciosV2Conectado',
-                'tool-control-v2': 'controlV2',
+                'tool-precios-manizales': 'precios-manizales',
+                'tool-validador': 'validador',
+                'tool-validador-v2': 'validador-v2',
+                'tool-validador-v2-conectado': 'validador-v2-conectado',
+                'tool-control-v2': 'control-v2',
                 'tool-spav2': 'spav2'
             };
+            
+            console.log('🔍 Verificando permisos para usuario:', currentUser.username);
+            console.log('📋 Permisos disponibles:', currentUser.permissions);
             
             Object.entries(toolPermissions).forEach(([toolId, permission]) => {
                 const toolElement = document.getElementById(toolId);
                 if (toolElement) {
                     const hasPermission = authConfig.hasPermission(currentUser.username, permission);
                     toolElement.style.display = hasPermission ? 'block' : 'none';
-                    console.log(`🔧 ${toolId} visible:`, hasPermission);
+                    console.log(`🔧 ${toolId} (${permission}) visible:`, hasPermission);
+                } else {
+                    console.error(`❌ Elemento no encontrado: ${toolId}`);
                 }
             });
         }
