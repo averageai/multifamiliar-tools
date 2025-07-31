@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Precios Codificados - Pistola + Cámara</title>
+    <title>Sistema de Precios Codificados - Pistolas Scanner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,7 +18,6 @@
             font-size: 14px;
             line-height: 1.4;
             color: #ffffff;
-            overflow-x: hidden;
         }
 
         .container {
@@ -32,17 +30,16 @@
         .header {
             background: #2c3e50;
             color: white;
-            padding: 10px 15px;
+            padding: 15px 20px;
             border-bottom: 3px solid #3498db;
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .logo {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             background: #3498db;
             border-radius: 50%;
             display: flex;
@@ -50,38 +47,35 @@
             justify-content: center;
             font-weight: bold;
             color: white;
-            font-size: 18px;
-            flex-shrink: 0;
+            font-size: 20px;
         }
 
         .header-text {
             flex: 1;
-            min-width: 200px;
         }
 
         .header h1 {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
         .header p {
-            font-size: 12px;
+            font-size: 14px;
             opacity: 0.8;
         }
 
         .scanner-indicator {
             background: #28a745;
             color: white;
-            padding: 6px 12px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             animation: pulse 2s infinite;
-            flex-shrink: 0;
         }
 
         @keyframes pulse {
@@ -90,27 +84,27 @@
         }
 
         .content {
-            padding: 15px;
+            padding: 20px;
         }
 
         .upload-section {
             background: #2a2a2a;
             border: 2px dashed #333;
             border-radius: 12px;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .upload-section h2 {
-            font-size: 16px;
-            margin-bottom: 8px;
+            font-size: 18px;
+            margin-bottom: 10px;
             color: #ffffff;
         }
 
         .upload-section p {
-            font-size: 12px;
-            margin: 4px 0;
+            font-size: 14px;
+            margin: 6px 0;
             color: #a0a0a0;
         }
 
@@ -118,17 +112,17 @@
             background: #3498db;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 12px;
+            padding: 12px 24px;
+            font-size: 14px;
             border-radius: 6px;
             cursor: pointer;
-            margin: 8px;
+            margin: 12px;
             transition: all 0.3s;
         }
 
         .upload-btn:hover {
             background: #2980b9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .file-input {
@@ -139,61 +133,22 @@
             display: none;
         }
 
-        /* Modo Toggle */
-        .mode-toggle {
-            display: flex;
-            background: #2a2a2a;
-            border-radius: 10px;
-            padding: 4px;
-            margin-bottom: 15px;
-            gap: 4px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            color: #a0a0a0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .mode-btn.active {
-            background: #3498db;
-            color: white;
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
-        }
-
-        .mode-btn:hover:not(.active) {
-            background: #333;
-            color: #ffffff;
-        }
-
-        /* Scanner Manual */
         .scanner-bar {
             background: #1e3a2e;
             border: 2px solid #4ade80;
             border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .scanner-input {
             width: 100%;
-            max-width: 350px;
-            padding: 12px 16px;
+            max-width: 400px;
+            padding: 15px 20px;
             border: 2px solid #4ade80;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px;
             background: #2a2a2a;
             color: #ffffff;
             text-align: center;
@@ -204,116 +159,21 @@
             outline: none;
             border-color: #22c55e;
             background: #333;
-            box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
         }
 
         .scanner-help {
-            margin-top: 10px;
+            margin-top: 15px;
             color: #4ade80;
-            font-size: 12px;
-        }
-
-        /* Cámara Scanner */
-        .camera-section {
-            display: none;
-            background: #2a2a2a;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .camera-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .camera-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .camera-btn:hover {
-            background: #218838;
-            transform: translateY(-1px);
-        }
-
-        .camera-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .camera-btn.stop {
-            background: #dc3545;
-        }
-
-        .camera-btn.stop:hover {
-            background: #c82333;
-        }
-
-        #camera-preview {
-            width: 100%;
-            max-width: 400px;
-            height: 300px;
-            border-radius: 8px;
-            border: 2px solid #333;
-            background: #1a1a1a;
-            margin: 0 auto;
-            display: block;
-        }
-
-        .camera-status {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #a0a0a0;
-        }
-
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            background: #2a2a2a;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .stat-label {
-            font-size: 10px;
-            color: #a0a0a0;
-            text-transform: uppercase;
-            margin-top: 2px;
+            font-size: 14px;
         }
 
         .price-display {
             background: #2a2a2a;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            min-height: 250px;
+            padding: 40px 25px;
+            margin-bottom: 20px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -325,8 +185,8 @@
         }
 
         .no-product-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
+            font-size: 48px;
+            margin-bottom: 15px;
         }
 
         .product-info {
@@ -334,47 +194,72 @@
             text-align: center;
         }
 
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+        }
+
         .product-not-found {
             background: #3d1f1f;
             border: 2px solid #dc3545;
             border-radius: 12px;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
         }
 
         .not-found-icon {
-            font-size: 48px;
+            font-size: 64px;
             color: #dc3545;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .not-found-code {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: bold;
             color: #ffffff;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-family: 'Courier New', monospace;
         }
 
         .not-found-message {
-            font-size: 14px;
+            font-size: 16px;
             color: #ffcccc;
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 30px;
+            padding: 40px;
         }
 
         .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #333;
-            border-top: 3px solid #3498db;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -385,11 +270,11 @@
         .alert {
             background: #d1ecf1;
             color: #0c5460;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 10px 0;
-            border-left: 3px solid #bee5eb;
-            font-size: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #bee5eb;
+            font-size: 14px;
         }
 
         .alert-success {
@@ -407,24 +292,22 @@
         .recent-searches {
             background: #2a2a2a;
             border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
         .recent-header {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             color: #ffffff;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
         }
 
         .recent-list {
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
         }
 
@@ -432,9 +315,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #333;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .recent-code {
@@ -451,107 +334,27 @@
             background: #dc3545;
             color: white;
             border: none;
-            padding: 3px 6px;
-            border-radius: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .clear-btn:hover {
             background: #c82333;
         }
 
-        /* Responsive Mobile */
         @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
             .header {
-                padding: 8px 10px;
                 flex-direction: column;
                 text-align: center;
-                gap: 8px;
+                gap: 10px;
             }
-
-            .header h1 {
-                font-size: 16px;
-            }
-
-            .header p {
-                font-size: 11px;
-            }
-
-            .content {
-                padding: 10px;
-            }
-
-            .stats-bar {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-                padding: 10px;
-            }
-
-            .stat-value {
-                font-size: 16px;
-            }
-
-            .price-display {
-                padding: 15px;
-                min-height: 200px;
-            }
-
-            .scanner-input {
-                max-width: 100%;
-                font-size: 14px;
-            }
-
-            #camera-preview {
-                height: 250px;
-            }
-
-            .camera-controls {
-                justify-content: center;
-            }
-
-            .mode-btn {
-                font-size: 12px;
-                padding: 10px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 14px;
-            }
-            
-            .stats-bar {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .price-display {
-                min-height: 180px;
-            }
-            
-            #camera-preview {
-                height: 200px;
-            }
-        }
-
-        /* Nuevos estilos para detección automática */
-        .detection-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            z-index: 1000;
-            animation: fadeInOut 2s;
-        }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
         }
     </style>
 </head>
@@ -561,11 +364,12 @@
             <div class="logo">🏷️</div>
             <div class="header-text">
                 <h1>Sistema de Precios Codificados</h1>
-                <p>Compatible con pistolas y cámara - Referencias invertidas</p>
+                <p>Compatible con pistolas de código de barras</p>
             </div>
             <div class="scanner-indicator">
-                <span>🔫📷</span> Multi-Scanner
+                <span>🔫</span> Scanner Listo
             </div>
+            <a href="../index.html" class="back-btn">← Volver al MENU</a>
         </div>
 
         <div class="content">
@@ -578,7 +382,7 @@
                     📁 Seleccionar Archivo
                 </button>
                 <div class="alert">
-                    <strong>Info:</strong> Compatible con pistolas de código de barras y lectura por cámara
+                    <strong>Info:</strong> Una vez cargado, el sistema estará listo para recibir códigos de barras automáticamente
                 </div>
             </div>
 
@@ -589,19 +393,8 @@
             </div>
 
             <div class="scanner-section" id="scannerSection">
-                <!-- Toggle de Modos -->
-                <div class="mode-toggle">
-                    <button class="mode-btn active" id="pistolBtn" onclick="cambiarModo('pistol')">
-                        <span>🔫</span> Pistola
-                    </button>
-                    <button class="mode-btn" id="cameraBtn" onclick="cambiarModo('camera')">
-                        <span>📷</span> Cámara
-                    </button>
-                </div>
-
-                <!-- Modo Pistola -->
-                <div class="scanner-bar" id="pistolSection">
-                    <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px;">🔫 Lector de Códigos - Pistola</h3>
+                <div class="scanner-bar">
+                    <h3 style="color: #4ade80; margin-bottom: 15px;">🔫 Lector de Códigos Activo</h3>
                     <input type="text" id="scannerInput" class="scanner-input" 
                            placeholder="Código de barras aquí..." 
                            autofocus>
@@ -610,27 +403,10 @@
                     </div>
                 </div>
 
-                <!-- Modo Cámara -->
-                <div class="camera-section" id="cameraSection">
-                    <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px; text-align: center;">📷 Lector de Códigos - Cámara</h3>
-                    <div class="camera-controls">
-                        <button class="camera-btn" id="startCameraBtn" onclick="iniciarCamera()">
-                            <span>▶️</span> Iniciar Cámara
-                        </button>
-                        <button class="camera-btn stop" id="stopCameraBtn" onclick="detenerCamera()" disabled>
-                            <span>⏹️</span> Detener
-                        </button>
-                    </div>
-                    <div id="camera-preview"></div>
-                    <div class="camera-status" id="cameraStatus">
-                        Cámara inactiva - Presione "Iniciar Cámara" para comenzar
-                    </div>
-                </div>
-
                 <div class="stats-bar">
                     <div class="stat-item">
                         <div class="stat-value" id="totalProducts">0</div>
-                        <div class="stat-label">Productos</div>
+                        <div class="stat-label">Productos Cargados</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="totalScans">0</div>
@@ -650,21 +426,17 @@
                     <div class="no-product">
                         <div class="no-product-icon">🎯</div>
                         <h3>Listo para escanear</h3>
-                        <p>Use pistola o cámara para leer códigos de barras</p>
+                        <p>Escanee un código de barras para ver precios y referencias</p>
                     </div>
                 </div>
 
                 <div class="recent-searches" id="recentSearches">
                     <div class="recent-header">
                         <span>📋 Últimos Escaneos</span>
-                        <div>
-                            <button class="clear-btn" style="background: #ffc107; color: #000;" onclick="resetStats()">🔄 Reset</button>
-                            <button class="clear-btn" style="background: #28a745;" onclick="exportarReporte()">📊 Exportar</button>
-                            <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
-                        </div>
+                        <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
                     </div>
                     <div class="recent-list" id="recentList">
-                        <div style="text-align: center; color: #6c757d; padding: 15px;">
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
                             No hay escaneos recientes
                         </div>
                     </div>
@@ -672,15 +444,12 @@
             </div>
         </div>
     </div>
-
     <script>
         let productosData = [];
         let recentScans = [];
         let totalScans = 0;
         let foundCount = 0;
         let notFoundCount = 0;
-        let currentMode = 'pistol';
-        let cameraActive = false;
 
         // Configurar carga de archivo
         const fileInput = document.getElementById('fileInput');
@@ -740,14 +509,12 @@
                     actualizarProgreso('Preparando códigos de referencia...');
                     procesarDatosProductos(jsonData);
                     
-                    actualizarProgreso('Activando sistema multi-scanner...');
+                    actualizarProgreso('Activando sistema de scanner...');
                     setTimeout(() => {
                         document.getElementById('loading').style.display = 'none';
                         document.getElementById('scannerSection').style.display = 'block';
-                        if (currentMode === 'pistol') {
-                            document.getElementById('scannerInput').focus();
-                        }
-                        mostrarAlerta('✅ Sistema listo - Pistola y Cámara disponibles', 'success');
+                        document.getElementById('scannerInput').focus();
+                        mostrarAlerta('✅ Sistema listo - Scanner activado', 'success');
                     }, 500);
                     
                 } catch (error) {
@@ -768,19 +535,20 @@
             console.log('Headers encontrados:', headers);
             console.log('Total filas de datos:', dataRows.length);
             
+            // Índices según estructura del archivo
             const indices = {
-                codigoInterno: 0,
-                nombre: 2,
-                costo: 5,
-                precioMayorista: 11,
-                precioMinorista: 12,
-                precioEstandar: 13,
-                porcentajeMayorista: 8,
-                porcentajeMinorista: 9,
-                porcentajeEstandar: 10,
-                stockTotal: 14,
-                proveedor: 16,
-                codigosBarras: 17
+                codigoInterno: 0,      // Columna A
+                nombre: 2,             // Columna C
+                costo: 5,              // Columna F
+                precioMayorista: 11,   // Columna L
+                precioMinorista: 12,   // Columna M
+                precioEstandar: 13,    // Columna N
+                porcentajeMayorista: 8, // Columna I
+                porcentajeMinorista: 9, // Columna J
+                porcentajeEstandar: 10, // Columna K
+                stockTotal: 14,        // Columna O
+                proveedor: 16,         // Columna Q
+                codigosBarras: 17      // Columna R - códigos separados por comas
             };
             
             productosData = dataRows.map(row => {
@@ -791,6 +559,7 @@
                 const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
                 const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
                 
+                // Procesar códigos de barras - separar por comas y limpiar
                 let codigosBarras = [];
                 if (row[indices.codigosBarras]) {
                     codigosBarras = row[indices.codigosBarras]
@@ -819,6 +588,7 @@
             }).filter(p => p !== null);
             
             console.log('Productos procesados:', productosData.length);
+            console.log('Ejemplo producto con códigos:', productosData.find(p => p.codigosBarras.length > 0));
             actualizarEstadisticas();
         }
 
@@ -842,36 +612,6 @@
             document.getElementById('notFoundCount').textContent = notFoundCount;
         }
 
-        // Cambiar entre modos
-        function cambiarModo(modo) {
-            if (modo === currentMode) return;
-            
-            currentMode = modo;
-            
-            if (modo === 'pistol') {
-                document.getElementById('pistolBtn').classList.add('active');
-                document.getElementById('cameraBtn').classList.remove('active');
-                document.getElementById('pistolSection').style.display = 'block';
-                document.getElementById('cameraSection').style.display = 'none';
-                
-                // Detener cámara si está activa
-                if (cameraActive) {
-                    detenerCamera();
-                }
-                
-                // Enfocar input
-                setTimeout(() => {
-                    document.getElementById('scannerInput').focus();
-                }, 100);
-                
-            } else if (modo === 'camera') {
-                document.getElementById('pistolBtn').classList.remove('active');
-                document.getElementById('cameraBtn').classList.add('active');
-                document.getElementById('pistolSection').style.display = 'none';
-                document.getElementById('cameraSection').style.display = 'block';
-            }
-        }
-
         // Configurar el input del scanner
         document.addEventListener('DOMContentLoaded', function() {
             const scannerInput = document.getElementById('scannerInput');
@@ -885,139 +625,12 @@
 
             scannerInput.addEventListener('blur', function() {
                 setTimeout(() => {
-                    if (currentMode === 'pistol' && 
-                        document.getElementById('scannerSection').style.display !== 'none') {
+                    if (document.getElementById('scannerSection').style.display !== 'none') {
                         scannerInput.focus();
                     }
                 }, 100);
             });
         });
-
-        // Funciones de cámara
-        function iniciarCamera() {
-            const preview = document.getElementById('camera-preview');
-            const status = document.getElementById('cameraStatus');
-            const startBtn = document.getElementById('startCameraBtn');
-            const stopBtn = document.getElementById('stopCameraBtn');
-
-            status.textContent = 'Inicializando cámara...';
-            startBtn.disabled = true;
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: preview,
-                    constraints: {
-                        width: 400,
-                        height: 300,
-                        facingMode: "environment" // Cámara trasera en móviles
-                    }
-                },
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                },
-                numOfWorkers: 2,
-                decoder: {
-                    readers: [
-                        "code_128_reader",
-                        "ean_reader",
-                        "ean_8_reader",
-                        "code_39_reader",
-                        "code_39_vin_reader",
-                        "codabar_reader",
-                        "upc_reader",
-                        "upc_e_reader",
-                        "i2of5_reader"
-                    ]
-                },
-                locate: true
-            }, function(err) {
-                if (err) {
-                    console.error('Error inicializando cámara:', err);
-                    status.textContent = 'Error: No se pudo acceder a la cámara';
-                    startBtn.disabled = false;
-                    mostrarError('No se pudo acceder a la cámara. Verifique permisos.');
-                    return;
-                }
-                
-                console.log('Cámara inicializada correctamente');
-                Quagga.start();
-                cameraActive = true;
-                status.textContent = '✅ Cámara activa - Apunte al código de barras';
-                startBtn.disabled = true;
-                stopBtn.disabled = false;
-                
-                // Mostrar indicador de detección
-                mostrarIndicadorDeteccion();
-            });
-
-            // Listener para códigos detectados
-            Quagga.onDetected(function(result) {
-                const codigo = result.codeResult.code;
-                console.log('Código detectado por cámara:', codigo);
-                
-                // Vibrar si está disponible
-                if (navigator.vibrate) {
-                    navigator.vibrate(100);
-                }
-                
-                // Procesar código igual que pistola
-                procesarCodigoDetectado(codigo);
-                
-                // Mostrar indicador visual
-                mostrarDeteccionExitosa();
-            });
-        }
-
-        function detenerCamera() {
-            if (cameraActive) {
-                Quagga.stop();
-                cameraActive = false;
-                
-                const status = document.getElementById('cameraStatus');
-                const startBtn = document.getElementById('startCameraBtn');
-                const stopBtn = document.getElementById('stopCameraBtn');
-                
-                status.textContent = 'Cámara detenida';
-                startBtn.disabled = false;
-                stopBtn.disabled = true;
-                
-                // Limpiar preview
-                const preview = document.getElementById('camera-preview');
-                preview.innerHTML = '';
-                
-                console.log('Cámara detenida');
-            }
-        }
-
-        function mostrarIndicadorDeteccion() {
-            const indicator = document.createElement('div');
-            indicator.className = 'detection-indicator';
-            indicator.textContent = '📷 Buscando códigos...';
-            document.body.appendChild(indicator);
-            
-            setTimeout(() => {
-                if (indicator.parentNode) {
-                    indicator.remove();
-                }
-            }, 3000);
-        }
-
-        function mostrarDeteccionExitosa() {
-            const indicator = document.createElement('div');
-            indicator.className = 'detection-indicator';
-            indicator.style.background = '#28a745';
-            indicator.textContent = '✅ ¡Código detectado!';
-            document.body.appendChild(indicator);
-            
-            setTimeout(() => {
-                if (indicator.parentNode) {
-                    indicator.remove();
-                }
-            }, 1500);
-        }
 
         function buscarProducto(codigo) {
             console.log('Buscando código:', codigo);
@@ -1045,14 +658,7 @@
         function procesarCodigoEscaneado() {
             const codigo = document.getElementById('scannerInput').value.trim();
             if (!codigo) return;
-            
-            procesarCodigoDetectado(codigo);
-            
-            document.getElementById('scannerInput').value = '';
-            document.getElementById('scannerInput').focus();
-        }
 
-        function procesarCodigoDetectado(codigo) {
             console.log('Procesando código:', codigo);
             totalScans++;
             
@@ -1070,6 +676,8 @@
                 agregarAHistorial(codigo, 'NO ENCONTRADO', false);
             }
             
+            document.getElementById('scannerInput').value = '';
+            document.getElementById('scannerInput').focus();
             actualizarEstadisticas();
         }
 
@@ -1084,20 +692,20 @@
             nuevoContenido.style.cssText = 'width: 100%; text-align: center;';
             
             nuevoContenido.innerHTML = `
-                <div style="font-size: 16px; margin-bottom: 15px; color: #3498db; font-family: 'Courier New', monospace; font-weight: bold;">
+                <div style="font-size: 18px; margin-bottom: 20px; color: #3498db; font-family: 'Courier New', monospace; font-weight: bold;">
                     ${producto.codigoInterno}
                 </div>
                 
                 <div style="
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    padding: 20px;
-                    border-radius: 12px;
-                    margin: 15px 0;
-                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+                    padding: 25px;
+                    border-radius: 15px;
+                    margin: 20px 0;
+                    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
                     transform: translateZ(0);
                 ">
                     <div style="
-                        font-size: 24px;
+                        font-size: 32px;
                         font-weight: bold;
                         color: #ffffff;
                         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -1109,14 +717,14 @@
                 
                 <div style="
                     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                    padding: 25px;
-                    border-radius: 15px;
-                    margin: 20px 0;
-                    box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5);
+                    padding: 30px;
+                    border-radius: 18px;
+                    margin: 25px 0;
+                    box-shadow: 0 12px 35px rgba(17, 153, 142, 0.5);
                     transform: translateZ(0);
                 ">
                     <div style="
-                        font-size: 42px;
+                        font-size: 52px;
                         font-weight: bold;
                         color: #ffffff;
                         text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
@@ -1127,18 +735,18 @@
                 
                 <div style="
                     background: linear-gradient(135deg, #ff0844 0%, #ff4757 100%);
-                    padding: 15px 25px;
-                    border-radius: 10px;
-                    margin-top: 20px;
-                    box-shadow: 0 6px 20px rgba(255, 8, 68, 0.6);
+                    padding: 18px 30px;
+                    border-radius: 12px;
+                    margin-top: 30px;
+                    box-shadow: 0 8px 25px rgba(255, 8, 68, 0.6);
                     border: 2px solid #ff6b6b;
                     transform: translateZ(0);
                 ">
                     <div style="
                         color: #ffffff;
-                        font-size: 14px;
+                        font-size: 16px;
                         font-weight: 600;
-                        margin-bottom: 6px;
+                        margin-bottom: 8px;
                         text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
                     ">
                         Ref:
@@ -1147,8 +755,8 @@
                         font-family: 'Courier New', monospace;
                         font-weight: bold;
                         color: #ffffff;
-                        font-size: 20px;
-                        letter-spacing: 2px;
+                        font-size: 24px;
+                        letter-spacing: 3px;
                         text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
                     ">
                         ${producto.refMayorista}/${producto.refMinorista}
@@ -1168,10 +776,10 @@
             display.innerHTML = `
                 <div class="product-not-found">
                     <div class="not-found-icon">❌</div>
-                    <div class="not-found-code">${codigo}</div>
-                    <div class="not-found-message">
+                    <div class="not-found-code" style="font-size: 24px; margin-bottom: 15px;">${codigo}</div>
+                    <div class="not-found-message" style="font-size: 20px;">
                         <strong>Producto No Encontrado</strong><br>
-                        <span>Código no registrado en el sistema</span>
+                        <span style="font-size: 16px; opacity: 0.8;">Código no registrado en el sistema</span>
                     </div>
                 </div>
             `;
@@ -1179,11 +787,9 @@
 
         function agregarAHistorial(codigo, nombre, encontrado) {
             const tiempo = new Date().toLocaleTimeString();
-            const fuente = currentMode === 'pistol' ? '🔫' : '📷';
-            
             recentScans.unshift({
                 codigo: codigo,
-                nombre: `${fuente} ${nombre}`,
+                nombre: nombre,
                 encontrado: encontrado,
                 tiempo: tiempo
             });
@@ -1200,7 +806,7 @@
             
             if (recentScans.length === 0) {
                 lista.innerHTML = `
-                    <div style="text-align: center; color: #6c757d; padding: 15px;">
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
                         No hay escaneos recientes
                     </div>
                 `;
@@ -1212,7 +818,7 @@
                     <div>
                         <span class="recent-code">${scan.codigo}</span> - 
                         <span style="color: ${scan.encontrado ? '#28a745' : '#dc3545'};">
-                            ${scan.nombre.substring(0, 25)}${scan.nombre.length > 25 ? '...' : ''}
+                            ${scan.nombre.substring(0, 30)}${scan.nombre.length > 30 ? '...' : ''}
                         </span>
                     </div>
                     <span class="recent-time">${scan.tiempo}</span>
@@ -1277,7 +883,7 @@
             
             let reporte = '';
             reporte += '================================================\n';
-            reporte += '      REPORTE DE ESCANEOS - MULTI-SCANNER       \n';
+            reporte += '         REPORTE DE ESCANEOS - PISTOLA          \n';
             reporte += '================================================\n';
             reporte += `Fecha: ${fecha} | Hora: ${hora}\n`;
             reporte += `Total escaneos: ${totalScans}\n`;
@@ -1293,14 +899,14 @@
             });
             
             reporte += '\n================================================\n';
-            reporte += '  Sistema de Precios Codificados Multi-Scanner   \n';
+            reporte += '     Sistema de Precios Codificados v1.0        \n';
             reporte += '================================================\n';
 
             const blob = new Blob([reporte], { type: 'text/plain;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `reporte_multi_scanner_${fecha}.txt`;
+            a.download = `reporte_escaneos_${fecha}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1311,54 +917,64 @@
 
         // Atajos de teclado
         document.addEventListener('keydown', function(e) {
+            // F5 para reiniciar stats
             if (e.key === 'F5' && e.ctrlKey) {
                 e.preventDefault();
                 resetStats();
             }
             
+            // F9 para exportar reporte
             if (e.key === 'F9') {
                 e.preventDefault();
                 exportarReporte();
             }
             
+            // Escape para limpiar pantalla
             if (e.key === 'Escape') {
                 const display = document.getElementById('priceDisplay');
                 display.innerHTML = `
                     <div class="no-product">
                         <div class="no-product-icon">🎯</div>
                         <h3>Listo para escanear</h3>
-                        <p>Use pistola o cámara para leer códigos de barras</p>
+                        <p>Escanee un código de barras para ver precios y referencias</p>
                     </div>
                 `;
-                if (currentMode === 'pistol') {
-                    document.getElementById('scannerInput').focus();
+                document.getElementById('scannerInput').focus();
+            }
+        });
+
+        // Agregar botones de acción después de cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const recentHeader = document.querySelector('.recent-header');
+                if (recentHeader) {
+                    const exportBtn = document.createElement('button');
+                    exportBtn.className = 'clear-btn';
+                    exportBtn.style.background = '#28a745';
+                    exportBtn.innerHTML = '📊 Exportar';
+                    exportBtn.onclick = exportarReporte;
+                    
+                    const resetBtn = document.createElement('button');
+                    resetBtn.className = 'clear-btn';
+                    resetBtn.style.background = '#ffc107';
+                    resetBtn.style.color = '#000';
+                    resetBtn.innerHTML = '🔄 Reset Stats';
+                    resetBtn.onclick = resetStats;
+                    
+                    recentHeader.appendChild(resetBtn);
+                    recentHeader.appendChild(exportBtn);
                 }
-            }
-            
-            // Atajo para cambiar modo (Ctrl + Tab)
-            if (e.key === 'Tab' && e.ctrlKey) {
-                e.preventDefault();
-                cambiarModo(currentMode === 'pistol' ? 'camera' : 'pistol');
-            }
+            }, 1000);
         });
 
         // Mantener conexión activa para pistolas USB
         setInterval(() => {
-            if (currentMode === 'pistol') {
-                const scannerInput = document.getElementById('scannerInput');
-                if (document.getElementById('scannerSection').style.display !== 'none' && 
-                    document.activeElement !== scannerInput) {
-                    scannerInput.focus();
-                }
+            const scannerInput = document.getElementById('scannerInput');
+            if (document.getElementById('scannerSection').style.display !== 'none' && 
+                document.activeElement !== scannerInput) {
+                scannerInput.focus();
             }
         }, 2000);
-
-        // Cleanup al salir
-        window.addEventListener('beforeunload', function() {
-            if (cameraActive) {
-                detenerCamera();
-            }
-        });
     </script>
 </body>
 </html>

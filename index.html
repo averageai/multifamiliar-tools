@@ -380,7 +380,7 @@
             </a>
 
             <!-- Sistema de Precios -->
-            <a href="Sistema de Precios Afectados (Operativo).html" class="tool-card operativo" id="tool-precios">
+            <a href="#/spa" class="tool-card operativo" id="tool-precios" onclick="navigateTo('/spa')">
                 <div class="tool-icon">💰</div>
                 <h3>Sistema de Precios</h3>
                 <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
@@ -388,15 +388,23 @@
             </a>
 
             <!-- Sistema de Precios Manizales -->
-            <a href="Sistema de Precios Afectados Manizales (Operativo).html" class="tool-card operativo" id="tool-precios-manizales">
+            <a href="#/spam" class="tool-card operativo" id="tool-precios-manizales" onclick="navigateTo('/spam')">
                 <div class="tool-icon">🏪</div>
                 <h3>Sistema de Precios Manizales</h3>
                 <p>Consulta de precios y márgenes específicos para Manizales. Control de inventario local y precios de referencia.</p>
                 <span class="tool-badge">Operativo</span>
             </a>
 
+            <!-- Control de Inventarios -->
+            <a href="#/control" class="tool-card administrativo" id="tool-inventarios" onclick="navigateTo('/control')">
+                <div class="tool-icon">📦</div>
+                <h3>Control de Inventarios</h3>
+                <p>Gestión administrativa de inventarios. Control de stock, proveedores y movimientos de mercancía.</p>
+                <span class="tool-badge">Administrativo</span>
+            </a>
+
             <!-- Validador de Precios -->
-            <a href="Validador de Precios.html" class="tool-card scanner" id="tool-validador">
+            <a href="#/validador" class="tool-card scanner" id="tool-validador" onclick="navigateTo('/validador')">
                 <div class="tool-icon">🏷️</div>
                 <h3>Validador de Precios</h3>
                 <p>Sistema de precios codificados compatible con pistolas de código de barras. Referencias invertidas para validación rápida.</p>
@@ -404,18 +412,27 @@
             </a>
 
             <!-- Validador de Precios V2 -->
-            <a href="Validador2 de Precios.html" class="tool-card scanner" id="tool-validador-v2">
+            <a href="#/validadorv2" class="tool-card scanner" id="tool-validador-v2" onclick="navigateTo('/validadorv2')">
                 <div class="tool-icon">📷</div>
                 <h3>Validador de Precios V2</h3>
                 <p>Sistema avanzado con pistola y cámara. Lectura automática de códigos de barras por cámara web y pistola scanner.</p>
                 <span class="tool-badge">Scanner</span>
             </a>
+
             <!-- Validador V2 Conectado -->
-            <a href="Validador de Precios (Conectado).html" class="tool-card scanner" id="tool-validador-v2-conectado">
+            <a href="#/validadorc" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc')">
                 <div class="tool-icon">📷</div>
                 <h3>Validador V2 Conectado</h3>
                 <p>Sistema avanzado conectado con pistola y cámara. Bases de datos locales con selector de sede automático.</p>
                 <span class="tool-badge">Conectado</span>
+            </a>
+
+            <!-- Control de Precios V2 -->
+            <a href="#/controlv2" class="tool-card operativo" id="tool-control-v2" onclick="navigateTo('/controlv2')">
+                <div class="tool-icon">🎯</div>
+                <h3>Control de Precios V2</h3>
+                <p>Sistema multi-sede con conexión directa a bases de datos. Selector automático de sede (Manizales/Dorada).</p>
+                <span class="tool-badge">Multi-Sede</span>
             </a>
         </div>
 
@@ -670,6 +687,43 @@
 
         // Enfoque automático en el menú de rol
         document.getElementById('role').focus();
+
+        // Sistema de routing SPA
+        const routes = {
+            '/spa': 'pages/spa.html',
+            '/spam': 'pages/spam.html',
+            '/control': 'pages/control.html',
+            '/validador': 'pages/validador.html',
+            '/validadorv2': 'pages/validadorv2.html',
+            '/validadorc': 'pages/validadorc.html',
+            '/controlv2': 'pages/controlv2.html'
+        };
+
+        // Función de navegación
+        function navigateTo(route) {
+            const targetFile = routes[route];
+            if (targetFile) {
+                window.location.href = targetFile;
+            } else {
+                console.error('Ruta no encontrada:', route);
+            }
+        }
+
+        // Manejar navegación con hash
+        function handleHashChange() {
+            const hash = window.location.hash.slice(1); // Remover el #
+            if (hash && routes[hash]) {
+                navigateTo(hash);
+            }
+        }
+
+        // Escuchar cambios en el hash
+        window.addEventListener('hashchange', handleHashChange);
+
+        // Manejar navegación inicial
+        if (window.location.hash) {
+            handleHashChange();
+        }
     </script>
 </body>
 </html>
