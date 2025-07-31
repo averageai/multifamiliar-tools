@@ -33,3 +33,4 @@ Thumbs.db
 # Archivos de sistema
 *.bak
 *.backup 
+bases_datos/~$productos_dorada.xlsx

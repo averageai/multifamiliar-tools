@@ -129,6 +129,64 @@
             display: none;
         }
 
+        .sede-selector {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sede-selector h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sede-btn {
+            background: #333;
+            color: #ffffff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .sede-btn:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .sede-btn.active:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+        }
+
         .results {
             display: none;
         }
@@ -527,16 +585,17 @@
         </div>
 
         <div class="content">
-            <div class="upload-section" id="uploadSection">
-                <h2>Cargar Archivo de Productos</h2>
-                <p><strong>Origen:</strong> Productos > Exportar/Importar > Exportación Masiva</p>
-                <p>Formato: productos_[fecha]_[hora].xlsx</p>
-                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    Seleccionar Archivo
-                </button>
-                <div class="alert">
-                    <strong>Info:</strong> Detecta automáticamente las bodegas de la ciudad y extrae datos de "Stock por Sede"
+            <div class="sede-selector" id="sedeSelector">
+                <h2>🏢 Seleccionar Sede</h2>
+                <div class="sede-buttons">
+                    <button class="sede-btn" onclick="seleccionarSede('manizales')">
+                        <div class="sede-icon">🏪</div>
+                        <div>Manizales</div>
+                    </button>
+                    <button class="sede-btn" onclick="seleccionarSede('dorada')">
+                        <div class="sede-icon">🏬</div>
+                        <div>Dorada</div>
+                    </button>
                 </div>
             </div>
 
@@ -549,11 +608,14 @@
             <div class="results" id="results">
                 <div class="top-bar">
                     <div class="city-info" id="cityInfo">
-                        <!-- Info ciudad aquí -->
+                        <!-- Info sede aquí -->
                     </div>
                     <div class="bodegas-chips" id="bodegasChips">
                         <!-- Chips bodegas aquí -->
                     </div>
+                    <button class="btn" onclick="cambiarSede()" style="background: #667eea; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                        🔄 Cambiar Sede
+                    </button>
                 </div>
 
                 <div class="stats-bar" id="statsBar">
@@ -613,38 +675,97 @@
         let resultadoGlobal = null;
         let bodegas = [];
         let ciudadDetectada = '';
+        let sedeSeleccionada = '';
 
-        // Configurar drag and drop
-        const uploadSection = document.getElementById('uploadSection');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#3498db';
-            uploadSection.style.background = '#e3f2fd';
-        });
-
-        uploadSection.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#dee2e6';
-            uploadSection.style.background = '#f8f9fa';
-        });
-
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#dee2e6';
-            uploadSection.style.background = '#f8f9fa';
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                procesarArchivo(files[0]);
+        // Configuración de sedes
+        const sedesConfig = {
+            manizales: {
+                nombre: 'Manizales',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                icon: '🏪',
+                color: '#28a745'
+            },
+            dorada: {
+                nombre: 'Dorada',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                icon: '🏬',
+                color: '#3498db'
             }
-        });
+        };
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                procesarArchivo(e.target.files[0]);
+        // Función para seleccionar sede
+        function seleccionarSede(sede) {
+            sedeSeleccionada = sede;
+            const config = sedesConfig[sede];
+            
+            // Actualizar UI de botones
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.sede-btn').classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede(sede);
+        }
+
+        // Función para cargar datos de la sede
+        function cargarDatosSede(sede) {
+            const config = sedesConfig[sede];
+            console.log(`📂 Cargando datos de ${config.nombre}...`);
+            
+            // Ocultar selector y mostrar loading
+            document.getElementById('sedeSelector').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            // Cargar datos desde GitHub Raw
+            cargarDatosReales(sede);
+        }
+
+        // Función para cargar datos reales desde GitHub Raw
+        async function cargarDatosReales(sede) {
+            const config = sedesConfig[sede];
+            
+            try {
+                actualizarProgreso(`Conectando con base de datos de ${config.nombre}...`);
+                
+                const response = await fetch(config.archivo);
+                if (!response.ok) {
+                    throw new Error(`Error cargando datos: ${response.status} ${response.statusText}`);
+                }
+
+                actualizarProgreso('Descargando datos de productos...');
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                
+                actualizarProgreso('Procesando archivo Excel...');
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                actualizarProgreso('Extrayendo datos de productos...');
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                
+                actualizarProgreso('Detectando bodegas de la ciudad...');
+                const productos = procesarDatosReales(jsonData);
+                datosGlobales = productos;
+                
+                actualizarProgreso('Calculando redistribución óptima...');
+                const resultado = redistribuirInventario(productos);
+                resultadoGlobal = resultado;
+                
+                actualizarProgreso('Generando reportes...');
+                setTimeout(() => {
+                    mostrarResultados(resultado);
+                    document.getElementById('loading').style.display = 'none';
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                mostrarError('Error cargando datos: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sedeSelector').style.display = 'block';
             }
-        });
+        }
 
         function actualizarProgreso(mensaje) {
             const detailElement = document.getElementById('loadingDetail');
@@ -1004,8 +1125,12 @@
         function mostrarResultados(resultado) {
             const { traslados, resumen, productosSinStock, estadisticas } = resultado;
             
-            // Mostrar información de la ciudad
-            document.getElementById('cityInfo').innerHTML = `${ciudadDetectada} (${bodegas.length} bodegas)`;
+            // Mostrar información de la sede
+            const config = sedesConfig[sedeSeleccionada];
+            document.getElementById('cityInfo').innerHTML = `
+                <span style="color: ${config.color};">${config.icon} ${config.nombre}</span>
+                <span style="color: #a0a0a0; font-size: 12px;">Base de datos conectada</span>
+            `;
             document.getElementById('bodegasChips').innerHTML = bodegas.map(bodega => 
                 `<span class="bodega-chip">${bodega}</span>`).join('');
             
@@ -1043,6 +1168,25 @@
             mostrarResumenCompacto(estadisticas, traslados);
             
             document.getElementById('results').style.display = 'block';
+        }
+
+        function cambiarSede() {
+            // Resetear datos
+            datosGlobales = null;
+            resultadoGlobal = null;
+            bodegas = [];
+            ciudadDetectada = '';
+            sedeSeleccionada = '';
+            
+            // Mostrar selector de sede
+            document.getElementById('sedeSelector').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            
+            // Resetear botones
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
         }
 
         function mostrarTrasladosTabla(traslados) {
