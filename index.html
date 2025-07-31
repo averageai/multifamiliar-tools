@@ -21,18 +21,45 @@
             color: #ffffff;
         }
 
-        .login-container {
-            background: #1a1a1a;
-            border-radius: 16px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            padding: 40px;
+        /* Overlay de autenticación */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 400px;
-            text-align: center;
-            border: 1px solid #333;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
         }
 
-        .logo {
+        .auth-modal {
+            background: #1a1a1a;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid #333;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .auth-logo {
             width: 80px;
             height: 80px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -43,19 +70,20 @@
             margin: 0 auto 20px;
             font-size: 32px;
             color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
 
-        .login-container h1 {
+        .auth-title {
             color: #ffffff;
             margin-bottom: 10px;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 600;
         }
 
-        .login-container p {
+        .auth-subtitle {
             color: #a0a0a0;
             margin-bottom: 30px;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .form-group {
@@ -73,10 +101,10 @@
 
         .form-group input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 16px;
             transition: all 0.3s;
             background: #2a2a2a;
             color: #ffffff;
@@ -86,6 +114,7 @@
             outline: none;
             border-color: #667eea;
             background: #333;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .form-group input::placeholder {
@@ -94,10 +123,10 @@
 
         .form-group select {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid #333;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 16px;
             transition: all 0.3s;
             background: #2a2a2a;
             color: #ffffff;
@@ -108,6 +137,7 @@
             outline: none;
             border-color: #667eea;
             background: #333;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .form-group select option {
@@ -116,33 +146,49 @@
             padding: 8px;
         }
 
-        .login-btn {
+        .auth-btn {
             width: 100%;
-            background: #ffffff;
-            color: #000000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
             border: none;
-            padding: 14px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
-        .login-btn:hover {
-            background: #f0f0f0;
+        .auth-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
         }
 
         .error-message {
             background: #2d1b1b;
             color: #ff6b6b;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-bottom: 20px;
             font-size: 14px;
             display: none;
             border: 1px solid #ff6b6b;
+        }
+
+        .success-message {
+            background: #1e3a2e;
+            color: #4ade80;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            border: 1px solid #4ade80;
         }
 
         .dashboard {
@@ -309,7 +355,7 @@
         }
 
         @media (max-width: 768px) {
-            .login-container {
+            .auth-modal {
                 margin: 20px;
                 padding: 30px 20px;
             }
@@ -330,34 +376,40 @@
     </style>
 </head>
 <body>
-    <!-- Pantalla de Login -->
-    <div class="login-container" id="loginContainer">
-        <div class="logo">🏢</div>
-        <h1>Hub de Herramientas</h1>
-        <p>Acceso al sistema de herramientas Multifamiliar</p>
-        
-        <div class="error-message" id="errorMessage">
-            Usuario o contraseña incorrectos
+    <!-- Overlay de Autenticación -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-modal">
+            <div class="auth-logo">🏢</div>
+            <h1 class="auth-title">Acceso Seguro</h1>
+            <p class="auth-subtitle">Ingresa tus credenciales para acceder al sistema</p>
+            
+            <div class="error-message" id="errorMessage">
+                Credenciales incorrectas
+            </div>
+
+            <div class="success-message" id="successMessage">
+                Acceso autorizado
+            </div>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="role">Tipo de Usuario</label>
+                    <select id="role" name="role" required>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="admin">Administrador</option>
+                        <option value="operativo">Operativo</option>
+                        <option value="usuario">Usuario</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="passwordGroup">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Ingresa la contraseña">
+                </div>
+                
+                <button type="submit" class="auth-btn">Acceder al Sistema</button>
+            </form>
         </div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="role">Rol</label>
-                <select id="role" name="role" required>
-                    <option value="">Seleccionar rol...</option>
-                    <option value="admin">Administrador</option>
-                    <option value="operativo">Operativo</option>
-                    <option value="usuario">Usuario</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            
-            <button type="submit" class="login-btn">Iniciar Sesión</button>
-        </form>
     </div>
 
     <!-- Dashboard -->
@@ -446,28 +498,24 @@
     </div>
 
     <script>
-        // Configuración integrada
-        class Config {
+        // Configuración de autenticación
+        class AuthConfig {
             constructor() {
-                // Configuración de entorno
-                this.NODE_ENV = 'production';
-                
-                // Credenciales configuradas para Vercel
                 this.credentials = {
                     'admin': {
-                        password: 'Multifamiliar*1',
+                        password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
+                        permissions: ['inventarios', 'precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado', 'controlV2']
                     },
                     'operativo': {
-                        password: 'Admin1*',
+                        password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
+                        permissions: ['precios', 'preciosManizales', 'validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado', 'controlV2']
                     },
                     'usuario': {
-                        password: 'Ventas123',
+                        password: '', // Sin contraseña
                         name: 'Usuario',
                         role: 'usuario',
                         permissions: ['validadorPrecios', 'validadorPreciosV2', 'validadorPreciosV2Conectado']
@@ -475,33 +523,36 @@
                 };
             }
 
-            // Verificar si estamos en producción
-            isProduction() {
-                return this.NODE_ENV === 'production';
-            }
-
             // Verificar credenciales
-            authenticate(username, password) {
-                console.log('🔍 Verificando credenciales para:', username);
-                console.log('📋 Credenciales disponibles:', Object.keys(this.credentials));
+            authenticate(role, password) {
+                console.log('🔍 Verificando credenciales para:', role);
                 
-                const user = this.credentials[username];
-                console.log('👤 Usuario encontrado:', user);
-                
-                if (user && user.password === password) {
-                    console.log('✅ Contraseña correcta');
-                    return {
-                        success: true,
-                        user: {
-                            username,
-                            name: user.name,
-                            role: user.role,
-                            permissions: user.permissions
-                        }
-                    };
+                const user = this.credentials[role];
+                if (!user) {
+                    return { success: false, message: 'Tipo de usuario no válido' };
                 }
-                console.log('❌ Contraseña incorrecta o usuario no encontrado');
-                return { success: false, message: 'Credenciales inválidas' };
+
+                // Admin requiere contraseña
+                if (role === 'admin') {
+                    if (password !== user.password) {
+                        return { success: false, message: 'Contraseña incorrecta para administrador' };
+                    }
+                } else {
+                    // Operativo y Usuario no requieren contraseña
+                    if (password && password.trim() !== '') {
+                        return { success: false, message: 'Este tipo de usuario no requiere contraseña' };
+                    }
+                }
+
+                return {
+                    success: true,
+                    user: {
+                        username: role,
+                        name: user.name,
+                        role: user.role,
+                        permissions: user.permissions
+                    }
+                };
             }
 
             // Verificar permisos
@@ -509,93 +560,84 @@
                 const user = this.credentials[username];
                 return user && user.permissions.includes(tool);
             }
-
-            // Generar token de sesión simple
-            generateSessionToken(username) {
-                const timestamp = Date.now();
-                const random = Math.random().toString(36).substring(2);
-                const data = `${username}:${timestamp}:${random}`;
-                return btoa(data);
-            }
-
-            // Verificar token de sesión
-            verifySessionToken(token) {
-                try {
-                    const decoded = atob(token);
-                    const [username, timestamp, random] = decoded.split(':');
-                    
-                    if (this.credentials[username]) {
-                        const sessionAge = Date.now() - parseInt(timestamp);
-                        // Sesión válida por 8 horas
-                        if (sessionAge < 8 * 60 * 60 * 1000) {
-                            return {
-                                valid: true,
-                                username,
-                                user: this.credentials[username]
-                            };
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error verificando token:', e);
-                }
-                return { valid: false };
-            }
-
-            // Obtener información de configuración
-            getConfigInfo() {
-                return {
-                    environment: this.NODE_ENV,
-                    isProduction: this.isProduction(),
-                    totalUsers: Object.keys(this.credentials).length,
-                    version: '1.0.0'
-                };
-            }
         }
 
         // Inicializar configuración
-        const config = new Config();
+        const authConfig = new AuthConfig();
         let currentUser = null;
 
-        // Mostrar información de configuración en consola (solo desarrollo)
-        if (!config.isProduction()) {
-            console.log('🔧 Configuración:', config.getConfigInfo());
-        }
-
-        // Verificar si ya está logueado
-        function checkLoginStatus() {
-            const sessionToken = localStorage.getItem('sessionToken');
-            if (sessionToken) {
-                const session = config.verifySessionToken(sessionToken);
-                if (session.valid) {
-                    currentUser = session.user;
-                    showDashboard(session.username);
-                } else {
-                    // Token expirado o inválido
-                    localStorage.removeItem('sessionToken');
-                    localStorage.removeItem('currentUser');
-                }
+        // Mostrar/ocultar campo de contraseña según el rol
+        document.getElementById('role').addEventListener('change', function() {
+            const role = this.value;
+            const passwordGroup = document.getElementById('passwordGroup');
+            const passwordInput = document.getElementById('password');
+            
+            if (role === 'admin') {
+                passwordGroup.style.display = 'block';
+                passwordInput.required = true;
+                passwordInput.placeholder = 'Ingresa la contraseña (123)';
+            } else {
+                passwordGroup.style.display = 'none';
+                passwordInput.required = false;
+                passwordInput.value = '';
+                passwordInput.placeholder = 'No requiere contraseña';
             }
-        }
+        });
+
+        // Manejar autenticación
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            if (!role) {
+                errorMessage.textContent = 'Por favor selecciona un tipo de usuario';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+            
+            console.log('🔑 Intentando autenticación:', role);
+            
+            const result = authConfig.authenticate(role, password);
+            console.log('✅ Resultado autenticación:', result);
+            
+            if (result.success) {
+                currentUser = result.user;
+                console.log('👤 Usuario autenticado:', currentUser);
+                
+                // Mostrar mensaje de éxito
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'block';
+                successMessage.textContent = `Acceso autorizado como ${currentUser.name}`;
+                
+                // Esperar un momento y mostrar dashboard
+                setTimeout(() => {
+                    showDashboard(role);
+                }, 1000);
+            } else {
+                console.log('❌ Autenticación fallida:', result.message);
+                errorMessage.textContent = result.message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                document.getElementById('password').value = '';
+            }
+        });
 
         // Mostrar dashboard
         function showDashboard(username) {
             console.log('🔐 Iniciando sesión para:', username);
             console.log('👤 Usuario actual:', currentUser);
             
-            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             document.getElementById('currentUser').textContent = currentUser.name;
             
-            // Generar y guardar token de sesión
-            const sessionToken = config.generateSessionToken(username);
-            localStorage.setItem('sessionToken', sessionToken);
-            localStorage.setItem('currentUser', username);
-            
             // Mostrar/ocultar herramientas según permisos
             updateToolVisibility();
-            
-            // Mostrar información de seguridad
-            showSecurityInfo();
         }
 
         // Actualizar visibilidad de herramientas según permisos
@@ -610,78 +652,36 @@
                 'tool-precios': 'precios',
                 'tool-precios-manizales': 'preciosManizales',
                 'tool-validador': 'validadorPrecios',
-                'tool-validador-v2': 'validadorPreciosV2'
+                'tool-validador-v2': 'validadorPreciosV2',
+                'tool-validador-v2-conectado': 'validadorPreciosV2Conectado',
+                'tool-control-v2': 'controlV2'
             };
             
             Object.entries(toolPermissions).forEach(([toolId, permission]) => {
                 const toolElement = document.getElementById(toolId);
                 if (toolElement) {
-                    const hasPermission = config.hasPermission(currentUser.username, permission);
+                    const hasPermission = authConfig.hasPermission(currentUser.username, permission);
                     toolElement.style.display = hasPermission ? 'block' : 'none';
                     console.log(`🔧 ${toolId} visible:`, hasPermission);
                 }
             });
         }
 
-        // Mostrar información de seguridad
-        function showSecurityInfo() {
-            const configInfo = config.getConfigInfo();
-            if (configInfo.isProduction) {
-                console.log('🔒 Modo producción activo');
-            } else {
-                console.log('⚠️ Modo desarrollo - Usar variables de entorno en producción');
-            }
-        }
-
-        // Manejar login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const role = document.getElementById('role').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            
-            if (!role) {
-                errorMessage.textContent = 'Por favor selecciona un rol';
-                errorMessage.style.display = 'block';
-                return;
-            }
-            
-            console.log('🔑 Intentando login:', role);
-            
-            const result = config.authenticate(role, password);
-            console.log('✅ Resultado autenticación:', result);
-            
-            if (result.success) {
-                currentUser = result.user;
-                console.log('👤 Usuario autenticado:', currentUser);
-                errorMessage.style.display = 'none';
-                showDashboard(role);
-            } else {
-                console.log('❌ Autenticación fallida:', result.message);
-                errorMessage.style.display = 'block';
-                document.getElementById('password').value = '';
-            }
-        });
-
         // Cerrar sesión
         function logout() {
-            localStorage.removeItem('sessionToken');
-            localStorage.removeItem('currentUser');
             currentUser = null;
-            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('authOverlay').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('loginForm').reset();
+            document.getElementById('authForm').reset();
             document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('passwordGroup').style.display = 'none';
         }
-
-        // Verificar login al cargar la página
-        checkLoginStatus();
 
         // Manejar tecla Enter en el formulario
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                document.getElementById('authForm').dispatchEvent(new Event('submit'));
             }
         });
 
