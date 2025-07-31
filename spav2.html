@@ -135,28 +135,51 @@
         }
 
         .sede-selector {
+            background: #2a2a2a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sede-selector h2 {
             margin-bottom: 15px;
-        }
-
-        .sede-selector select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            background: #1a1a1a;
             color: #ffffff;
-            border: 1px solid #333;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            font-size: 16px;
         }
 
-        .sede-selector select:focus {
-            outline: none;
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sede-btn {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .sede-btn:hover {
             border-color: #3498db;
+            transform: translateY(-2px);
         }
 
-        .sede-selector select option {
-            background: #1a1a1a;
-            color: #ffffff;
+        .sede-btn.active {
+            border-color: #28a745;
+            background: #1e3a2e;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
         }
 
         .search-section {
@@ -493,23 +516,18 @@
         </div>
 
         <div class="content">
-            <div class="upload-section" id="uploadSection">
-                <h2>Seleccionar Sede y Cargar Base de Datos</h2>
-                <div style="margin-bottom: 20px;">
-                    <label for="sedeSelector" style="display: block; margin-bottom: 8px; font-weight: bold; color: #ffffff;">
-                        Seleccionar Sede:
-                    </label>
-                    <select id="sedeSelector" style="width: 100%; padding: 8px; border-radius: 6px; background: #1a1a1a; color: #ffffff; border: 1px solid #333; font-size: 14px;">
-                        <option value="">-- Seleccionar una sede --</option>
-                        <option value="manizales">🏢 Manizales (Inventario)</option>
-                        <option value="dorada">🏢 Dorada (Productos)</option>
-                    </select>
-                </div>
-                <button class="upload-btn" onclick="cargarBaseDatos()" id="cargarBtn" disabled>
-                    📊 Cargar Base de Datos
-                </button>
-                <div class="alert">
-                    <strong>Info:</strong> Cada sede tiene su propia base de datos con estructura similar pero diferente cantidad de productos
+            <!-- Selector de Sede -->
+            <div class="sede-selector" id="sedeSelector">
+                <h2>🏢 Seleccionar Sede</h2>
+                <div class="sede-buttons">
+                    <button class="sede-btn" data-sede="manizales" onclick="seleccionarSede('manizales')">
+                        <div class="sede-icon">🏪</div>
+                        <div>Manizales</div>
+                    </button>
+                    <button class="sede-btn" data-sede="dorada" onclick="seleccionarSede('dorada')">
+                        <div class="sede-icon">🏬</div>
+                        <div>Dorada</div>
+                    </button>
                 </div>
             </div>
 
@@ -591,22 +609,36 @@
         let productsNotFound = 0;
         let sedeActual = '';
 
-        // Configurar selector de sede
-        const sedeSelector = document.getElementById('sedeSelector');
-        const cargarBtn = document.getElementById('cargarBtn');
-
-        sedeSelector.addEventListener('change', function() {
-            const sedeSeleccionada = this.value;
-            cargarBtn.disabled = !sedeSeleccionada;
-            
-            if (sedeSeleccionada) {
-                cargarBtn.style.background = '#3498db';
-                cargarBtn.style.cursor = 'pointer';
-            } else {
-                cargarBtn.style.background = '#6c757d';
-                cargarBtn.style.cursor = 'not-allowed';
+        // Configuración de sedes - URLs directas como en validadorc.html
+        const sedesConfig = {
+            manizales: {
+                nombre: 'Manizales',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                icon: '🏪',
+                color: '#28a745'
+            },
+            dorada: {
+                nombre: 'Dorada',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                icon: '🏬',
+                color: '#3498db'
             }
-        });
+        };
+
+        // Función para seleccionar sede (como en validadorc.html)
+        function seleccionarSede(sede) {
+            console.log('🏢 Seleccionando sede:', sede);
+            sedeActual = sede;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sede="${sede}"]`).classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede(sede);
+        }
 
         function actualizarProgreso(mensaje) {
             const detailElement = document.getElementById('loadingDetail');
@@ -615,67 +647,76 @@
             }
         }
 
-        async function cargarBaseDatos() {
-            const sedeSeleccionada = sedeSelector.value;
-            if (!sedeSeleccionada) {
-                mostrarAlerta('⚠️ Por favor selecciona una sede', 'warning');
+        async function cargarDatosSede(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                mostrarError('Sede no encontrada');
                 return;
             }
 
-            sedeActual = sedeSeleccionada;
-            console.log('Cargando base de datos para sede:', sedeSeleccionada);
+            console.log('📂 Cargando datos de:', config.nombre);
             
+            document.getElementById('sedeSelector').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('uploadSection').style.display = 'none';
-
+            
             try {
-                actualizarProgreso('Conectando con la base de datos...');
+                actualizarProgreso(`Conectando con ${config.nombre}...`);
                 
-                // Determinar qué archivo cargar según la sede
-                let archivoBaseDatos = '';
-                if (sedeSeleccionada === 'manizales') {
-                    archivoBaseDatos = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx';
-                } else if (sedeSeleccionada === 'dorada') {
-                    archivoBaseDatos = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx';
-                }
-
-                actualizarProgreso('Descargando datos de productos...');
+                const datosReales = await cargarDatosReales(sede);
                 
-                // Cargar archivo directamente desde GitHub Raw
-                console.log(`📂 Cargando archivo desde: ${archivoBaseDatos}`);
-                
-                const response = await fetch(archivoBaseDatos);
-                if (!response.ok) {
-                    throw new Error(`Error al cargar la base de datos: ${response.status} ${response.statusText}`);
-                }
-
-                actualizarProgreso('Procesando archivo Excel...');
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                actualizarProgreso('Extrayendo datos de productos...');
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                
-                actualizarProgreso('Procesando precios y márgenes...');
-                procesarDatosProductos(jsonData, sedeSeleccionada);
+                actualizarProgreso('Procesando productos y precios...');
+                procesarDatosProductos(datosReales, sede);
                 
                 actualizarProgreso('Inicializando sistema...');
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('searchSection').style.display = 'block';
-                    document.getElementById('sedeInfo').textContent = sedeSeleccionada.toUpperCase();
-                    mostrarAlerta(`✅ Sistema cargado correctamente para sede: ${sedeSeleccionada.toUpperCase()}`, 'success');
+                    
+                    actualizarInfoSede(config);
+                    
                     document.getElementById('searchInput').focus();
-                }, 300);
+                    mostrarAlerta(`✅ ${config.nombre} conectado - Sistema listo`, 'success');
+                }, 500);
                 
             } catch (error) {
-                console.error('Error completo:', error);
-                mostrarError('Error cargando base de datos: ' + error.message);
+                console.error('Error cargando sede:', error);
+                mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('uploadSection').style.display = 'block';
+                document.getElementById('sedeSelector').style.display = 'block';
             }
+        }
+
+        async function cargarDatosReales(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                throw new Error(`Sede '${sede}' no encontrada`);
+            }
+
+            try {
+                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
+
+                const response = await fetch(config.archivo);
+                if (!response.ok) {
+                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
+                return jsonData;
+
+            } catch (error) {
+                console.error(`Error cargando base de datos ${sede}:`, error);
+                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
+            }
+        }
+
+        function actualizarInfoSede(config) {
+            document.getElementById('sedeInfo').textContent = config.nombre;
         }
 
         function procesarDatosProductos(jsonData, sede) {
@@ -1355,11 +1396,13 @@
             
             // Volver a la pantalla de selección
             document.getElementById('searchSection').style.display = 'none';
-            document.getElementById('uploadSection').style.display = 'block';
-            document.getElementById('sedeSelector').value = '';
-            document.getElementById('cargarBtn').disabled = true;
-            document.getElementById('cargarBtn').style.background = '#6c757d';
-            document.getElementById('cargarBtn').style.cursor = 'not-allowed';
+            document.getElementById('sedeSelector').style.display = 'block';
+            
+            // Limpiar botones activos
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
             document.getElementById('sedeInfo').textContent = '-';
             
             mostrarAlerta('🔄 Selecciona una nueva sede', 'success');

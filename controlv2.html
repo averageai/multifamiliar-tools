@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Precios - Sistema Multi-Sede</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -609,10 +608,20 @@
         let productsNotFound = 0;
         let currentSede = null;
 
-        // Configuración de sedes usando el archivo config.js
+        // Configuración de sedes - URLs directas como en validadorc.html
         const sedesConfig = {
-            manizales: getSedeConfig('manizales'),
-            dorada: getSedeConfig('dorada')
+            manizales: {
+                nombre: 'Manizales',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                icon: '🏪',
+                color: '#28a745'
+            },
+            dorada: {
+                nombre: 'Dorada',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                icon: '🏬',
+                color: '#3498db'
+            }
         };
 
         // Función para cargar datos de sede
@@ -1474,6 +1483,8 @@
             
             mostrarAlerta('✅ Productos con precios exportados', 'success');
         }
+
+
 
         // Mejorar los botones de acción
         document.addEventListener('DOMContentLoaded', function() {
