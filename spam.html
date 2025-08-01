@@ -199,6 +199,34 @@
             background: #e0a800;
         }
 
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
         .section {
             margin-bottom: 20px;
         }
@@ -425,7 +453,7 @@
                 <h1>Sistema de Consulta de Precios - Manizales</h1>
                 <p>Control de márgenes y precios de inventario para evitar pérdidas</p>
             </div>
-            <a href="index.html" class="back-btn">← Volver al MENU</a>
+            <a href="index.html" class="back-btn">🏠 Volver al Hub</a>
         </div>
 
         <div class="content">
@@ -929,6 +957,175 @@
             actualizarEstadisticas();
         }
 
+        function imprimirListaCompleta() {
+            if (productosEnLista.length === 0) {
+                mostrarAlerta('⚠️ No hay productos en la lista para imprimir', 'warning');
+                return;
+            }
+            
+            // Crear contenido para impresora POS 80mm
+            let contenido = '';
+            contenido += '='.repeat(32) + '\n';
+            contenido += '    MULTIFAMILIAR MANIZALES\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'LISTA COMPLETA DE PRODUCTOS\n';
+            contenido += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+            contenido += 'Hora: ' + new Date().toLocaleTimeString() + '\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'N° CODIGO    PRODUCTO\n';
+            contenido += '='.repeat(32) + '\n';
+            
+            productosEnLista.forEach((producto, index) => {
+                const numero = (index + 1).toString().padStart(2, '0');
+                const codigo = producto.codigo.padEnd(8, ' ');
+                const productoNombre = producto.producto.substring(0, 20).padEnd(20, ' ');
+                
+                contenido += `${numero} ${codigo} ${productoNombre}\n`;
+                
+                if (producto.encontrado) {
+                    // Calcular REF: primeros 3 dígitos invertidos
+                    const mayoristaStr = producto.precioMayorista.toString();
+                    const minoristaStr = producto.precioMinorista.toString();
+                    const refMayorista = mayoristaStr.substring(0, 3).split('').reverse().join('');
+                    const refMinorista = minoristaStr.substring(0, 3).split('').reverse().join('');
+                    
+                    contenido += `    $${producto.precioEstandar.toLocaleString().padStart(8, ' ')}\n`;
+                    contenido += `    REF ${refMayorista}/${refMinorista}\n`;
+                    contenido += `    Existencia: ${producto.existencia.toString().padStart(8, ' ')}\n`;
+                } else {
+                    contenido += `    PRODUCTO NUEVO\n`;
+                    contenido += `    Sin precios de referencia\n`;
+                }
+                contenido += '-'.repeat(32) + '\n';
+            });
+            
+            contenido += 'RESUMEN:\n';
+            contenido += `Total: ${productosEnLista.length}\n`;
+            contenido += `Encontrados: ${productsFound}\n`;
+            contenido += `No encontrados: ${productsNotFound}\n`;
+            contenido += '='.repeat(32) + '\n';
+            contenido += '        FIN DEL REPORTE\n';
+            contenido += '='.repeat(32) + '\n\n\n\n\n';
+            
+            // Imprimir en impresora POS
+            imprimirPOS(contenido, 'lista_completa_manizales');
+        }
+
+        function imprimirSinPrecios() {
+            const productosSinPrecios = productosEnLista.filter(p => !p.encontrado);
+            
+            if (productosSinPrecios.length === 0) {
+                mostrarAlerta('⚠️ No hay productos sin precios para exportar', 'warning');
+                return;
+            }
+            
+            // Crear contenido para impresora POS 80mm
+            let contenido = '';
+            contenido += '='.repeat(32) + '\n';
+            contenido += '    MULTIFAMILIAR MANIZALES\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'PRODUCTOS SIN PRECIOS\n';
+            contenido += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+            contenido += 'Hora: ' + new Date().toLocaleTimeString() + '\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'N° CODIGO    PRODUCTO\n';
+            contenido += '='.repeat(32) + '\n';
+            
+            productosSinPrecios.forEach((producto, index) => {
+                const numero = (index + 1).toString().padStart(2, '0');
+                const codigo = producto.codigo.padEnd(8, ' ');
+                const productoNombre = producto.producto.substring(0, 20).padEnd(20, ' ');
+                
+                contenido += `${numero} ${codigo} ${productoNombre}\n`;
+                contenido += `    PRODUCTO NUEVO\n`;
+                contenido += `    Sin precios de referencia\n`;
+                contenido += `    Hora: ${producto.fechaBusqueda}\n`;
+                contenido += '-'.repeat(32) + '\n';
+            });
+            
+            contenido += 'RESUMEN:\n';
+            contenido += `Total sin precios: ${productosSinPrecios.length}\n`;
+            contenido += '='.repeat(32) + '\n';
+            contenido += '        FIN DEL REPORTE\n';
+            contenido += '='.repeat(32) + '\n\n\n\n\n';
+            
+            // Imprimir en impresora POS
+            imprimirPOS(contenido, 'productos_sin_precios_manizales');
+        }
+
+        function exportarSoloEncontrados() {
+            const productosConPrecios = productosEnLista.filter(p => p.encontrado);
+            
+            if (productosConPrecios.length === 0) {
+                mostrarAlerta('⚠️ No hay productos con precios para exportar', 'warning');
+                return;
+            }
+            
+            // Crear contenido para impresora POS 80mm
+            let contenido = '';
+            contenido += '='.repeat(32) + '\n';
+            contenido += '    MULTIFAMILIAR MANIZALES\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'PRODUCTOS CON PRECIOS\n';
+            contenido += 'Fecha: ' + new Date().toLocaleDateString() + '\n';
+            contenido += 'Hora: ' + new Date().toLocaleTimeString() + '\n';
+            contenido += '='.repeat(32) + '\n';
+            contenido += 'N° CODIGO    PRODUCTO\n';
+            contenido += '='.repeat(32) + '\n';
+            
+            productosConPrecios.forEach((producto, index) => {
+                const numero = (index + 1).toString().padStart(2, '0');
+                const codigo = producto.codigo.padEnd(8, ' ');
+                const productoNombre = producto.producto.substring(0, 20).padEnd(20, ' ');
+                
+                contenido += `${numero} ${codigo} ${productoNombre}\n`;
+                
+                // Calcular REF: primeros 3 dígitos invertidos
+                const mayoristaStr = producto.precioMayorista.toString();
+                const minoristaStr = producto.precioMinorista.toString();
+                const refMayorista = mayoristaStr.substring(0, 3).split('').reverse().join('');
+                const refMinorista = minoristaStr.substring(0, 3).split('').reverse().join('');
+                
+                contenido += `    $${producto.precioEstandar.toLocaleString().padStart(8, ' ')}\n`;
+                contenido += `    REF ${refMayorista}/${refMinorista}\n`;
+                contenido += `    Existencia: ${producto.existencia.toString().padStart(8, ' ')}\n`;
+                contenido += `    Hora: ${producto.fechaBusqueda}\n`;
+                contenido += '-'.repeat(32) + '\n';
+            });
+            
+            contenido += 'RESUMEN:\n';
+            contenido += `Total con precios: ${productosConPrecios.length}\n`;
+            contenido += '='.repeat(32) + '\n';
+            contenido += '        FIN DEL REPORTE\n';
+            contenido += '='.repeat(32) + '\n\n\n\n\n';
+            
+            // Imprimir en impresora POS
+            imprimirPOS(contenido, 'productos_con_precios_manizales');
+        }
+
+        function reiniciarSistema() {
+            if (confirm('¿Estás seguro de que quieres reiniciar el sistema? Esto limpiará toda la lista y recargará el inventario.')) {
+                // Limpiar lista
+                productosEnLista = [];
+                productsFound = 0;
+                productsNotFound = 0;
+                
+                // Actualizar UI
+                actualizarTablaProductos();
+                actualizarEstadisticas();
+                
+                // Recargar inventario
+                document.getElementById('searchSection').style.display = 'none';
+                document.getElementById('loading').style.display = 'block';
+                
+                setTimeout(() => {
+                    cargarInventarioManizales();
+                }, 500);
+                
+                mostrarAlerta('🔄 Sistema reiniciado', 'success');
+            }
+        }
+
         function limpiarLista() {
             if (productosEnLista.length === 0) {
                 mostrarAlerta('⚠️ La lista ya está vacía', 'warning');
@@ -971,6 +1168,70 @@
                     alertDiv.remove();
                 }
             }, 4000);
+        }
+
+        function imprimirPOS(contenido, nombreArchivo) {
+            try {
+                // Crear un elemento de texto oculto para copiar al portapapeles
+                const textArea = document.createElement('textarea');
+                textArea.value = contenido;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                // Intentar copiar al portapapeles
+                const copiado = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                if (copiado) {
+                    mostrarAlerta('✅ Contenido copiado al portapapeles. Pega en tu impresora POS.', 'success');
+                    
+                    // También crear un archivo de texto para descargar
+                    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${nombreArchivo}_${new Date().toISOString().slice(0,10)}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    // Mostrar instrucciones
+                    setTimeout(() => {
+                        alert('📋 INSTRUCCIONES PARA IMPRESIÓN:\n\n' +
+                              '1. El contenido se copió al portapapeles\n' +
+                              '2. También se descargó un archivo .txt\n' +
+                              '3. Para imprimir en POS:\n' +
+                              '   - Abre tu software de impresora POS\n' +
+                              '   - Pega el contenido (Ctrl+V)\n' +
+                              '   - O abre el archivo .txt descargado\n' +
+                              '   - Configura para impresora térmica 80mm\n' +
+                              '   - Imprime');
+                    }, 1000);
+                    
+                } else {
+                    // Fallback: solo descargar archivo
+                    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${nombreArchivo}_${new Date().toISOString().slice(0,10)}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    mostrarAlerta('✅ Archivo de texto descargado. Ábrelo en tu software de impresora POS.', 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error al imprimir:', error);
+                mostrarError('Error al generar la impresión: ' + error.message);
+            }
         }
 
         function mostrarError(mensaje) {
