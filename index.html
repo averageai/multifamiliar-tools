@@ -423,7 +423,47 @@
         </div>
 
         <div class="tools-grid">
+            <!-- Control de Inventarios -->
+            <a href="#" class="tool-card administrativo" id="tool-inventarios" onclick="navigateTo('/control'); return false;">
+                <div class="tool-icon">📦</div>
+                <h3>Control de Inventarios</h3>
+                <p>Gestión administrativa de inventarios. Control de stock, proveedores y movimientos de mercancía. Con carga de archivos manual.</p>
+                <span class="tool-badge">Multi-sede</span>
+            </a>
+
             <!-- Control de Precios V2 -->
+            <a href="#" class="tool-card operativo" id="tool-spav2" onclick="navigateTo('/spav2'); return false;">
+                <div class="tool-icon">💎</div>
+                <h3>Control de Precios V2</h3>
+                <p>Sistema de consulta de precios con selector de sede y conexión directa a bases de datos. Manizales y Dorada.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
+            <!-- Códigos Disponibles -->
+            <a href="#" class="tool-card operativo" id="tool-codigos-disponibles" onclick="navigateTo('/codigos-disponibles'); return false;">
+                <div class="tool-icon">📋</div>
+                <h3>Códigos Disponibles</h3>
+                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada. Listado de próximos códigos disponibles.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
+            <!-- Sistema de Precios Manizales -->
+            <a href="#" class="tool-card operativo" id="tool-precios-manizales" onclick="navigateTo('/spam'); return false;">
+                <div class="tool-icon">🏪</div>
+                <h3>Sistema de Margenes (Solo para Manizales)</h3>
+                <p>Consulta de precios y márgenes viejos para Manizales. Control de margenes viejos y precios de referencia.</p>
+                <span class="tool-badge">Conectado</span>
+            </a>
+
+            <!-- Validador V2 Conectado -->
+            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc'); return false;">
+                <div class="tool-icon">📷</div>
+                <h3>Validador V2</h3>
+                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos en nube con selector de sede automático.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
+            <!-- Control de Inventarios V2 -->
             <a href="#" class="tool-card operativo" id="tool-control-v2" onclick="navigateTo('/controlv2'); return false;">
                 <div class="tool-icon">🎯</div>
                 <h3>Control de Inventarios V2</h3>
@@ -438,52 +478,12 @@
                 <p>Análisis de productos con códigos internos duplicados entre las bases de datos de Manizales y Dorada.</p>
                 <span class="tool-badge">Multi-Sede</span>
             </a>
-
-            <!-- Códigos Disponibles -->
-            <a href="#" class="tool-card operativo" id="tool-codigos-disponibles" onclick="navigateTo('/codigos-disponibles'); return false;">
-                <div class="tool-icon">📋</div>
-                <h3>Códigos Disponibles</h3>
-                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada. Listado de próximos códigos disponibles.</p>
-                <span class="tool-badge">Multi-Sede</span>
-            </a>
-
-            <!-- Control de Precios V2 -->
-            <a href="#" class="tool-card operativo" id="tool-spav2" onclick="navigateTo('/spav2'); return false;">
-                <div class="tool-icon">💎</div>
-                <h3>Control de Precios V2</h3>
-                <p>Sistema de consulta de precios con selector de sede y conexión directa a bases de datos. Manizales y Dorada.</p>
-                <span class="tool-badge">Multi-Sede</span>
-            </a>
-
-            <!-- Control de Inventarios -->
-            <a href="#" class="tool-card administrativo" id="tool-inventarios" onclick="navigateTo('/control'); return false;">
-                <div class="tool-icon">📦</div>
-                <h3>Control de Inventarios</h3>
-                <p>Gestión administrativa de inventarios. Control de stock, proveedores y movimientos de mercancía. Con carga de archivos manual.</p>
-                <span class="tool-badge">Multi-sede</span>
-            </a>
-
-            <!-- Validador V2 Conectado -->
-            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc'); return false;">
-                <div class="tool-icon">📷</div>
-                <h3>Validador V2</h3>
-                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos en nube con selector de sede automático.</p>
-                <span class="tool-badge">Multi-Sede</span>
-            </a>
             
             <!-- Sistema de Precios -->
             <a href="#" class="tool-card operativo" id="tool-precios" onclick="navigateTo('/spa'); return false;">
                 <div class="tool-icon">💰</div>
                 <h3>Sistema de Precios</h3>
                 <p>Consulta de precios y márgenes para evitar pérdidas. Control de precios de referencia y productos nuevos.</p>
-                <span class="tool-badge">Manual</span>
-            </a>
-
-            <!-- Sistema de Precios Manizales -->
-            <a href="#" class="tool-card operativo" id="tool-precios-manizales" onclick="navigateTo('/spam'); return false;">
-                <div class="tool-icon">🏪</div>
-                <h3>Sistema de Margenes (Solo para Manizales)</h3>
-                <p>Consulta de precios y márgenes viejos para Manizales. Control de margenes viejos y precios de referencia.</p>
                 <span class="tool-badge">Manual</span>
             </a>
 
