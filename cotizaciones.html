@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cotizaciones - Cristalería Multifamiliar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+    <script>
+        // Fallback para la librería docx
+        if (typeof docx === 'undefined') {
+            console.error('Error: La librería docx no se cargó correctamente');
+        } else {
+            console.log('Librería docx cargada correctamente');
+        }
+        
+        // Función de prueba para verificar la librería
+        function testDocxLibrary() {
+            try {
+                const testDoc = new docx.Document({
+                    sections: [{
+                        properties: {},
+                        children: [
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: "Test",
+                                        size: 20
+                                    })
+                                ]
+                            })
+                        ]
+                    }]
+                });
+                console.log('Test de librería docx exitoso');
+                return true;
+            } catch (error) {
+                console.error('Error en test de librería docx:', error);
+                return false;
+            }
+        }
+        
+        // Ejecutar test al cargar
+        window.addEventListener('load', () => {
+            setTimeout(testDocxLibrary, 1000);
+        });
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .sede-selector {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sede-selector h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sede-btn {
+            background: #333;
+            color: #ffffff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .sede-btn:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .sede-btn.active:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .cotizacion-section {
+            display: none;
+        }
+
+        .top-bar {
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .system-info {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .form-grid {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .punto-venta-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .punto-venta-btn {
+            background: #444;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .punto-venta-btn:hover {
+            background: #555;
+        }
+
+        .punto-venta-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            background: #2a2a2a;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 6px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            color: #2c3e50;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .price-input {
+            width: 80px;
+            padding: 2px 4px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            background: #2a2a2a;
+            color: #ffffff;
+            font-size: 11px;
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 2px 4px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            background: #2a2a2a;
+            color: #ffffff;
+            font-size: 11px;
+        }
+
+        .price-popup {
+            position: absolute;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 11px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .price-popup.show {
+            display: block;
+        }
+
+        .resumen-cotizacion {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .resumen-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .resumen-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ade80;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left-color: #dc3545;
+            font-size: 12px;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: #a0a0a0;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input {
+                margin-bottom: 8px;
+            }
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            background: #2a2a2a;
+            padding: 15px 20px;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📋</div>
+            <div class="header-text">
+                <h1>Sistema de Cotizaciones</h1>
+                <p>Creación rápida y profesional de cotizaciones para clientes</p>
+            </div>
+            <a href="index.html" class="back-btn">← Volver al MENU</a>
+        </div>
+
+        <div class="content">
+            <!-- Selector de Sede -->
+            <div class="sede-selector" id="sedeSelector">
+                <h2>🏢 Seleccionar Sede</h2>
+                <div class="sede-buttons">
+                    <button class="sede-btn" data-sede="manizales" onclick="seleccionarSede('manizales')">
+                        <div class="sede-icon">🏪</div>
+                        <div>Manizales</div>
+                    </button>
+                    <button class="sede-btn" data-sede="dorada" onclick="seleccionarSede('dorada')">
+                        <div class="sede-icon">🏬</div>
+                        <div>Dorada</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cargando base de datos...</p>
+                <p id="loadingDetail">Conectando con la sede...</p>
+            </div>
+
+            <div class="cotizacion-section" id="cotizacionSection">
+                <div class="top-bar">
+                    <div class="system-info" id="systemInfo">
+                        Sistema de Cotizaciones - Sede: <span id="sedeInfo">-</span>
+                    </div>
+                    <button class="btn btn-warning" onclick="cambiarSede()" style="font-size: 11px; padding: 4px 8px;">
+                        🔄 Cambiar Sede
+                    </button>
+                </div>
+
+                <!-- Datos del Cliente -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>👤 Datos del Cliente</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clienteNombre">Nombre *</label>
+                                <input type="text" id="clienteNombre" placeholder="Nombre completo del cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="clienteEmail">Correo *</label>
+                                <input type="email" id="clienteEmail" placeholder="correo@ejemplo.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clienteCelular">Celular (opcional)</label>
+                                <input type="tel" id="clienteCelular" placeholder="300 123 4567">
+                            </div>
+                            <div class="form-group">
+                                <label for="clienteDocumento">Documento (opcional)</label>
+                                <input type="text" id="clienteDocumento" placeholder="CC 12345678">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="clienteDireccion">Dirección (opcional)</label>
+                                <input type="text" id="clienteDireccion" placeholder="Dirección completa">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Punto de Venta -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>🏪 Información de Punto de Venta</span>
+                        <button class="btn btn-primary" onclick="editarInformacionPuntoVenta()" style="font-size: 11px; padding: 4px 8px;">
+                            ✏️ Editar Información
+                        </button>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Punto de Venta:</label>
+                                <input type="text" id="puntoVentaNombre" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección:</label>
+                                <input type="text" id="puntoVentaDireccion" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono:</label>
+                                <input type="text" id="puntoVentaTelefono" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Punto de Venta -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>🏪 Punto de Venta</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Seleccionar punto de venta:</label>
+                            <div class="punto-venta-selector" id="puntoVentaSelector">
+                                <!-- Se llena dinámicamente según la sede -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agregar Productos -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>📦 Agregar Productos</span>
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" class="search-input" 
+                               placeholder="Buscar por código de producto..." 
+                               onkeypress="handleKeyPress(event)">
+                        <button class="btn btn-primary" onclick="buscarYAgregar()">🔍 Buscar y Agregar</button>
+                        <button class="btn" onclick="limpiarBusqueda()">🗑️ Limpiar</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Productos -->
+                <div class="section">
+                    <div class="section-header">
+                        <span>📋 Productos en Cotización</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" onclick="generarCotizacion()">📄 Generar Cotización</button>
+                            <button class="btn btn-warning" onclick="limpiarCotizacion()">🗑️ Limpiar Todo</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="productosTable">
+                        <div style="text-align: center; padding: 30px; color: #6c757d;">
+                            <h3>📝 Cotización vacía</h3>
+                            <p>Busca productos para agregarlos a la cotización</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen de Cotización -->
+                <div class="resumen-cotizacion" id="resumenCotizacion" style="display: none;">
+                    <h3 style="margin-bottom: 15px; color: #4ade80;">💰 Resumen de Cotización</h3>
+                    <div class="resumen-item">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0</span>
+                    </div>
+                    <div class="resumen-item">
+                        <span>IVA 19%:</span>
+                        <span id="iva">$0</span>
+                    </div>
+                    <div class="resumen-item resumen-total">
+                        <span>TOTAL:</span>
+                        <span id="total">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para editar información de punto de venta -->
+        <div id="modalPuntoVenta" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>✏️ Editar Información de Punto de Venta</h3>
+                    <span class="close" onclick="cerrarModalPuntoVenta()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modalPuntoVentaNombre">Nombre del Punto de Venta:</label>
+                        <input type="text" id="modalPuntoVentaNombre" placeholder="Nombre del punto de venta">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalPuntoVentaDireccion">Dirección:</label>
+                        <input type="text" id="modalPuntoVentaDireccion" placeholder="Dirección del punto de venta">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalPuntoVentaTelefono">Teléfono:</label>
+                        <input type="text" id="modalPuntoVentaTelefono" placeholder="Teléfono del punto de venta">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-warning" onclick="cerrarModalPuntoVenta()">❌ Cancelar</button>
+                    <button class="btn btn-primary" onclick="guardarInformacionPuntoVenta()">💾 Guardar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="https://ai.average.lat" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let productosData = [];
+        let productosCotizacion = [];
+        let sedeActual = '';
+        let puntoVentaSeleccionado = '';
+
+        // Configuración de sedes y puntos de venta
+        const sedesConfig = {
+            manizales: {
+                nombre: 'Manizales',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                icon: '🏪',
+                color: '#28a745',
+                puntosVenta: [
+                    { 
+                        id: 'cristaleria_multifamiliar', 
+                        nombre: 'Cristalería Multifamiliar',
+                        direccion: 'Cll 10a # 14 47, La Dorada',
+                        telefono: '3100002221'
+                    },
+                    { 
+                        id: 'cristaleria_mi_hogar', 
+                        nombre: 'Cristalería Mi Hogar',
+                        direccion: 'Cll 15 # 20 30, Manizales',
+                        telefono: '3100002222'
+                    }
+                ]
+            },
+            dorada: {
+                nombre: 'Dorada',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                icon: '🏬',
+                color: '#3498db',
+                puntosVenta: [
+                    { 
+                        id: 'cristaleria_multifamiliar', 
+                        nombre: 'Cristalería Multifamiliar',
+                        direccion: 'Cll 10a # 14 47, La Dorada',
+                        telefono: '3100002221'
+                    },
+                    { 
+                        id: 'cristaleria_el_hogar', 
+                        nombre: 'Cristalería El Hogar',
+                        direccion: 'Cll 20 # 25 40, La Dorada',
+                        telefono: '3100002223'
+                    },
+                    { 
+                        id: 'cristaleria_surtitodo', 
+                        nombre: 'Cristalería Surtitodo',
+                        direccion: 'Cll 30 # 35 50, La Dorada',
+                        telefono: '3100002224'
+                    }
+                ]
+            }
+        };
+
+        function seleccionarSede(sede) {
+            console.log('🏢 Seleccionando sede:', sede);
+            sedeActual = sede;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sede="${sede}"]`).classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede(sede);
+        }
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        async function cargarDatosSede(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                mostrarError('Sede no encontrada');
+                return;
+            }
+
+            console.log('📂 Cargando datos de:', config.nombre);
+            
+            document.getElementById('sedeSelector').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                actualizarProgreso(`Conectando con ${config.nombre}...`);
+                
+                const datosReales = await cargarDatosReales(sede);
+                
+                actualizarProgreso('Procesando productos y precios...');
+                procesarDatosProductos(datosReales, sede);
+                
+                actualizarProgreso('Inicializando sistema...');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('cotizacionSection').style.display = 'block';
+                    
+                    actualizarInfoSede(config);
+                    cargarPuntosVenta(config);
+                    
+                    document.getElementById('searchInput').focus();
+                    mostrarAlerta(`✅ ${config.nombre} conectado - Sistema listo`, 'success');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error cargando sede:', error);
+                mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sedeSelector').style.display = 'block';
+            }
+        }
+
+        async function cargarDatosReales(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                throw new Error(`Sede '${sede}' no encontrada`);
+            }
+
+            try {
+                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
+
+                const response = await fetch(config.archivo);
+                if (!response.ok) {
+                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
+                return jsonData;
+
+            } catch (error) {
+                console.error(`Error cargando base de datos ${sede}:`, error);
+                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
+            }
+        }
+
+        function actualizarInfoSede(config) {
+            document.getElementById('sedeInfo').textContent = config.nombre;
+        }
+
+        function cargarPuntosVenta(config) {
+            const selector = document.getElementById('puntoVentaSelector');
+            selector.innerHTML = '';
+            
+            config.puntosVenta.forEach(punto => {
+                const btn = document.createElement('button');
+                btn.className = 'punto-venta-btn';
+                btn.textContent = punto.nombre;
+                btn.onclick = () => seleccionarPuntoVenta(punto.id, punto.nombre);
+                selector.appendChild(btn);
+            });
+
+            // Limpiar información de punto de venta hasta que se seleccione uno
+            document.getElementById('puntoVentaNombre').value = '';
+            document.getElementById('puntoVentaDireccion').value = '';
+            document.getElementById('puntoVentaTelefono').value = '';
+        }
+
+        function seleccionarPuntoVenta(id, nombre) {
+            puntoVentaSeleccionado = nombre;
+            
+            // Actualizar botones
+            document.querySelectorAll('.punto-venta-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Cargar información del punto de venta seleccionado
+            const config = sedesConfig[sedeActual];
+            const puntoVenta = config.puntosVenta.find(p => p.id === id);
+            
+            if (puntoVenta) {
+                document.getElementById('puntoVentaNombre').value = puntoVenta.nombre;
+                document.getElementById('puntoVentaDireccion').value = puntoVenta.direccion || '';
+                document.getElementById('puntoVentaTelefono').value = puntoVenta.telefono || '';
+            }
+            
+            mostrarAlerta(`✅ Punto de venta seleccionado: ${nombre}`, 'success');
+        }
+
+        function procesarDatosProductos(jsonData, sede) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            console.log('Total filas de datos:', dataRows.length);
+            
+            // Mapeo de índices basado en la estructura real
+            const indices = {
+                codigoInterno: 0,      // "Código Interno"
+                nombre: 2,             // "Nombre"
+                costo: 5,              // "Costo"
+                precioMayorista: 11,   // "Precio Mayorista"
+                precioMinorista: 12,   // "Precio Minorista"
+                precioEstandar: 13,    // "Precio Estándar"
+                stockTotal: 14,        // "Stock Total"
+                proveedor: 16,         // "Proveedor"
+                fechaActualizacion: 20 // "Última Actualización"
+            };
+            
+            productosData = dataRows.map((row, index) => {
+                if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                    return null;
+                }
+                
+                const costo = parseFloat(row[indices.costo]) || 0;
+                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+                
+                return {
+                    codigoInterno: row[indices.codigoInterno].toString().trim(),
+                    nombre: row[indices.nombre].trim(),
+                    costo: costo,
+                    precioMayorista: precioMayorista,
+                    precioMinorista: precioMinorista,
+                    precioEstandar: precioEstandar,
+                    stockTotal: parseInt(row[indices.stockTotal]) || 0,
+                    proveedor: row[indices.proveedor] || '',
+                    fechaActualizacion: row[indices.fechaActualizacion] || ''
+                };
+            }).filter(p => p !== null);
+            
+            console.log('Productos procesados:', productosData.length);
+        }
+
+        function buscarYAgregar() {
+            const codigo = document.getElementById('searchInput').value.trim();
+            if (!codigo) {
+                mostrarAlerta('⚠️ Por favor ingresa un código de producto', 'warning');
+                return;
+            }
+            
+            // Buscar el producto
+            const producto = productosData.find(p => p.codigoInterno === codigo);
+            
+            if (producto) {
+                // Verificar si ya está en la cotización
+                const yaExiste = productosCotizacion.find(p => p.codigoInterno === codigo);
+                if (yaExiste) {
+                    mostrarAlerta('⚠️ Este producto ya está en la cotización', 'warning');
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('searchInput').focus();
+                    return;
+                }
+                
+                // Agregar a la cotización con precio estándar por defecto
+                productosCotizacion.push({
+                    ...producto,
+                    precioCotizacion: producto.precioEstandar,
+                    cantidad: 1,
+                    subtotal: producto.precioEstandar
+                });
+                
+                mostrarAlerta('✅ Producto encontrado y agregado a la cotización', 'success');
+                
+            } else {
+                mostrarAlerta('❌ Producto no encontrado en la base de datos', 'warning');
+            }
+            
+            // Limpiar input y actualizar visualización
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+            actualizarTablaProductos();
+            actualizarResumen();
+        }
+
+        function actualizarTablaProductos() {
+            const container = document.getElementById('productosTable');
+            
+            if (productosCotizacion.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #6c757d;">
+                        <h3>📝 Cotización vacía</h3>
+                        <p>Busca productos para agregarlos a la cotización</p>
+                    </div>
+                `;
+                document.getElementById('resumenCotizacion').style.display = 'none';
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            productosCotizacion.forEach((producto, index) => {
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><span class="code">${producto.codigoInterno}</span></td>
+                        <td>${producto.nombre}</td>
+                        <td>
+                            <input type="number" class="price-input" value="${producto.precioCotizacion}" 
+                                   onchange="actualizarPrecio(${index}, this.value)" 
+                                   onfocus="mostrarPreciosPopup(${index}, event)">
+                            <button class="btn" style="font-size: 10px; padding: 2px 6px; margin-left: 5px;" 
+                                    onclick="mostrarPreciosPopup(${index}, event)">👁️</button>
+                        </td>
+                        <td>
+                            <input type="number" class="quantity-input" value="${producto.cantidad}" 
+                                   onchange="actualizarCantidad(${index}, this.value)">
+                        </td>
+                        <td>$${producto.subtotal.toLocaleString('es-CO')}</td>
+                        <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarProducto(${index})">❌</button></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+            
+            document.getElementById('resumenCotizacion').style.display = 'block';
+        }
+
+        function actualizarPrecio(index, nuevoPrecio) {
+            const producto = productosCotizacion[index];
+            producto.precioCotizacion = parseFloat(nuevoPrecio) || 0;
+            producto.subtotal = producto.precioCotizacion * producto.cantidad;
+            actualizarTablaProductos();
+            actualizarResumen();
+        }
+
+        function actualizarCantidad(index, nuevaCantidad) {
+            const producto = productosCotizacion[index];
+            producto.cantidad = parseInt(nuevaCantidad) || 1;
+            producto.subtotal = producto.precioCotizacion * producto.cantidad;
+            actualizarTablaProductos();
+            actualizarResumen();
+        }
+
+        function eliminarProducto(index) {
+            productosCotizacion.splice(index, 1);
+            actualizarTablaProductos();
+            actualizarResumen();
+        }
+
+        function mostrarPreciosPopup(index, event) {
+            const producto = productosCotizacion[index];
+            
+            // Crear popup si no existe
+            let popup = document.getElementById('preciosPopup');
+            if (!popup) {
+                popup = document.createElement('div');
+                popup.id = 'preciosPopup';
+                popup.className = 'price-popup';
+                document.body.appendChild(popup);
+            }
+            
+            // Posicionar popup
+            const rect = event.target.getBoundingClientRect();
+            popup.style.left = rect.right + 'px';
+            popup.style.top = rect.top + 'px';
+            
+            // Contenido del popup
+            popup.innerHTML = `
+                <div style="margin-bottom: 5px;"><strong>Precios de referencia:</strong></div>
+                <div>Mayorista: $${producto.precioMayorista.toLocaleString('es-CO')}</div>
+                <div>Minorista: $${producto.precioMinorista.toLocaleString('es-CO')}</div>
+                <div>Estándar: $${producto.precioEstandar.toLocaleString('es-CO')}</div>
+            `;
+            
+            popup.classList.add('show');
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 3000);
+        }
+
+        function actualizarResumen() {
+            const total = productosCotizacion.reduce((sum, producto) => sum + producto.subtotal, 0);
+            const iva = total * 0.19;
+            const subtotal = total - iva;
+            
+            document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString('es-CO')}`;
+            document.getElementById('iva').textContent = `$${iva.toLocaleString('es-CO')}`;
+            document.getElementById('total').textContent = `$${total.toLocaleString('es-CO')}`;
+        }
+
+        function limpiarBusqueda() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                buscarYAgregar();
+            }
+        }
+
+        function limpiarCotizacion() {
+            if (productosCotizacion.length === 0) {
+                mostrarAlerta('⚠️ La cotización ya está vacía', 'warning');
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres limpiar toda la cotización?')) {
+                productosCotizacion = [];
+                actualizarTablaProductos();
+                actualizarResumen();
+                mostrarAlerta('✅ Cotización limpiada', 'success');
+            }
+        }
+
+        function generarCotizacion() {
+            // Validar datos del cliente
+            const nombre = document.getElementById('clienteNombre').value.trim();
+            const email = document.getElementById('clienteEmail').value.trim();
+            
+            if (!nombre || !email) {
+                mostrarAlerta('⚠️ Por favor completa los datos obligatorios del cliente', 'warning');
+                return;
+            }
+            
+            if (productosCotizacion.length === 0) {
+                mostrarAlerta('⚠️ No hay productos en la cotización', 'warning');
+                return;
+            }
+            
+            if (!puntoVentaSeleccionado) {
+                mostrarAlerta('⚠️ Por favor selecciona un punto de venta', 'warning');
+                return;
+            }
+            
+            // Generar cotización
+            const total = productosCotizacion.reduce((sum, p) => sum + p.subtotal, 0);
+            const iva = total * 0.19;
+            const subtotal = total - iva;
+            
+            const cotizacion = {
+                fecha: new Date().toLocaleDateString('es-CO'),
+                hora: new Date().toLocaleTimeString('es-CO'),
+                sede: sedeActual,
+                puntoVenta: puntoVentaSeleccionado,
+                cliente: {
+                    nombre: nombre,
+                    email: email,
+                    celular: document.getElementById('clienteCelular').value.trim(),
+                    documento: document.getElementById('clienteDocumento').value.trim(),
+                    direccion: document.getElementById('clienteDireccion').value.trim()
+                },
+                productos: productosCotizacion,
+                total: total,
+                iva: iva,
+                subtotal: subtotal
+            };
+            
+            // Generar PDF (simulado por ahora)
+            generarPDFCotizacion(cotizacion);
+        }
+
+        async function generarPDFCotizacion(cotizacion) {
+            try {
+                console.log('Iniciando generación de DOCX...');
+                
+                // Verificar que la librería docx esté disponible
+                if (typeof docx === 'undefined') {
+                    throw new Error('La librería docx no está disponible. Verifica la conexión a internet.');
+                }
+                
+                // Obtener información del punto de venta
+                const config = sedesConfig[sedeActual];
+                const puntoVenta = config.puntosVenta.find(p => p.nombre === puntoVentaSeleccionado);
+                const direccionPuntoVenta = puntoVenta ? puntoVenta.direccion || '' : '';
+                const telefonoPuntoVenta = puntoVenta ? puntoVenta.telefono || '' : '';
+                
+                console.log('Información del punto de venta:', { direccionPuntoVenta, telefonoPuntoVenta });
+                console.log('Datos de la cotización:', cotizacion);
+                
+                // Generar número de cotización único
+                const numeroCotizacion = Math.floor(Math.random() * 1000) + 1;
+                
+                // Crear documento DOCX
+                const doc = new docx.Document({
+                    sections: [{
+                        properties: {
+                            page: {
+                                size: {
+                                    width: 12240, // Tamaño carta en twips
+                                    height: 15840
+                                },
+                                margin: {
+                                    top: 1440,
+                                    right: 1440,
+                                    bottom: 1440,
+                                    left: 1440
+                                }
+                            }
+                        },
+                        children: [
+                            // Encabezado
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: cotizacion.puntoVenta,
+                                        bold: true,
+                                        size: 24
+                                    })
+                                ],
+                                alignment: docx.AlignmentType.CENTER,
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Información del punto de venta
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: direccionPuntoVenta,
+                                        size: 20
+                                    })
+                                ],
+                                alignment: docx.AlignmentType.CENTER,
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Tel: ${telefonoPuntoVenta}`,
+                                        size: 20
+                                    })
+                                ],
+                                alignment: docx.AlignmentType.CENTER,
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Fecha y número de cotización
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Fecha: ${cotizacion.fecha}`,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Número de cotización: ${numeroCotizacion}`,
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Datos del cliente
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'A:',
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: cotizacion.cliente.nombre,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Email: ${cotizacion.cliente.email}`,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            ...(cotizacion.cliente.celular ? [
+                                new docx.Paragraph({
+                                    children: [
+                                        new docx.TextRun({
+                                            text: `Celular: ${cotizacion.cliente.celular}`,
+                                            size: 20
+                                        })
+                                    ],
+                                    spacing: { after: 200 }
+                                })
+                            ] : []),
+                            
+                            ...(cotizacion.cliente.documento ? [
+                                new docx.Paragraph({
+                                    children: [
+                                        new docx.TextRun({
+                                            text: `Documento: ${cotizacion.cliente.documento}`,
+                                            size: 20
+                                        })
+                                    ],
+                                    spacing: { after: 200 }
+                                })
+                            ] : []),
+                            
+                            ...(cotizacion.cliente.direccion ? [
+                                new docx.Paragraph({
+                                    children: [
+                                        new docx.TextRun({
+                                            text: `Dirección: ${cotizacion.cliente.direccion}`,
+                                            size: 20
+                                        })
+                                    ],
+                                    spacing: { after: 400 }
+                                })
+                            ] : []),
+                            
+                            // Título de cotización
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Cotización de Productos para el Hogar y Cocina',
+                                        bold: true,
+                                        size: 24
+                                    })
+                                ],
+                                alignment: docx.AlignmentType.CENTER,
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Introducción
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Estimado/a Cliente,',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Agradecemos su interés en nuestros productos para el hogar y cocina. Con gusto le presentamos la cotización solicitada, la cual es válida por 30 días a partir de la fecha de emisión.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Detalles de la Cotización:',
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Tabla de productos
+                            new docx.Table({
+                                width: {
+                                    size: 100,
+                                    type: docx.WidthType.PERCENTAGE
+                                },
+                                rows: [
+                                    // Encabezados
+                                    new docx.TableRow({
+                                        children: [
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: '#', alignment: docx.AlignmentType.CENTER })]
+                                            }),
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: 'Código', alignment: docx.AlignmentType.CENTER })]
+                                            }),
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: 'Producto', alignment: docx.AlignmentType.CENTER })]
+                                            }),
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: 'Precio', alignment: docx.AlignmentType.CENTER })]
+                                            }),
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: 'Cantidad', alignment: docx.AlignmentType.CENTER })]
+                                            })
+                                        ]
+                                    }),
+                                    // Productos
+                                    ...cotizacion.productos.map((producto, index) => 
+                                        new docx.TableRow({
+                                            children: [
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: (index + 1).toString(), alignment: docx.AlignmentType.CENTER })]
+                                                }),
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: producto.codigoInterno })]
+                                                }),
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: producto.nombre })]
+                                                }),
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: `$${producto.precioCotizacion.toLocaleString('es-CO')}`, alignment: docx.AlignmentType.RIGHT })]
+                                                }),
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: producto.cantidad.toString(), alignment: docx.AlignmentType.CENTER })]
+                                                })
+                                            ]
+                                        })
+                                    )
+                                ]
+                            }),
+                            
+                            // Totales
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Subtotal: $${cotizacion.subtotal.toLocaleString('es-CO')}`,
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `IVA (19%): $${cotizacion.iva.toLocaleString('es-CO')}`,
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: `Total: $${cotizacion.total.toLocaleString('es-CO')}`,
+                                        bold: true,
+                                        size: 24
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Términos y condiciones
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Términos Generales:',
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '1. Validez de la cotización: La cotización es válida por 30 días a partir de la fecha de emisión. Pasado este plazo, los precios pueden estar sujetos a cambios según disponibilidad o modificaciones en costos de proveedores.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '2. Forma de pago: El pago se debe realizar de la siguiente manera: 100% al momento de la orden. Pagos a través de transferencia bancaria o efectivo.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '3. Plazo de entrega: Los productos serán entregados de forma inmediata o dentro de los 15 días hábiles después de recibir el pago de la orden.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '4. Condiciones de entrega: Los productos serán entregados en la misma dirección del punto de venta.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '5. Garantía: Todos nuestros electrodomésticos cuentan con una garantía de 1 año, cubriendo defectos de fabricación.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '6. Devoluciones y cambios: Los productos pueden ser devueltos o cambiados dentro de los primeros 5 días calendario después de la compra.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '7. Impuestos: Todos los precios incluyen el IVA del 19% según la legislación vigente en Colombia.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '8. Disponibilidad: Todos los productos están sujetos a disponibilidad en el momento de la compra.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: '9. Otros: Cualquier ajuste o modificación en la cotización debe ser acordado por ambas partes antes de la confirmación de la orden.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            // Cierre
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Esperamos que esta cotización sea de su agrado. Quedamos a su disposición para resolver cualquier duda o realizar ajustes a la propuesta.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Agradecemos nuevamente su interés en ' + cotizacion.puntoVenta + '. Nos complace poder servirle.',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Atentamente,',
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: cotizacion.puntoVenta,
+                                        bold: true,
+                                        size: 20
+                                    })
+                                ],
+                                spacing: { after: 400 }
+                            }),
+                            
+                            new docx.Paragraph({
+                                children: [
+                                    new docx.TextRun({
+                                        text: 'Nota: Esta cotización es solo para fines informativos y no constituye un contrato formal hasta la confirmación por parte del cliente.',
+                                        size: 16
+                                    })
+                                ],
+                                spacing: { after: 200 }
+                            })
+                        ]
+                    }]
+                });
+
+                console.log('Creando documento DOCX...');
+                
+                try {
+                    // Generar y descargar el documento
+                    const buffer = await docx.Packer.toBlob(doc);
+                    console.log('Documento creado, generando blob...');
+                    
+                    const url = window.URL.createObjectURL(buffer);
+                    console.log('URL creada, iniciando descarga...');
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const fecha = new Date().toISOString().slice(0,10);
+                    a.download = `cotizacion_${numeroCotizacion}_${fecha}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    console.log('Descarga completada');
+                    mostrarAlerta('✅ Cotización DOCX generada y descargada', 'success');
+                } catch (docError) {
+                    console.error('Error en la generación del documento:', docError);
+                    throw new Error('Error al generar el documento DOCX: ' + docError.message);
+                }
+                
+            } catch (error) {
+                console.error('Error generando DOCX:', error);
+                mostrarError('Error generando el documento DOCX: ' + error.message);
+            }
+        }
+
+        function cambiarSede() {
+            if (productosCotizacion.length > 0) {
+                if (!confirm('¿Estás seguro de que quieres cambiar de sede? Se perderán todos los datos de la cotización actual.')) {
+                    return;
+                }
+            }
+            
+            // Limpiar datos actuales
+            productosData = [];
+            productosCotizacion = [];
+            sedeActual = '';
+            puntoVentaSeleccionado = '';
+            
+            // Volver a la pantalla de selección
+            document.getElementById('cotizacionSection').style.display = 'none';
+            document.getElementById('sedeSelector').style.display = 'block';
+            
+            // Limpiar botones activos
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById('sedeInfo').textContent = '-';
+            
+            mostrarAlerta('🔄 Selecciona una nueva sede', 'success');
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+
+        // Funciones para manejar información de punto de venta
+        function editarInformacionPuntoVenta() {
+            if (!puntoVentaSeleccionado) {
+                mostrarAlerta('⚠️ Por favor selecciona un punto de venta primero', 'warning');
+                return;
+            }
+
+            const config = sedesConfig[sedeActual];
+            const puntoVenta = config.puntosVenta.find(p => p.nombre === puntoVentaSeleccionado);
+            
+            if (!puntoVenta) {
+                mostrarAlerta('⚠️ Punto de venta no encontrado', 'warning');
+                return;
+            }
+
+            // Cargar datos actuales en el modal
+            document.getElementById('modalPuntoVentaNombre').value = puntoVenta.nombre || '';
+            document.getElementById('modalPuntoVentaDireccion').value = puntoVenta.direccion || '';
+            document.getElementById('modalPuntoVentaTelefono').value = puntoVenta.telefono || '';
+            
+            // Mostrar modal
+            document.getElementById('modalPuntoVenta').style.display = 'flex';
+        }
+
+        function cerrarModalPuntoVenta() {
+            document.getElementById('modalPuntoVenta').style.display = 'none';
+        }
+
+        function guardarInformacionPuntoVenta() {
+            const nuevoNombre = document.getElementById('modalPuntoVentaNombre').value.trim();
+            const nuevaDireccion = document.getElementById('modalPuntoVentaDireccion').value.trim();
+            const nuevoTelefono = document.getElementById('modalPuntoVentaTelefono').value.trim();
+            
+            if (!nuevoNombre || !nuevaDireccion || !nuevoTelefono) {
+                mostrarAlerta('⚠️ Por favor completa todos los campos', 'warning');
+                return;
+            }
+
+            // Actualizar configuración
+            const config = sedesConfig[sedeActual];
+            const puntoVenta = config.puntosVenta.find(p => p.nombre === puntoVentaSeleccionado);
+            
+            if (puntoVenta) {
+                puntoVenta.nombre = nuevoNombre;
+                puntoVenta.direccion = nuevaDireccion;
+                puntoVenta.telefono = nuevoTelefono;
+                
+                // Actualizar campos en la interfaz
+                document.getElementById('puntoVentaNombre').value = nuevoNombre;
+                document.getElementById('puntoVentaDireccion').value = nuevaDireccion;
+                document.getElementById('puntoVentaTelefono').value = nuevoTelefono;
+                
+                // Actualizar el botón del punto de venta
+                const botones = document.querySelectorAll('.punto-venta-btn');
+                botones.forEach(btn => {
+                    if (btn.textContent === puntoVentaSeleccionado) {
+                        btn.textContent = nuevoNombre;
+                    }
+                });
+                
+                // Actualizar la variable global
+                puntoVentaSeleccionado = nuevoNombre;
+                
+                cerrarModalPuntoVenta();
+                mostrarAlerta('✅ Información de punto de venta actualizada', 'success');
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            const modal = document.getElementById('modalPuntoVenta');
+            if (event.target === modal) {
+                cerrarModalPuntoVenta();
+            }
+        }
+    </script>
+</body>
+</html> 

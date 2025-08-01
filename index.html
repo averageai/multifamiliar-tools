@@ -503,6 +503,14 @@
                 <span class="tool-badge">Manual</span>
             </a>
 
+            <!-- Sistema de Cotizaciones -->
+            <a href="#" class="tool-card operativo" id="tool-cotizaciones" onclick="navigateTo('/cotizaciones'); return false;">
+                <div class="tool-icon">📋</div>
+                <h3>Sistema de Cotizaciones</h3>
+                <p>Creación rápida y profesional de cotizaciones para clientes. Multi-sede con puntos de venta específicos y cálculo automático de IVA.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
         </div>
 
         <div style="text-align: center;">
@@ -523,13 +531,13 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles']
+                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -674,7 +682,8 @@
                 'tool-control-v2': 'control-v2',
                 'tool-spav2': 'spav2',
                 'tool-duplicados': 'duplicados',
-                'tool-codigos-disponibles': 'codigos-disponibles'
+                'tool-codigos-disponibles': 'codigos-disponibles',
+                'tool-cotizaciones': 'cotizaciones'
             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -724,7 +733,8 @@
             '/controlv2': 'controlv2.html',
             '/spav2': 'spav2.html',
             '/duplicados': 'duplicados.html',
-            '/codigos-disponibles': 'codigos-disponibles.html'
+            '/codigos-disponibles': 'codigos-disponibles.html',
+            '/cotizaciones': 'cotizaciones.html'
         };
 
         // Función de navegación
