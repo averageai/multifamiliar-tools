@@ -1212,12 +1212,27 @@
 
         function actualizarResumen() {
             const total = productosCotizacion.reduce((sum, producto) => sum + producto.subtotal, 0);
-            const iva = total * 0.19;
-            const subtotal = total - iva;
+            const subtotal = total / 1.19;
+            const iva = total - subtotal;
             
-            document.getElementById('subtotal').textContent = `$${subtotal.toLocaleString('es-CO')}`;
-            document.getElementById('iva').textContent = `$${iva.toLocaleString('es-CO')}`;
-            document.getElementById('total').textContent = `$${total.toLocaleString('es-CO')}`;
+            // Formatear números sin redondear a .000 pero manteniendo decimales cuando existan
+            const formatearNumero = (numero) => {
+                const numeroFormateado = numero.toFixed(2);
+                // Si termina en .00, mostrar solo la parte entera
+                if (numeroFormateado.endsWith('.00')) {
+                    return Math.floor(numero).toLocaleString('es-CO');
+                }
+                // Si termina en .0, mostrar solo un decimal
+                if (numeroFormateado.endsWith('.0')) {
+                    return numero.toFixed(1).replace('.', ',');
+                }
+                // En caso contrario, mostrar con dos decimales
+                return numeroFormateado.replace('.', ',');
+            };
+            
+            document.getElementById('subtotal').textContent = `$${formatearNumero(subtotal)}`;
+            document.getElementById('iva').textContent = `$${formatearNumero(iva)}`;
+            document.getElementById('total').textContent = `$${formatearNumero(total)}`;
         }
 
         function limpiarBusqueda() {
@@ -1265,10 +1280,10 @@
                 return;
             }
             
-            // Generar cotización
-            const total = productosCotizacion.reduce((sum, p) => sum + p.subtotal, 0);
-            const iva = total * 0.19;
-            const subtotal = total - iva;
+                            // Generar cotización
+                const total = productosCotizacion.reduce((sum, p) => sum + p.subtotal, 0);
+                const subtotal = total / 1.19;
+                const iva = total - subtotal;
             
             const cotizacion = {
                 fecha: new Date().toLocaleDateString('es-CO'),
