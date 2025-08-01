@@ -240,12 +240,12 @@
         .stat-number {
             font-size: 16px;
             font-weight: bold;
-            color: #2c3e50;
+            color: #1070d1;
         }
 
         .stat-label {
             font-size: 10px;
-            color: #6c757d;
+            color: #a0a0a0;
             text-transform: uppercase;
         }
 
@@ -318,13 +318,13 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            color: #383838;
+            color: #ffffff;
         }
 
         td {
             padding: 4px 8px;
             border-bottom: 1px solid #333;
-            color: #383838;
+            color: #ffffff;
         }
 
         tr:hover {
@@ -333,7 +333,7 @@
 
         .priority-badge {
             background: #007bff;
-            color: #383838;
+            color: #ffffff;
             padding: 2px 6px;
             border-radius: 10px;
             font-size: 10px;
@@ -342,7 +342,7 @@
 
         .route-badge {
             background: #6f42c1;
-            color: #383838;
+            color: #ffffff;
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
@@ -351,7 +351,7 @@
 
         .quantity-badge {
             background: #28a745;
-            color: #383838;
+            color: #ffffff;
             padding: 2px 6px;
             border-radius: 10px;
             font-size: 10px;
@@ -360,7 +360,7 @@
 
         .error-badge {
             background: #dc3545;
-            color: #383838;
+            color: #ffffff;
             padding: 2px 6px;
             border-radius: 10px;
             font-size: 10px;
@@ -446,7 +446,7 @@
         .summary-title {
             font-weight: 600;
             font-size: 12px;
-            color: #2c3e50;
+            color: #1e293b;
             margin-bottom: 8px;
             text-transform: uppercase;
         }
@@ -1530,17 +1530,17 @@
                 Object.entries(analisisPorBodega).forEach(([bodega, datos]) => {
                     const tipo = datos.envia > datos.recibe ? 'Donante' : 
                                 datos.recibe > datos.envia ? 'Receptora' : 'Equilibrada';
-                    const color = datos.envia > datos.recibe ? '#dc3545' : 
-                                 datos.recibe > datos.envia ? '#28a745' : '#6c757d';
+                    const color = datos.envia > datos.recibe ? '#b91c1c' : 
+                                 datos.recibe > datos.envia ? '#15803d' : '#374151';
                     
                     movementHTML += `
                         <div style="color: ${color}; font-weight: 600;">${bodega}:</div>
-                        <div>${tipo} (E:${datos.envia} R:${datos.recibe})</div>
+                        <div style="color: #374151;">${tipo} (E:${datos.envia} R:${datos.recibe})</div>
                     `;
                 });
                 movementHTML += '</div>';
             } else {
-                movementHTML = '<div style="text-align: center; color: #6c757d; font-style: italic;">Sin movimientos</div>';
+                movementHTML = '<div style="text-align: center; color: #374151; font-style: italic;">Sin movimientos</div>';
             }
 
             document.getElementById('warehouseMovement').innerHTML = movementHTML;
