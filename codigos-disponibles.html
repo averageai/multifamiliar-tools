@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Códigos Disponibles - Multifamiliar Tools</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .start-section {
+            background: #2a2a2a;
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 14px;
+            color: #a0a0a0;
+        }
+
+        .loading-info {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            margin-top: 20px;
+        }
+
+        .loading-info h3 {
+            color: #3498db;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+
+        .loading-info p {
+            color: #e0e0e0;
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .loading-info strong {
+            color: #ffffff;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-left: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 11px;
+        }
+
+        .tables-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .table-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #333;
+        }
+
+        .table-title {
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ffffff;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            font-weight: 600;
+        }
+
+        .safezone-info {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .safezone-title {
+            color: #22c55e;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .safezone-text {
+            color: #a0a0a0;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .codes-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .codes-table th {
+            background: rgba(102, 126, 234, 0.2);
+            color: #ffffff;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            font-size: 11px;
+        }
+
+        .codes-table td {
+            padding: 6px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 11px;
+        }
+
+        .codes-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .code-item {
+            font-family: 'Courier New', monospace;
+            background: #1e3a2e;
+            color: #4ade80;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-btn.secondary {
+            background: linear-gradient(45deg, #6b7280, #4b5563);
+        }
+
+        .action-btn.secondary:hover {
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: none;
+            font-size: 12px;
+        }
+
+        .alert.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .tables-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">🏠 Volver</a>
+            <div class="logo">📋</div>
+            <div class="header-text">
+                <h1>Códigos Disponibles</h1>
+                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+            <div class="loading-info">
+                <h3>📋 Códigos Disponibles</h3>
+                <p><strong>¿Para qué sirve?</strong> Encuentra espacios libres para crear nuevos productos sin conflictos.</p>
+                <p><strong>¿Cómo usar?</strong> Haz clic en "Iniciar Análisis" y revisa las tablas de códigos disponibles para cada sede.</p>
+                <p><strong>Dorada:</strong> Códigos 1-100 | <strong>Manizales:</strong> Códigos 101-200</p>
+            </div>
+        </div>
+
+            <div id="start-section" class="start-section">
+                <button class="start-btn" onclick="iniciarAnalisis()">
+                    🔍 Iniciar Análisis de Códigos
+                </button>
+            </div>
+
+            <div id="results-section" class="results-section">
+                <div class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-manizales">0</div>
+                        <div class="stat-label">Códigos Manizales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-dorada">0</div>
+                        <div class="stat-label">Códigos Dorada</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="safezone-manizales">0</div>
+                        <div class="stat-label">Safezone Manizales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="safezone-dorada">0</div>
+                        <div class="stat-label">Safezone Dorada</div>
+                    </div>
+                </div>
+
+                <div class="tables-container">
+                    <div class="table-section">
+                                                 <div class="safezone-info">
+                             <div class="safezone-title">🏢 Zona Segura Manizales</div>
+                             <div class="safezone-text">
+                                 Códigos reservados para uso exclusivo de Manizales. 
+                                 Muestra códigos 101-200 de los próximos 500 espacios libres desde 5000.
+                                 Lógica optimizada: ordenar códigos y encontrar espacios secuenciales.
+                             </div>
+                         </div>
+                        <div class="table-title">📊 Códigos Disponibles - Manizales</div>
+                        <div id="manizales-table-container"></div>
+                    </div>
+
+                    <div class="table-section">
+                                                 <div class="safezone-info">
+                             <div class="safezone-title">🏭 Zona Segura Dorada</div>
+                             <div class="safezone-text">
+                                 Códigos reservados para uso exclusivo de Dorada. 
+                                 Muestra códigos 1-100 de los próximos 500 espacios libres desde 5000.
+                                 Lógica optimizada: ordenar códigos y encontrar espacios secuenciales.
+                             </div>
+                         </div>
+                        <div class="table-title">📊 Códigos Disponibles - Dorada</div>
+                        <div id="dorada-table-container"></div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="action-btn" onclick="exportarCodigosManizales()">
+                        📥 Exportar Manizales
+                    </button>
+                    <button class="action-btn" onclick="exportarCodigosDorada()">
+                        📥 Exportar Dorada
+                    </button>
+                    <button class="action-btn secondary" onclick="reiniciarAnalisis()">
+                        🔄 Reiniciar
+                    </button>
+
+                </div>
+            </div>
+
+            <div id="alert" class="alert"></div>
+        </div>
+    </div>
+
+    <script>
+        let datosManizales = [];
+        let datosDorada = [];
+        let codigosDisponiblesManizales = [];
+        let codigosDisponiblesDorada = [];
+        let safezoneManizales = [];
+        let safezoneDorada = [];
+
+        async function iniciarAnalisis() {
+            const startTime = performance.now();
+            console.log('🚀 Iniciando análisis...');
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('start-section').style.display = 'none';
+            document.getElementById('results-section').style.display = 'none';
+
+            try {
+                mostrarInfoBusqueda();
+                
+                // Debug: Carga de datos
+                const dataStartTime = performance.now();
+                actualizarProgreso('Conectando con bases de datos...');
+                await cargarDatos();
+                const dataEndTime = performance.now();
+                console.log(`📊 Datos cargados en: ${(dataEndTime - dataStartTime).toFixed(2)}ms`);
+                
+                // Debug: Procesamiento
+                const processStartTime = performance.now();
+                actualizarProgreso('Procesando códigos disponibles...');
+                procesarCodigosDisponibles();
+                const processEndTime = performance.now();
+                console.log(`⚙️ Procesamiento completado en: ${(processEndTime - processStartTime).toFixed(2)}ms`);
+                
+                actualizarProgreso('Generando zonas seguras...');
+                setTimeout(() => {
+                    mostrarResultados();
+                    const totalTime = performance.now() - startTime;
+                    console.log(`✅ Análisis completo en: ${totalTime.toFixed(2)}ms`);
+                }, 300);
+            } catch (error) {
+                console.error('❌ Error en análisis:', error);
+                mostrarError('Error al cargar los datos: ' + error.message);
+            }
+        }
+
+        function actualizarProgreso(mensaje) {
+            const loadingText = document.querySelector('.loading p');
+            if (loadingText) {
+                const timestamp = new Date().toLocaleTimeString();
+                loadingText.textContent = `[${timestamp}] ${mensaje}`;
+            }
+        }
+
+        function mostrarInfoBusqueda() {
+            console.log(`🔍 Nueva lógica implementada:`);
+            console.log(`   1. Juntar ambas bases de datos`);
+            console.log(`   2. Organizar de menor a mayor`);
+            console.log(`   3. Encontrar próximos 500 espacios libres desde 5000`);
+            console.log(`   4. Dorada: códigos 1-100 de los espacios libres`);
+            console.log(`   5. Manizales: códigos 101-200 de los espacios libres`);
+        }
+
+        async function cargarDatos() {
+            try {
+                // Debug: Cargar Manizales
+                const manizalesStart = performance.now();
+                await cargarDatosManizales();
+                const manizalesEnd = performance.now();
+                console.log(`🏪 Manizales cargado en: ${(manizalesEnd - manizalesStart).toFixed(2)}ms`);
+                
+                // Debug: Cargar Dorada
+                const doradaStart = performance.now();
+                await cargarDatosDorada();
+                const doradaEnd = performance.now();
+                console.log(`🏭 Dorada cargado en: ${(doradaEnd - doradaStart).toFixed(2)}ms`);
+                
+                console.log('📈 Resumen de datos:', { 
+                    manizales: datosManizales.length, 
+                    dorada: datosDorada.length,
+                    total: datosManizales.length + datosDorada.length
+                });
+            } catch (error) {
+                throw new Error('No se pudieron cargar los archivos de datos: ' + error.message);
+            }
+        }
+
+        async function cargarDatosManizales() {
+            const url = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx';
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error cargando Manizales: ${response.status} ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            datosManizales = procesarDatosSede(jsonData, 'Manizales');
+            console.log(`✅ Manizales cargado: ${datosManizales.length} productos`);
+        }
+
+        async function cargarDatosDorada() {
+            const url = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx';
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error cargando Dorada: ${response.status} ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            datosDorada = procesarDatosSede(jsonData, 'Dorada');
+            console.log(`✅ Dorada cargado: ${datosDorada.length} productos`);
+        }
+
+        function procesarDatosSede(jsonData, sede) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            const codigoIndex = headers.findIndex(h => h === 'Código Interno');
+            
+            if (codigoIndex === -1) {
+                throw new Error(`No se encontró la columna 'Código Interno' en ${sede}`);
+            }
+            
+            return dataRows.map((row, index) => {
+                const codigoInterno = row[codigoIndex];
+                
+                if (!codigoInterno) {
+                    return null;
+                }
+                
+                return {
+                    codigoInterno: codigoInterno.toString().trim(),
+                    sede: sede
+                };
+            }).filter(p => p !== null);
+        }
+
+        function procesarCodigosDisponibles() {
+            const startTime = performance.now();
+            console.log('🔧 Iniciando procesamiento de códigos...');
+            
+            // 1. JUNTAR AMBAS BASES DE DATOS
+            const todosLosCodigos = new Set();
+            
+            // Debug: Procesar Manizales
+            const manizalesStart = performance.now();
+            for (const producto of datosManizales) {
+                if (producto.codigoInterno) {
+                    const codigo = producto.codigoInterno.toString();
+                    todosLosCodigos.add(codigo);
+                }
+            }
+            const manizalesEnd = performance.now();
+            console.log(`🏪 Procesados ${datosManizales.length} códigos Manizales en: ${(manizalesEnd - manizalesStart).toFixed(2)}ms`);
+            
+            // Debug: Procesar Dorada
+            const doradaStart = performance.now();
+            for (const producto of datosDorada) {
+                if (producto.codigoInterno) {
+                    const codigo = producto.codigoInterno.toString();
+                    todosLosCodigos.add(codigo);
+                }
+            }
+            const doradaEnd = performance.now();
+            console.log(`🏭 Procesados ${datosDorada.length} códigos Dorada en: ${(doradaEnd - doradaStart).toFixed(2)}ms`);
+
+            // 2. ORGANIZAR DE MENOR A MAYOR (OPTIMIZADO)
+            const ordenarStart = performance.now();
+            const codigosOrdenados = Array.from(todosLosCodigos)
+                .map(codigo => parseInt(codigo))
+                .filter(codigo => !isNaN(codigo) && codigo >= 5000) // Solo códigos >= 5000
+                .sort((a, b) => a - b);
+            const ordenarEnd = performance.now();
+            console.log(`📊 Códigos ordenados: ${codigosOrdenados.length} (>=5000) en ${(ordenarEnd - ordenarStart).toFixed(2)}ms`);
+
+            // 3. ENCONTRAR LOS PRÓXIMOS 500 ESPACIOS LIBRES DEL 5000 EN ADELANTE
+            const espaciosStart = performance.now();
+            const espaciosLibres = encontrarEspaciosLibres(codigosOrdenados, 500);
+            const espaciosEnd = performance.now();
+            console.log(`🔍 Encontrados ${espaciosLibres.length} espacios libres en ${(espaciosEnd - espaciosStart).toFixed(2)}ms`);
+
+            // 4. DIVIDIR: PRIMEROS 100 PARA DORADA, 101-200 PARA MANIZALES (OPTIMIZADO)
+            const convertirAString = (codigo) => codigo.toString();
+            
+            codigosDisponiblesDorada = espaciosLibres.slice(0, 100).map(convertirAString);
+            codigosDisponiblesManizales = espaciosLibres.slice(100, 200).map(convertirAString);
+
+            // Crear safezones para mostrar en estadísticas
+            safezoneManizales = espaciosLibres.slice(200, 400).map(convertirAString);
+            safezoneDorada = espaciosLibres.slice(400, 500).map(convertirAString);
+
+            const totalTime = performance.now() - startTime;
+            console.log(`⚙️ Procesamiento total completado en: ${totalTime.toFixed(2)}ms`);
+        }
+
+
+
+        function encontrarEspaciosLibres(codigosOrdenados, cantidad) {
+            const startTime = performance.now();
+            const espaciosLibres = [];
+            
+            // Siempre empezar desde 5000
+            let codigoActual = 5000;
+            let indiceCodigo = 0;
+            let iteraciones = 0;
+
+            console.log(`🔍 Buscando ${cantidad} espacios libres desde código ${codigoActual}...`);
+
+            // Optimización: Saltar códigos existentes menores al punto de partida
+            while (indiceCodigo < codigosOrdenados.length && codigosOrdenados[indiceCodigo] < codigoActual) {
+                indiceCodigo++;
+            }
+
+            while (espaciosLibres.length < cantidad && iteraciones < 10000) {
+                // Si hemos revisado todos los códigos existentes, el código actual está libre
+                if (indiceCodigo >= codigosOrdenados.length || codigoActual < codigosOrdenados[indiceCodigo]) {
+                    espaciosLibres.push(codigoActual);
+                    
+                    // Log cada 50 espacios para no saturar la consola
+                    if (espaciosLibres.length % 50 === 0) {
+                        console.log(`✅ ${espaciosLibres.length} espacios libres encontrados (último: ${codigoActual})`);
+                    }
+                } else {
+                    // Avanzar al siguiente código existente
+                    indiceCodigo++;
+                }
+                
+                codigoActual++;
+                iteraciones++;
+            }
+
+            const endTime = performance.now();
+            console.log(`🔍 Encontrados ${espaciosLibres.length} espacios libres en ${(endTime - startTime).toFixed(2)}ms (${iteraciones} iteraciones)`);
+
+            return espaciosLibres;
+        }
+
+
+
+        function mostrarResultados() {
+            // Actualizar estadísticas
+            document.getElementById('total-manizales').textContent = datosManizales.length;
+            document.getElementById('total-dorada').textContent = datosDorada.length;
+            document.getElementById('safezone-manizales').textContent = safezoneManizales.length;
+            document.getElementById('safezone-dorada').textContent = safezoneDorada.length;
+
+            // Mostrar tablas
+            mostrarTablaCodigos('manizales', codigosDisponiblesManizales);
+            mostrarTablaCodigos('dorada', codigosDisponiblesDorada);
+
+            // Mostrar resultados
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results-section').style.display = 'block';
+
+            mostrarAlerta('Análisis completado exitosamente', 'success');
+        }
+
+        function mostrarTablaCodigos(sede, codigos) {
+            const container = document.getElementById(`${sede}-table-container`);
+            const sedeNombre = sede === 'manizales' ? 'Manizales' : 'Dorada';
+
+            let html = `
+                <table class="codes-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código Disponible</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            codigos.forEach((codigo, index) => {
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><span class="code-item">${codigo}</span></td>
+                        <td>✅ Libre</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function exportarCodigosManizales() {
+            exportarCodigos(codigosDisponiblesManizales, 'codigos_disponibles_manizales');
+        }
+
+        function exportarCodigosDorada() {
+            exportarCodigos(codigosDisponiblesDorada, 'codigos_disponibles_dorada');
+        }
+
+        function exportarCodigos(codigos, nombreArchivo) {
+            const workbook = XLSX.utils.book_new();
+            
+            // Crear datos para exportar
+            const data = [
+                ['#', 'Código Disponible', 'Estado', 'Fecha de Exportación']
+            ];
+
+            codigos.forEach((codigo, index) => {
+                data.push([
+                    index + 1,
+                    codigo,
+                    'Libre',
+                    new Date().toLocaleDateString('es-ES')
+                ]);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Códigos Disponibles');
+            
+            XLSX.writeFile(workbook, `${nombreArchivo}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            
+            mostrarAlerta(`Archivo ${nombreArchivo} exportado exitosamente`, 'success');
+        }
+
+        function reiniciarAnalisis() {
+            document.getElementById('start-section').style.display = 'block';
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            
+            datosManizales = [];
+            datosDorada = [];
+            codigosDisponiblesManizales = [];
+            codigosDisponiblesDorada = [];
+            safezoneManizales = [];
+            safezoneDorada = [];
+        }
+
+
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alert = document.getElementById('alert');
+            alert.textContent = mensaje;
+            alert.className = `alert ${tipo}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function mostrarError(mensaje) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('start-section').style.display = 'block';
+            mostrarAlerta(mensaje, 'error');
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector de Códigos Duplicados - Multi Sede</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 13px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .start-section {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .start-section h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            background: #2a2a2a;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1070d1;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            color: #2c3e50;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .code-libre {
+            font-family: 'Courier New', monospace;
+            background: #1e3a2e;
+            color: #4ade80;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .duplicate-badge {
+            background: #dc3545;
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .sede-badge {
+            background: #3498db;
+            color: #ffffff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: #a0a0a0;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🔍</div>
+            <div class="header-text">
+                <h1>Detector de Códigos Duplicados</h1>
+                <p>Análisis de productos con códigos internos repetidos entre sedes</p>
+            </div>
+            <a href="index.html" class="back-btn">🏠 Volver al Hub</a>
+        </div>
+
+        <div class="content">
+            <div class="start-section" id="startSection">
+                <h2>🔍 Detector de Duplicados Multi-Sede</h2>
+                <p>Esta herramienta analiza las bases de datos de Manizales y Dorada para encontrar productos con códigos internos duplicados.</p>
+                <p><strong>Funcionalidad:</strong> Compara códigos internos entre sedes y genera reportes de duplicados.</p>
+                <button class="start-btn" onclick="iniciarAnalisis()">🚀 Iniciar Análisis</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analizando bases de datos...</p>
+                <p id="loadingDetail">Conectando con sedes...</p>
+            </div>
+
+            <div class="results" id="results">
+                <div class="stats-bar" id="statsBar">
+                    <!-- Stats aquí -->
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>📋 Productos con Códigos Duplicados</span>
+                        <div class="action-buttons">
+                            <button class="btn" onclick="exportarDuplicados()">📊 Exportar Duplicados</button>
+                            <button class="btn btn-warning" onclick="exportarResumen()">📋 Resumen Ejecutivo</button>
+                            <button class="btn btn-danger" onclick="reiniciarAnalisis()">🔄 Reiniciar</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="duplicatesContainer">
+                        <!-- Tabla duplicados aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="https://ai.average.lat" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let datosManizales = [];
+        let datosDorada = [];
+        let duplicados = [];
+        let estadisticas = {};
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        async function iniciarAnalisis() {
+            console.log('🚀 Iniciando análisis de duplicados...');
+            
+            // Ocultar sección de inicio y mostrar loading
+            document.getElementById('startSection').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                // Cargar datos de Manizales
+                actualizarProgreso('Cargando base de datos Manizales...');
+                await cargarDatosManizales();
+                
+                // Cargar datos de Dorada
+                actualizarProgreso('Cargando base de datos Dorada...');
+                await cargarDatosDorada();
+                
+                // Analizar duplicados
+                actualizarProgreso('Analizando códigos duplicados...');
+                analizarDuplicados();
+                
+                // Mostrar resultados
+                actualizarProgreso('Generando reportes...');
+                setTimeout(() => {
+                    mostrarResultados();
+                    document.getElementById('loading').style.display = 'none';
+                }, 300);
+                
+            } catch (error) {
+                console.error('Error en análisis:', error);
+                mostrarError('Error en análisis: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('startSection').style.display = 'block';
+            }
+        }
+
+        async function cargarDatosManizales() {
+            const url = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx';
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error cargando Manizales: ${response.status} ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            datosManizales = procesarDatosSede(jsonData, 'Manizales');
+            console.log(`✅ Manizales cargado: ${datosManizales.length} productos`);
+        }
+
+        async function cargarDatosDorada() {
+            const url = 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx';
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Error cargando Dorada: ${response.status} ${response.statusText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const data = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            
+            datosDorada = procesarDatosSede(jsonData, 'Dorada');
+            console.log(`✅ Dorada cargado: ${datosDorada.length} productos`);
+        }
+
+        function procesarDatosSede(jsonData, sede) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            const codigoIndex = headers.findIndex(h => h === 'Código Interno');
+            const nombreIndex = headers.findIndex(h => h === 'Nombre');
+            
+            if (codigoIndex === -1 || nombreIndex === -1) {
+                throw new Error(`No se encontraron las columnas requeridas en ${sede}`);
+            }
+            
+            return dataRows.map((row, index) => {
+                const codigoInterno = row[codigoIndex];
+                const nombre = row[nombreIndex];
+                
+                if (!codigoInterno || !nombre) {
+                    return null;
+                }
+                
+                return {
+                    codigoInterno: codigoInterno.toString().trim(),
+                    nombre: nombre.trim(),
+                    sede: sede
+                };
+            }).filter(p => p !== null);
+        }
+
+        function analizarDuplicados() {
+            const codigosManizales = new Set(datosManizales.map(p => p.codigoInterno));
+            const codigosDorada = new Set(datosDorada.map(p => p.codigoInterno));
+            
+            // Encontrar códigos que están en ambas sedes
+            const codigosDuplicados = new Set();
+            for (const codigo of codigosManizales) {
+                if (codigosDorada.has(codigo)) {
+                    codigosDuplicados.add(codigo);
+                }
+            }
+            
+            // Crear lista de duplicados con información completa
+            duplicados = [];
+            for (const codigo of codigosDuplicados) {
+                const productoManizales = datosManizales.find(p => p.codigoInterno === codigo);
+                const productoDorada = datosDorada.find(p => p.codigoInterno === codigo);
+                
+                duplicados.push({
+                    codigoInterno: codigo,
+                    manizales: productoManizales,
+                    dorada: productoDorada
+                });
+            }
+            
+            // Calcular estadísticas
+            estadisticas = {
+                totalManizales: datosManizales.length,
+                totalDorada: datosDorada.length,
+                duplicados: duplicados.length,
+                unicosManizales: datosManizales.length - duplicados.length,
+                unicosDorada: datosDorada.length - duplicados.length
+            };
+            
+            console.log(`✅ Análisis completado: ${duplicados.length} duplicados encontrados`);
+        }
+
+        function encontrarProximoCodigoLibre(codigoDuplicado) {
+            // Obtener todos los códigos existentes en ambas sedes
+            const todosLosCodigos = new Set([
+                ...datosManizales.map(p => p.codigoInterno),
+                ...datosDorada.map(p => p.codigoInterno)
+            ]);
+            
+            // Extraer el patrón del código duplicado (asumiendo que es numérico)
+            const codigoNumerico = parseInt(codigoDuplicado);
+            if (isNaN(codigoNumerico)) {
+                return 'N/A'; // Si no es numérico, no podemos sugerir
+            }
+            
+            // Buscar el próximo código libre empezando desde el código duplicado + 1
+            let proximoCodigo = codigoNumerico + 1;
+            const maxIntentos = 1000; // Límite para evitar bucles infinitos
+            let intentos = 0;
+            
+            while (intentos < maxIntentos) {
+                const codigoString = proximoCodigo.toString();
+                
+                // Verificar si este código ya existe
+                if (!todosLosCodigos.has(codigoString)) {
+                    return codigoString;
+                }
+                
+                proximoCodigo++;
+                intentos++;
+            }
+            
+            // Si no encontramos uno cercano, buscar en un rango más amplio
+            for (let i = 1; i <= 1000; i++) {
+                const codigoString = i.toString();
+                if (!todosLosCodigos.has(codigoString)) {
+                    return codigoString;
+                }
+            }
+            
+            return 'No disponible';
+        }
+
+        function mostrarResultados() {
+            // Mostrar estadísticas
+            document.getElementById('statsBar').innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.totalManizales}</div>
+                    <div class="stat-label">Manizales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.totalDorada}</div>
+                    <div class="stat-label">Dorada</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.duplicados}</div>
+                    <div class="stat-label">Duplicados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.unicosManizales}</div>
+                    <div class="stat-label">Únicos MZ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${estadisticas.unicosDorada}</div>
+                    <div class="stat-label">Únicos DR</div>
+                </div>
+            `;
+            
+            // Mostrar tabla de duplicados
+            mostrarTablaDuplicados();
+            
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function mostrarTablaDuplicados() {
+            const container = document.getElementById('duplicatesContainer');
+            
+            if (duplicados.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>✅ Sin duplicados encontrados</strong> - Todos los códigos internos son únicos entre las sedes.
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Código Interno</th>
+                            <th>Producto Manizales</th>
+                            <th>Producto Dorada</th>
+                            <th>Estado</th>
+                            <th>Próximo Código Libre (Dorada)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            duplicados.forEach((duplicado, index) => {
+                const nombresIguales = duplicado.manizales.nombre.toLowerCase() === duplicado.dorada.nombre.toLowerCase();
+                const estado = nombresIguales ? 'Mismo nombre' : 'Nombres diferentes';
+                const estadoClass = nombresIguales ? 'duplicate-badge' : 'sede-badge';
+                
+                // Encontrar próximo código libre para Dorada
+                const proximoCodigoLibre = encontrarProximoCodigoLibre(duplicado.codigoInterno);
+                
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><span class="code">${duplicado.codigoInterno}</span></td>
+                        <td>${duplicado.manizales.nombre}</td>
+                        <td>${duplicado.dorada.nombre}</td>
+                        <td><span class="${estadoClass}">${estado}</span></td>
+                        <td><span class="code-libre">${proximoCodigoLibre}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        function exportarDuplicados() {
+            if (duplicados.length === 0) {
+                mostrarAlerta('⚠️ No hay duplicados para exportar', 'warning');
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            
+            const data = [];
+            data.push(['REPORTE DE CÓDIGOS DUPLICADOS - MULTI SEDE', '', '', '', '']);
+            data.push(['Fecha:', new Date().toLocaleDateString(), '', '', '']);
+            data.push(['Hora:', new Date().toLocaleTimeString(), '', '', '']);
+            data.push(['', '', '', '', '']);
+            data.push(['#', 'Código Interno', 'Producto Manizales', 'Producto Dorada', 'Estado', 'Próximo Código Libre']);
+            
+            duplicados.forEach((duplicado, index) => {
+                const nombresIguales = duplicado.manizales.nombre.toLowerCase() === duplicado.dorada.nombre.toLowerCase();
+                const estado = nombresIguales ? 'Mismo nombre' : 'Nombres diferentes';
+                const proximoCodigoLibre = encontrarProximoCodigoLibre(duplicado.codigoInterno);
+                
+                data.push([
+                    index + 1,
+                    duplicado.codigoInterno,
+                    duplicado.manizales.nombre,
+                    duplicado.dorada.nombre,
+                    estado,
+                    proximoCodigoLibre
+                ]);
+            });
+            
+            data.push(['', '', '', '', '']);
+            data.push(['RESUMEN', '', '', '', '']);
+            data.push(['Total Manizales:', estadisticas.totalManizales, '', '', '']);
+            data.push(['Total Dorada:', estadisticas.totalDorada, '', '', '']);
+            data.push(['Duplicados encontrados:', estadisticas.duplicados, '', '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Duplicados');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `codigos_duplicados_${fecha}.xlsx`);
+            mostrarAlerta('✅ Reporte de duplicados exportado', 'success');
+        }
+
+        function exportarResumen() {
+            const wb = XLSX.utils.book_new();
+            
+            const data = [];
+            data.push(['RESUMEN EJECUTIVO - ANÁLISIS DE DUPLICADOS', '', '', '']);
+            data.push(['Fecha:', new Date().toLocaleDateString(), '', '']);
+            data.push(['Hora:', new Date().toLocaleTimeString(), '', '']);
+            data.push(['', '', '', '']);
+            data.push(['Métrica', 'Valor', 'Descripción', '']);
+            data.push(['Total Manizales', estadisticas.totalManizales, 'Productos únicos en Manizales', '']);
+            data.push(['Total Dorada', estadisticas.totalDorada, 'Productos únicos en Dorada', '']);
+            data.push(['Duplicados', estadisticas.duplicados, 'Códigos presentes en ambas sedes', '']);
+            data.push(['Únicos Manizales', estadisticas.unicosManizales, 'Solo en Manizales', '']);
+            data.push(['Únicos Dorada', estadisticas.unicosDorada, 'Solo en Dorada', '']);
+            data.push(['', '', '', '']);
+            data.push(['TOP 10 DUPLICADOS', '', '', '']);
+            data.push(['#', 'Código', 'Nombre Manizales', 'Nombre Dorada']);
+            
+            duplicados.slice(0, 10).forEach((duplicado, index) => {
+                data.push([
+                    index + 1,
+                    duplicado.codigoInterno,
+                    duplicado.manizales.nombre,
+                    duplicado.dorada.nombre
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `resumen_duplicados_${fecha}.xlsx`);
+            mostrarAlerta('✅ Resumen ejecutivo exportado', 'success');
+        }
+
+        function reiniciarAnalisis() {
+            if (confirm('¿Estás seguro de que quieres reiniciar el análisis?')) {
+                datosManizales = [];
+                datosDorada = [];
+                duplicados = [];
+                estadisticas = {};
+                
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('startSection').style.display = 'block';
+                
+                mostrarAlerta('🔄 Análisis reiniciado', 'success');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+    </script>
+</body>
+</html> 

@@ -431,6 +431,22 @@
                 <span class="tool-badge">Multi-Sede</span>
             </a>
 
+            <!-- Detector de Duplicados -->
+            <a href="#" class="tool-card administrativo" id="tool-duplicados" onclick="navigateTo('/duplicados'); return false;">
+                <div class="tool-icon">🔍</div>
+                <h3>Detector de Duplicados</h3>
+                <p>Análisis de productos con códigos internos duplicados entre las bases de datos de Manizales y Dorada.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
+            <!-- Códigos Disponibles -->
+            <a href="#" class="tool-card operativo" id="tool-codigos-disponibles" onclick="navigateTo('/codigos-disponibles'); return false;">
+                <div class="tool-icon">📋</div>
+                <h3>Códigos Disponibles</h3>
+                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada. Listado de próximos códigos disponibles.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
             <!-- Control de Precios V2 -->
             <a href="#" class="tool-card operativo" id="tool-spav2" onclick="navigateTo('/spav2'); return false;">
                 <div class="tool-icon">💎</div>
@@ -507,13 +523,13 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios', 'precios-manizales', 'inventarios', 'validador','validador-v2']
+                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -656,7 +672,9 @@
                 'tool-validador-v2': 'validador-v2',
                 'tool-validador-v2-conectado': 'validador-v2-conectado',
                 'tool-control-v2': 'control-v2',
-                'tool-spav2': 'spav2'
+                'tool-spav2': 'spav2',
+                'tool-duplicados': 'duplicados',
+                'tool-codigos-disponibles': 'codigos-disponibles'
             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -704,7 +722,9 @@
             '/validadorv2': 'validadorv2.html',
             '/validadorc': 'validadorc.html',
             '/controlv2': 'controlv2.html',
-            '/spav2': 'spav2.html'
+            '/spav2': 'spav2.html',
+            '/duplicados': 'duplicados.html',
+            '/codigos-disponibles': 'codigos-disponibles.html'
         };
 
         // Función de navegación
