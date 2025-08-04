@@ -329,20 +329,33 @@
             background: #444;
             color: white;
             border: 1px solid #555;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            min-width: 180px;
+            justify-content: center;
         }
 
         .punto-venta-btn:hover {
             background: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .punto-venta-btn.active {
             background: #3498db;
             border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .punto-venta-btn img {
+            border-radius: 4px;
+            background: white;
+            padding: 2px;
         }
 
         .search-bar {
@@ -841,13 +854,15 @@
                         id: 'cristaleria_multifamiliar2', 
                         nombre: 'Cristalería Multifamiliar 2',
                         direccion: 'Cr 18 # 22 06, Manizales',
-                        telefono: '3185242131'
+                        telefono: '3185242131',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
                     },
                     { 
                         id: 'cristaleria_mi_hogar', 
                         nombre: 'Cristalería Mi Hogar',
                         direccion: 'Cll 22 # 18 53, Manizales',
-                        telefono: '3185242131'
+                        telefono: '3185242131',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Mi_Hogar.png'
                     }
                 ]
             },
@@ -861,19 +876,22 @@
                         id: 'cristaleria_multifamiliar', 
                         nombre: 'Cristalería Multifamiliar',
                         direccion: 'Cll 16 # 3 51, La Dorada',
-                        telefono: '3245967523'
+                        telefono: '3245967523',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
                     },
                     { 
                         id: 'cristaleria_el_hogar', 
                         nombre: 'Cristalería El Hogar',
                         direccion: 'Cll 16 # 4 04, La Dorada',
-                        telefono: '3242786480'
+                        telefono: '3242786480',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_El_Hogar.png'
                     },
                     { 
                         id: 'cristaleria_surtitodo', 
                         nombre: 'Cristalería Surtitodo',
                         direccion: 'Cr 4 # 15 55, La Dorada',
-                        telefono: '3100002224'
+                        telefono: '3100002224',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Surtitodo.png'
                     }
                 ]
             }
@@ -980,7 +998,43 @@
             config.puntosVenta.forEach(punto => {
                 const btn = document.createElement('button');
                 btn.className = 'punto-venta-btn';
-                btn.textContent = punto.nombre;
+                
+                // Crear imagen del logo
+                const img = document.createElement('img');
+                img.src = punto.logo;
+                img.alt = punto.nombre;
+                img.style.width = '60px';
+                img.style.height = 'auto';
+                img.style.maxHeight = '40px';
+                img.style.objectFit = 'contain';
+                img.style.marginRight = '10px';
+                
+                // Manejar errores de carga de imagen
+                img.onerror = function() {
+                    console.warn(`No se pudo cargar el logo para ${punto.nombre}`);
+                    this.style.display = 'none';
+                    // Hacer el nombre más prominente si no hay logo
+                    span.style.fontSize = '14px';
+                    span.style.color = '#ffffff';
+                };
+                
+                // Crear span para el nombre (como fallback)
+                const span = document.createElement('span');
+                span.textContent = punto.nombre;
+                span.style.fontSize = '12px';
+                span.style.color = '#666';
+                
+                // Agregar indicador de carga
+                img.onload = function() {
+                    this.style.opacity = '1';
+                };
+                img.style.opacity = '0.7';
+                img.style.transition = 'opacity 0.3s ease';
+                
+                // Agregar imagen y nombre al botón
+                btn.appendChild(img);
+                btn.appendChild(span);
+                
                 btn.onclick = () => seleccionarPuntoVenta(punto.id, punto.nombre);
                 selector.appendChild(btn);
             });
@@ -1386,6 +1440,33 @@
                     return;
                 }
                 
+                // Función para cargar imagen desde URL
+                async function cargarImagenDesdeURL(url) {
+                    try {
+                        const response = await fetch(url);
+                        const arrayBuffer = await response.arrayBuffer();
+                        return arrayBuffer;
+                    } catch (error) {
+                        console.error('Error cargando imagen:', error);
+                        return null;
+                    }
+                }
+
+                // Cargar logo del punto de venta
+                let logoImage = null;
+                if (puntoVenta && puntoVenta.logo) {
+                    console.log('Cargando logo desde:', puntoVenta.logo);
+                    try {
+                        logoImage = await cargarImagenDesdeURL(puntoVenta.logo);
+                        if (!logoImage) {
+                            console.warn('No se pudo cargar el logo, usando texto como fallback');
+                        }
+                    } catch (error) {
+                        console.error('Error cargando logo:', error);
+                        logoImage = null;
+                    }
+                }
+
                 // Crear documento DOCX
                 const doc = new docx.Document({
                     sections: [{
@@ -1404,19 +1485,38 @@
                             }
                         },
                         children: [
-                            // Encabezado
-                            new docx.Paragraph({
-                                children: [
-                                    new docx.TextRun({
-                                        text: cotizacion.puntoVenta,
-                                        bold: true,
-                                        size: 24,
-                                        font: "Calibri"
-                                    })
-                                ],
-                                alignment: docx.AlignmentType.CENTER,
-                                spacing: { after: 400 }
-                            }),
+                            // Logo del punto de venta (si está disponible)
+                            ...(logoImage ? [
+                                new docx.Paragraph({
+                                    children: [
+                                        new docx.ImageRun({
+                                            data: logoImage,
+                                            transformation: {
+                                                width: 200,
+                                                height: 100
+                                            }
+                                        })
+                                    ],
+                                    alignment: docx.AlignmentType.CENTER,
+                                    spacing: { after: 400 }
+                                })
+                            ] : []),
+                            
+                            // Encabezado (solo si no hay logo)
+                            ...(logoImage ? [] : [
+                                new docx.Paragraph({
+                                    children: [
+                                        new docx.TextRun({
+                                            text: cotizacion.puntoVenta,
+                                            bold: true,
+                                            size: 24,
+                                            font: "Calibri"
+                                        })
+                                    ],
+                                    alignment: docx.AlignmentType.CENTER,
+                                    spacing: { after: 400 }
+                                })
+                            ]),
                             
                             // Información del punto de venta
                             new docx.Paragraph({
