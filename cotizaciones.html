@@ -733,6 +733,10 @@
                                 <!-- Se llena dinámicamente según la sede -->
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="numeroCotizacionInput">Número de Cotización:</label>
+                            <input type="number" id="numeroCotizacionInput" placeholder="Ingrese el número de cotización" min="1">
+                        </div>
                     </div>
                 </div>
 
@@ -834,16 +838,16 @@
                 color: '#28a745',
                 puntosVenta: [
                     { 
-                        id: 'cristaleria_multifamiliar', 
-                        nombre: 'Cristalería Multifamiliar',
-                        direccion: 'Cll 10a # 14 47, La Dorada',
-                        telefono: '3100002221'
+                        id: 'cristaleria_multifamiliar2', 
+                        nombre: 'Cristalería Multifamiliar 2',
+                        direccion: 'Cr 18 # 22 06, Manizales',
+                        telefono: '3185242131'
                     },
                     { 
                         id: 'cristaleria_mi_hogar', 
                         nombre: 'Cristalería Mi Hogar',
-                        direccion: 'Cll 15 # 20 30, Manizales',
-                        telefono: '3100002222'
+                        direccion: 'Cll 22 # 18 53, Manizales',
+                        telefono: '3185242131'
                     }
                 ]
             },
@@ -856,19 +860,19 @@
                     { 
                         id: 'cristaleria_multifamiliar', 
                         nombre: 'Cristalería Multifamiliar',
-                        direccion: 'Cll 10a # 14 47, La Dorada',
-                        telefono: '3100002221'
+                        direccion: 'Cll 16 # 3 51, La Dorada',
+                        telefono: '3245967523'
                     },
                     { 
                         id: 'cristaleria_el_hogar', 
                         nombre: 'Cristalería El Hogar',
-                        direccion: 'Cll 20 # 25 40, La Dorada',
-                        telefono: '3100002223'
+                        direccion: 'Cll 16 # 4 04, La Dorada',
+                        telefono: '3242786480'
                     },
                     { 
                         id: 'cristaleria_surtitodo', 
                         nombre: 'Cristalería Surtitodo',
-                        direccion: 'Cll 30 # 35 50, La Dorada',
+                        direccion: 'Cr 4 # 15 55, La Dorada',
                         telefono: '3100002224'
                     }
                 ]
@@ -1143,7 +1147,7 @@
                             <input type="number" class="quantity-input" value="${producto.cantidad}" 
                                    onchange="actualizarCantidad(${index}, this.value)">
                         </td>
-                        <td>$${producto.subtotal.toLocaleString('es-CO')}</td>
+                        <td>${formatearNumero(producto.subtotal)}</td>
                         <td><button class="btn" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarProducto(${index})">❌</button></td>
                     </tr>
                 `;
@@ -1197,9 +1201,9 @@
             // Contenido del popup
             popup.innerHTML = `
                 <div style="margin-bottom: 5px;"><strong>Precios de referencia:</strong></div>
-                <div>Mayorista: $${producto.precioMayorista.toLocaleString('es-CO')}</div>
-                <div>Minorista: $${producto.precioMinorista.toLocaleString('es-CO')}</div>
-                <div>Estándar: $${producto.precioEstandar.toLocaleString('es-CO')}</div>
+                                        <div>Mayorista: ${formatearNumero(producto.precioMayorista)}</div>
+                        <div>Minorista: ${formatearNumero(producto.precioMinorista)}</div>
+                        <div>Estándar: ${formatearNumero(producto.precioEstandar)}</div>
             `;
             
             popup.classList.add('show');
@@ -1220,19 +1224,19 @@
                 const numeroFormateado = numero.toFixed(2);
                 // Si termina en .00, mostrar solo la parte entera
                 if (numeroFormateado.endsWith('.00')) {
-                    return Math.floor(numero).toLocaleString('es-CO');
+                    return `$ ${Math.floor(numero).toLocaleString('es-CO')}`;
                 }
                 // Si termina en .0, mostrar solo un decimal
                 if (numeroFormateado.endsWith('.0')) {
-                    return numero.toFixed(1).replace('.', ',');
+                    return `$ ${numero.toFixed(1).replace('.', ',')}`;
                 }
                 // En caso contrario, mostrar con dos decimales
-                return numeroFormateado.replace('.', ',');
+                return `$ ${numeroFormateado.replace('.', ',')}`;
             };
             
-            document.getElementById('subtotal').textContent = `$${formatearNumero(subtotal)}`;
-            document.getElementById('iva').textContent = `$${formatearNumero(iva)}`;
-            document.getElementById('total').textContent = `$${formatearNumero(total)}`;
+            document.getElementById('subtotal').textContent = formatearNumero(subtotal);
+            document.getElementById('iva').textContent = formatearNumero(iva);
+            document.getElementById('total').textContent = formatearNumero(total);
         }
 
         function limpiarBusqueda() {
@@ -1254,6 +1258,7 @@
             
             if (confirm('¿Estás seguro de que quieres limpiar toda la cotización?')) {
                 productosCotizacion = [];
+                document.getElementById('numeroCotizacionInput').value = '';
                 actualizarTablaProductos();
                 actualizarResumen();
                 mostrarAlerta('✅ Cotización limpiada', 'success');
@@ -1325,8 +1330,21 @@
                 console.log('Información del punto de venta:', { direccionPuntoVenta, telefonoPuntoVenta });
                 console.log('Datos de la cotización:', cotizacion);
                 
-                // Generar número de cotización único
-                const numeroCotizacion = Math.floor(Math.random() * 1000) + 1;
+                // Obtener número de cotización del input
+                const numeroCotizacionInput = document.getElementById('numeroCotizacionInput');
+                const numeroCotizacion = numeroCotizacionInput.value.trim();
+                
+                if (!numeroCotizacion) {
+                    mostrarAlerta('⚠️ Por favor ingrese el número de cotización', 'warning');
+                    return;
+                }
+                
+                // Validar que sea un número válido y positivo
+                const numeroCotizacionInt = parseInt(numeroCotizacion);
+                if (isNaN(numeroCotizacionInt) || numeroCotizacionInt <= 0) {
+                    mostrarAlerta('⚠️ El número de cotización debe ser un número positivo válido', 'warning');
+                    return;
+                }
                 
                 // Crear documento DOCX
                 const doc = new docx.Document({
@@ -1352,7 +1370,8 @@
                                     new docx.TextRun({
                                         text: cotizacion.puntoVenta,
                                         bold: true,
-                                        size: 24
+                                        size: 24,
+                                        font: "Calibri"
                                     })
                                 ],
                                 alignment: docx.AlignmentType.CENTER,
@@ -1364,7 +1383,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: direccionPuntoVenta,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 alignment: docx.AlignmentType.CENTER,
@@ -1375,7 +1395,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: `Tel: ${telefonoPuntoVenta}`,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 alignment: docx.AlignmentType.CENTER,
@@ -1387,7 +1408,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: `Fecha: ${cotizacion.fecha}`,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1398,7 +1420,8 @@
                                     new docx.TextRun({
                                         text: `Número de cotización: ${numeroCotizacion}`,
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 400 }
@@ -1410,7 +1433,8 @@
                                     new docx.TextRun({
                                         text: 'A:',
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1420,7 +1444,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: cotizacion.cliente.nombre,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1430,7 +1455,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: `Email: ${cotizacion.cliente.email}`,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1440,8 +1466,9 @@
                                 new docx.Paragraph({
                                     children: [
                                         new docx.TextRun({
-                                            text: `Celular: ${cotizacion.cliente.celular}`,
-                                            size: 20
+                                                                                    text: `Celular: ${cotizacion.cliente.celular}`,
+                                        size: 20,
+                                        font: "Calibri"
                                         })
                                     ],
                                     spacing: { after: 200 }
@@ -1452,8 +1479,9 @@
                                 new docx.Paragraph({
                                     children: [
                                         new docx.TextRun({
-                                            text: `Documento: ${cotizacion.cliente.documento}`,
-                                            size: 20
+                                                                                    text: `Documento: ${cotizacion.cliente.documento}`,
+                                        size: 20,
+                                        font: "Calibri"
                                         })
                                     ],
                                     spacing: { after: 200 }
@@ -1464,8 +1492,9 @@
                                 new docx.Paragraph({
                                     children: [
                                         new docx.TextRun({
-                                            text: `Dirección: ${cotizacion.cliente.direccion}`,
-                                            size: 20
+                                                                                    text: `Dirección: ${cotizacion.cliente.direccion}`,
+                                        size: 20,
+                                        font: "Calibri"
                                         })
                                     ],
                                     spacing: { after: 400 }
@@ -1478,7 +1507,8 @@
                                     new docx.TextRun({
                                         text: 'Cotización de Productos para el Hogar y Cocina',
                                         bold: true,
-                                        size: 24
+                                        size: 24,
+                                        font: "Calibri"
                                     })
                                 ],
                                 alignment: docx.AlignmentType.CENTER,
@@ -1490,7 +1520,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: 'Estimado/a Cliente,',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1500,7 +1531,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: 'Agradecemos su interés en nuestros productos para el hogar y cocina. Con gusto le presentamos la cotización solicitada, la cual es válida por 30 días a partir de la fecha de emisión.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 400 }
@@ -1511,7 +1543,8 @@
                                     new docx.TextRun({
                                         text: 'Detalles de la Cotización:',
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 400 }
@@ -1561,13 +1594,13 @@
                                                     children: [new docx.Paragraph({ text: producto.nombre })]
                                                 }),
                                                 new docx.TableCell({
-                                                    children: [new docx.Paragraph({ text: `$${producto.precioCotizacion.toLocaleString('es-CO')}`, alignment: docx.AlignmentType.RIGHT })]
+                                                    children: [new docx.Paragraph({ text: formatearNumero(producto.precioCotizacion), alignment: docx.AlignmentType.RIGHT })]
                                                 }),
                                                 new docx.TableCell({
                                                     children: [new docx.Paragraph({ text: producto.cantidad.toString(), alignment: docx.AlignmentType.CENTER })]
                                                 }),
                                                 new docx.TableCell({
-                                                    children: [new docx.Paragraph({ text: `$${producto.subtotal.toLocaleString('es-CO')}`, alignment: docx.AlignmentType.RIGHT })]
+                                                    children: [new docx.Paragraph({ text: formatearNumero(producto.subtotal), alignment: docx.AlignmentType.RIGHT })]
                                                 })
                                             ]
                                         })
@@ -1579,33 +1612,39 @@
                             new docx.Paragraph({
                                 children: [
                                     new docx.TextRun({
-                                        text: `Subtotal: $${cotizacion.subtotal.toLocaleString('es-CO')}`,
+                                        text: `Subtotal: ${formatearNumero(cotizacion.subtotal)}`,
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
+                                alignment: docx.AlignmentType.RIGHT,
                                 spacing: { after: 200 }
                             }),
                             
                             new docx.Paragraph({
                                 children: [
                                     new docx.TextRun({
-                                        text: `IVA (19%): $${cotizacion.iva.toLocaleString('es-CO')}`,
+                                        text: `IVA (19%): ${formatearNumero(cotizacion.iva)}`,
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
+                                alignment: docx.AlignmentType.RIGHT,
                                 spacing: { after: 200 }
                             }),
                             
                             new docx.Paragraph({
                                 children: [
                                     new docx.TextRun({
-                                        text: `Total: $${cotizacion.total.toLocaleString('es-CO')}`,
+                                        text: `Total: ${formatearNumero(cotizacion.total)}`,
                                         bold: true,
-                                        size: 24
+                                        size: 24,
+                                        font: "Calibri"
                                     })
                                 ],
+                                alignment: docx.AlignmentType.RIGHT,
                                 spacing: { after: 400 }
                             }),
                             
@@ -1615,7 +1654,8 @@
                                     new docx.TextRun({
                                         text: 'Términos Generales:',
                                         bold: true,
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1625,7 +1665,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '1. Validez de la cotización: La cotización es válida por 30 días a partir de la fecha de emisión. Pasado este plazo, los precios pueden estar sujetos a cambios según disponibilidad o modificaciones en costos de proveedores.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1635,7 +1676,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '2. Forma de pago: El pago se debe realizar de la siguiente manera: 100% al momento de la orden. Pagos a través de transferencia bancaria o efectivo.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1645,7 +1687,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '3. Plazo de entrega: Los productos serán entregados de forma inmediata o dentro de los 15 días hábiles después de recibir el pago de la orden.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1655,7 +1698,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '4. Condiciones de entrega: Los productos serán entregados en la misma dirección del punto de venta.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1665,7 +1709,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '5. Garantía: Todos nuestros electrodomésticos cuentan con una garantía de 1 año, cubriendo defectos de fabricación.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1675,7 +1720,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '6. Devoluciones y cambios: Los productos pueden ser devueltos o cambiados dentro de los primeros 5 días calendario después de la compra.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1685,7 +1731,8 @@
                                 children: [
                                     new docx.TextRun({
                                         text: '7. Impuestos: Todos los precios incluyen el IVA del 19% según la legislación vigente en Colombia.',
-                                        size: 20
+                                        size: 20,
+                                        font: "Calibri"
                                     })
                                 ],
                                 spacing: { after: 200 }
@@ -1778,8 +1825,15 @@
                     
                     const a = document.createElement('a');
                     a.href = url;
-                    const fecha = new Date().toISOString().slice(0,10);
-                    a.download = `cotizacion_${numeroCotizacion}_${fecha}.docx`;
+                    const fecha = new Date().toISOString().slice(0, 10);
+
+                    // Limpiar y limitar el nombre del cliente
+                    let nombreCliente = cotizacion.cliente.nombre
+                        .replace(/\s+/g, '_')           // reemplaza espacios por _
+                        .replace(/[^\w\-]/g, '')        // elimina caracteres especiales
+                        .slice(0, 20);                  // límite de 20 caracteres (ajustable)
+
+                    a.download = `cotizacion_${numeroCotizacion}_${nombreCliente}.docx`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -1810,6 +1864,7 @@
             productosCotizacion = [];
             sedeActual = '';
             puntoVentaSeleccionado = '';
+            document.getElementById('numeroCotizacionInput').value = '';
             
             // Volver a la pantalla de selección
             document.getElementById('cotizacionSection').style.display = 'none';
