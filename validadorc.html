@@ -758,6 +758,8 @@
         let notFoundCount = 0;
         let currentMode = 'pistol';
         let cameraActive = false;
+        let ultimoCodigo = '';
+        let tiempoUltimo = 0;
         let sedeActual = '';
 
         // Configuración de sedes y sus archivos
@@ -1043,6 +1045,12 @@
             const status = document.getElementById('cameraStatus');
             const startBtn = document.getElementById('startCameraBtn');
             const stopBtn = document.getElementById('stopCameraBtn');
+            const output = document.getElementById('codigoDetectado'); // opcional para mostrar el código
+
+            if (cameraActive) {
+                console.warn('Cámara ya está activa');
+                return;
+            }
 
             status.textContent = 'Inicializando cámara...';
             startBtn.disabled = true;
@@ -1059,10 +1067,10 @@
                     }
                 },
                 locator: {
-                    patchSize: "medium",
-                    halfSample: true
+                    patchSize: "large",    // Mejora detección en móviles y códigos pequeños
+                    halfSample: false
                 },
-                numOfWorkers: 2,
+                numOfWorkers: navigator.hardwareConcurrency ? 2 : 0,
                 decoder: {
                     readers: [
                         "code_128_reader",
@@ -1077,34 +1085,55 @@
                     ]
                 },
                 locate: true
-            }, function(err) {
+            }, function (err) {
                 if (err) {
                     console.error('Error inicializando cámara:', err);
-                    status.textContent = 'Error: No se pudo acceder a la cámara';
+                    status.textContent = '❌ No se pudo acceder a la cámara';
                     startBtn.disabled = false;
                     mostrarError('No se pudo acceder a la cámara. Verifique permisos.');
                     return;
                 }
-                
+
                 console.log('Cámara inicializada correctamente');
                 Quagga.start();
                 cameraActive = true;
                 status.textContent = '✅ Cámara activa - Apunte al código de barras';
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
-                
+
                 mostrarIndicadorDeteccion();
             });
 
-            Quagga.onDetected(function(result) {
-                const codigo = result.codeResult.code;
-                console.log('Código detectado por cámara:', codigo);
-                
-                if (navigator.vibrate) {
-                    navigator.vibrate(100);
+            Quagga.onDetected(function (result) {
+                const code = result.codeResult.code;
+
+                // Validar calidad de lectura
+                const errores = result.codeResult.decodedCodes
+                    .map(x => x.error)
+                    .filter(x => x !== undefined);
+                const promedioError = errores.reduce((a, b) => a + b, 0) / errores.length;
+
+                if (promedioError > 0.2) {
+                    console.warn('Lectura ignorada por baja calidad:', code);
+                    return;
                 }
-                
-                procesarCodigoDetectado(codigo);
+
+                const ahora = Date.now();
+
+                // Evitar duplicados inmediatos
+                if (code === ultimoCodigo && (ahora - tiempoUltimo < 3000)) {
+                    return;
+                }
+
+                ultimoCodigo = code;
+                tiempoUltimo = ahora;
+
+                console.log('✅ Código detectado:', code);
+                if (navigator.vibrate) navigator.vibrate(100);
+
+                if (output) output.textContent = `📦 Código: ${code}`;
+
+                procesarCodigoDetectado(code);
                 mostrarDeteccionExitosa();
             });
         }
