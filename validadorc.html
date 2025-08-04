@@ -852,12 +852,12 @@
                 <div class="camera-section" id="cameraSection">
                     <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px; text-align: center;">📷 Lector de Códigos - Cámara</h3>
                     
-                    <!-- Toggle de Layout -->
-                    <div class="layout-toggle">
-                        <button class="layout-btn active" id="overlayBtn" onclick="cambiarLayout('overlay')">
+                    <!-- Toggle de Layout (Oculto temporalmente) -->
+                    <div class="layout-toggle" style="display: none;">
+                        <button class="layout-btn" id="overlayBtn" onclick="cambiarLayout('overlay')">
                             📐 Guía
                         </button>
-                        <button class="layout-btn" id="compactBtn" onclick="cambiarLayout('compact')">
+                        <button class="layout-btn active" id="compactBtn" onclick="cambiarLayout('compact')">
                             📱 Compacto
                         </button>
                     </div>
@@ -871,15 +871,15 @@
                         </button>
                     </div>
                     
-                    <!-- Layout Overlay -->
-                    <div class="camera-container" id="cameraOverlay" style="display: block;">
+                    <!-- Layout Overlay (Oculto) -->
+                    <div class="camera-container" id="cameraOverlay" style="display: none;">
                         <div id="camera-preview"></div>
                         <div class="camera-overlay">
                             <div class="camera-guide"></div>
                         </div>
                     </div>
                     
-                    <!-- Layout Compact -->
+                    <!-- Layout Compact (Por defecto) -->
                     <div class="camera-compact" id="cameraCompact" style="display: none;">
                         <div id="camera-preview-compact"></div>
                     </div>
@@ -971,7 +971,7 @@
         let sedeActual = '';
         let cameraTimeout = null;
         let cameraStartTime = 0;
-        let cameraLayoutMode = 'overlay'; // 'overlay' o 'compact'
+        let cameraLayoutMode = 'compact'; // 'overlay' o 'compact'
 
         // Configuración de sedes y sus archivos
         const sedesConfig = {
@@ -1320,6 +1320,9 @@
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
 
+                // Mostrar recuadro de cámara
+                mostrarRecuadroCamera();
+
                 mostrarIndicadorDeteccion();
                 
                 // Iniciar timeout de 1 minuto
@@ -1389,6 +1392,9 @@
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
                 
+                // Ocultar recuadro de cámara
+                ocultarRecuadroCamera();
+                
                 // Limpiar preview según el layout actual
                 const preview = cameraLayoutMode === 'overlay' ? 
                     document.getElementById('camera-preview') : 
@@ -1432,6 +1438,19 @@
             setTimeout(() => {
                 iniciarCamera();
             }, 500);
+        }
+
+        function mostrarRecuadroCamera() {
+            if (cameraLayoutMode === 'overlay') {
+                document.getElementById('cameraOverlay').style.display = 'block';
+            } else {
+                document.getElementById('cameraCompact').style.display = 'block';
+            }
+        }
+
+        function ocultarRecuadroCamera() {
+            document.getElementById('cameraOverlay').style.display = 'none';
+            document.getElementById('cameraCompact').style.display = 'none';
         }
 
         function cambiarLayout(modo) {
@@ -1544,6 +1563,11 @@
             const display = document.getElementById('priceDisplay');
             const config = sedesConfig[sedeActual];
             
+            // Ocultar recuadro de cámara si está activo
+            if (cameraActive) {
+                ocultarRecuadroCamera();
+            }
+            
             display.innerHTML = '';
             
             const nuevoContenido = document.createElement('div');
@@ -1615,6 +1639,11 @@
             const display = document.getElementById('priceDisplay');
             const config = sedesConfig[sedeActual];
             
+            // Ocultar recuadro de cámara si está activo
+            if (cameraActive) {
+                ocultarRecuadroCamera();
+            }
+            
             display.innerHTML = `
                 <div class="product-not-found">
                     <div class="not-found-icon">❌</div>
@@ -1681,6 +1710,7 @@
                 // Detener cámara si está activa
                 if (cameraActive) {
                     detenerCamera();
+                    ocultarRecuadroCamera();
                 }
                 
                 // Reset datos
