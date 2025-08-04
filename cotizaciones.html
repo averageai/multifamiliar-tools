@@ -1033,8 +1033,13 @@
                 fechaActualizacion: 20 // "Última Actualización"
             };
             
+            console.log('Mapeo de índices:', indices);
+            
             productosData = dataRows.map((row, index) => {
                 if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                    if (index < 5) { // Solo mostrar los primeros 5 para debug
+                        console.log(`Fila ${index} descartada - código: "${row[indices.codigoInterno]}", nombre: "${row[indices.nombre]}"`);
+                    }
                     return null;
                 }
                 
@@ -1043,7 +1048,7 @@
                 const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
                 const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
                 
-                return {
+                const producto = {
                     codigoInterno: row[indices.codigoInterno].toString().trim(),
                     nombre: row[indices.nombre].trim(),
                     costo: costo,
@@ -1054,9 +1059,16 @@
                     proveedor: row[indices.proveedor] || '',
                     fechaActualizacion: row[indices.fechaActualizacion] || ''
                 };
+                
+                if (index < 3) { // Solo mostrar los primeros 3 productos para debug
+                    console.log(`Producto ${index + 1}:`, producto);
+                }
+                
+                return producto;
             }).filter(p => p !== null);
             
             console.log('Productos procesados:', productosData.length);
+            console.log('Primeros 3 productos:', productosData.slice(0, 3));
         }
 
         function buscarYAgregar() {
@@ -1066,10 +1078,15 @@
                 return;
             }
             
+            console.log('Buscando producto con código:', codigo);
+            console.log('Productos disponibles:', productosData.length);
+            
             // Buscar el producto
             const producto = productosData.find(p => p.codigoInterno === codigo);
             
             if (producto) {
+                console.log('Producto encontrado:', producto);
+                
                 // Verificar si ya está en la cotización
                 const yaExiste = productosCotizacion.find(p => p.codigoInterno === codigo);
                 if (yaExiste) {
@@ -1080,16 +1097,21 @@
                 }
                 
                 // Agregar a la cotización con precio estándar por defecto
-                productosCotizacion.push({
+                const productoAgregado = {
                     ...producto,
                     precioCotizacion: producto.precioEstandar,
                     cantidad: 1,
                     subtotal: producto.precioEstandar
-                });
+                };
+                
+                productosCotizacion.push(productoAgregado);
+                console.log('Producto agregado a cotización:', productoAgregado);
+                console.log('Total productos en cotización:', productosCotizacion.length);
                 
                 mostrarAlerta('✅ Producto encontrado y agregado a la cotización', 'success');
                 
             } else {
+                console.log('Producto no encontrado');
                 mostrarAlerta('❌ Producto no encontrado en la base de datos', 'warning');
             }
             
@@ -1103,7 +1125,12 @@
         function actualizarTablaProductos() {
             const container = document.getElementById('productosTable');
             
+            console.log('Actualizando tabla de productos...');
+            console.log('Productos en cotización:', productosCotizacion.length);
+            console.log('Productos:', productosCotizacion);
+            
             if (productosCotizacion.length === 0) {
+                console.log('No hay productos, mostrando mensaje vacío');
                 container.innerHTML = `
                     <div style="text-align: center; padding: 30px; color: #6c757d;">
                         <h3>📝 Cotización vacía</h3>
@@ -1114,6 +1141,7 @@
                 return;
             }
 
+            console.log('Generando tabla con productos...');
             let tableHTML = `
                 <table>
                     <thead>
@@ -1131,6 +1159,7 @@
             `;
 
             productosCotizacion.forEach((producto, index) => {
+                console.log(`Procesando producto ${index + 1}:`, producto);
                 tableHTML += `
                     <tr>
                         <td>${index + 1}</td>
@@ -1154,9 +1183,11 @@
             });
 
             tableHTML += `</tbody></table>`;
+            console.log('HTML de tabla generado, actualizando contenedor...');
             container.innerHTML = tableHTML;
             
             document.getElementById('resumenCotizacion').style.display = 'block';
+            console.log('Tabla actualizada correctamente');
         }
 
         function actualizarPrecio(index, nuevoPrecio) {
@@ -1214,25 +1245,25 @@
             }, 3000);
         }
 
+        // Función global para formatear números
+        function formatearNumero(numero) {
+            const numeroFormateado = numero.toFixed(2);
+            // Si termina en .00, mostrar solo la parte entera
+            if (numeroFormateado.endsWith('.00')) {
+                return `$ ${Math.floor(numero).toLocaleString('es-CO')}`;
+            }
+            // Si termina en .0, mostrar solo un decimal
+            if (numeroFormateado.endsWith('.0')) {
+                return `$ ${numero.toFixed(1).replace('.', ',')}`;
+            }
+            // En caso contrario, mostrar con dos decimales
+            return `$ ${numeroFormateado.replace('.', ',')}`;
+        }
+
         function actualizarResumen() {
             const total = productosCotizacion.reduce((sum, producto) => sum + producto.subtotal, 0);
             const subtotal = total / 1.19;
             const iva = total - subtotal;
-            
-            // Formatear números sin redondear a .000 pero manteniendo decimales cuando existan
-            const formatearNumero = (numero) => {
-                const numeroFormateado = numero.toFixed(2);
-                // Si termina en .00, mostrar solo la parte entera
-                if (numeroFormateado.endsWith('.00')) {
-                    return `$ ${Math.floor(numero).toLocaleString('es-CO')}`;
-                }
-                // Si termina en .0, mostrar solo un decimal
-                if (numeroFormateado.endsWith('.0')) {
-                    return `$ ${numero.toFixed(1).replace('.', ',')}`;
-                }
-                // En caso contrario, mostrar con dos decimales
-                return `$ ${numeroFormateado.replace('.', ',')}`;
-            };
             
             document.getElementById('subtotal').textContent = formatearNumero(subtotal);
             document.getElementById('iva').textContent = formatearNumero(iva);
