@@ -1353,6 +1353,8 @@
         async function generarPDFCotizacion(cotizacion) {
             try {
                 console.log('Iniciando generación de DOCX...');
+                console.log('Estado de la librería docx:', typeof docx);
+                console.log('docx disponible:', docx);
                 
                 // Verificar que la librería docx esté disponible
                 if (typeof docx === 'undefined') {
@@ -1852,9 +1854,13 @@
                 });
 
                 console.log('Creando documento DOCX...');
+                console.log('Estructura del documento:', JSON.stringify(doc, null, 2));
+                console.log('Tipo de documento:', typeof doc);
+                console.log('Constructor del documento:', doc.constructor.name);
                 
                 try {
                     // Generar y descargar el documento
+                    console.log('Iniciando Packer.toBlob...');
                     const buffer = await docx.Packer.toBlob(doc);
                     console.log('Documento creado, generando blob...');
                     
@@ -1881,6 +1887,8 @@
                     mostrarAlerta('✅ Cotización DOCX generada y descargada', 'success');
                 } catch (docError) {
                     console.error('Error en la generación del documento:', docError);
+                    console.error('Stack trace:', docError.stack);
+                    console.error('Error completo:', docError);
                     throw new Error('Error al generar el documento DOCX: ' + docError.message);
                 }
                 
