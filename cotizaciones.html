@@ -445,7 +445,7 @@
             border-radius: 6px;
             padding: 8px;
             font-size: 11px;
-            z-index: 1000;
+            z-index: 9999;
             display: none;
         }
 
@@ -1191,8 +1191,8 @@
             
             // Posicionar popup
             const rect = event.target.getBoundingClientRect();
-            popup.style.left = rect.right + 'px';
-            popup.style.top = rect.top + 'px';
+            popup.style.left = `${rect.left + window.scrollX + rect.width + 10}px`;;
+            popup.style.top = `${rect.top + window.scrollY}px`;
             
             // Contenido del popup
             popup.innerHTML = `
@@ -1541,6 +1541,9 @@
                                             }),
                                             new docx.TableCell({
                                                 children: [new docx.Paragraph({ text: 'Cantidad', alignment: docx.AlignmentType.CENTER })]
+                                            }),
+                                            new docx.TableCell({
+                                                children: [new docx.Paragraph({ text: 'Subtotal', alignment: docx.AlignmentType.CENTER })]
                                             })
                                         ]
                                     }),
@@ -1562,6 +1565,9 @@
                                                 }),
                                                 new docx.TableCell({
                                                     children: [new docx.Paragraph({ text: producto.cantidad.toString(), alignment: docx.AlignmentType.CENTER })]
+                                                }),
+                                                new docx.TableCell({
+                                                    children: [new docx.Paragraph({ text: `$${producto.subtotal.toLocaleString('es-CO')}`, alignment: docx.AlignmentType.RIGHT })]
                                                 })
                                             ]
                                         })
