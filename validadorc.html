@@ -622,6 +622,168 @@
             0%, 100% { opacity: 0; }
             50% { opacity: 1; }
         }
+
+        /* Popup de timeout */
+        .timeout-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+        }
+
+        .timeout-content {
+            background: #2a2a2a;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .timeout-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .timeout-message {
+            color: #a0a0a0;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .timeout-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .timeout-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .timeout-btn.manual {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .timeout-btn.manual:hover {
+            background: #5a32a3;
+        }
+
+        .timeout-btn.retry {
+            background: #28a745;
+            color: white;
+        }
+
+        .timeout-btn.retry:hover {
+            background: #218838;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Layouts de cámara */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .camera-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 100px;
+            border: 3px solid #28a745;
+            border-radius: 8px;
+            background: rgba(40, 167, 69, 0.1);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .camera-guide::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #28a745, #20c997, #28a745);
+            background-size: 200% 200%;
+            animation: borderGlow 2s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .camera-compact {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .layout-toggle {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+
+        .layout-btn {
+            background: #333;
+            color: #a0a0a0;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.3s;
+        }
+
+        .layout-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -689,6 +851,17 @@
                 <!-- Modo Cámara -->
                 <div class="camera-section" id="cameraSection">
                     <h3 style="color: #4ade80; margin-bottom: 12px; font-size: 14px; text-align: center;">📷 Lector de Códigos - Cámara</h3>
+                    
+                    <!-- Toggle de Layout -->
+                    <div class="layout-toggle">
+                        <button class="layout-btn active" id="overlayBtn" onclick="cambiarLayout('overlay')">
+                            📐 Guía
+                        </button>
+                        <button class="layout-btn" id="compactBtn" onclick="cambiarLayout('compact')">
+                            📱 Compacto
+                        </button>
+                    </div>
+                    
                     <div class="camera-controls">
                         <button class="camera-btn" id="startCameraBtn" onclick="iniciarCamera()">
                             <span>▶️</span> Iniciar Cámara
@@ -697,7 +870,20 @@
                             <span>⏹️</span> Detener
                         </button>
                     </div>
-                    <div id="camera-preview"></div>
+                    
+                    <!-- Layout Overlay -->
+                    <div class="camera-container" id="cameraOverlay" style="display: block;">
+                        <div id="camera-preview"></div>
+                        <div class="camera-overlay">
+                            <div class="camera-guide"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Layout Compact -->
+                    <div class="camera-compact" id="cameraCompact" style="display: none;">
+                        <div id="camera-preview-compact"></div>
+                    </div>
+                    
                     <div class="camera-status" id="cameraStatus">
                         Cámara inactiva - Presione "Iniciar Cámara" para comenzar
                     </div>
@@ -750,6 +936,28 @@
         </div>
     </div>
 
+    <!-- Popup de Timeout -->
+    <div class="timeout-popup" id="timeoutPopup" style="display: none;">
+        <div class="timeout-content">
+            <div class="timeout-title">⏰ Tiempo Agotado</div>
+            <div class="timeout-message">
+                No se detectó ningún <strong>código de barras válido</strong> en 1 minuto.
+                <br><br>
+                <small style="color: #888;">(Solo se consideran válidos los códigos que encuentren productos en la base de datos)</small>
+                <br><br>
+                ¿Qué deseas hacer?
+            </div>
+            <div class="timeout-buttons">
+                <button class="timeout-btn manual" onclick="pasarAModoManual()">
+                    🔫 Pasar a Modo Manual
+                </button>
+                <button class="timeout-btn retry" onclick="reintentarCamera()">
+                    🔄 Volver a Intentarlo
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let productosData = [];
         let recentScans = [];
@@ -761,6 +969,9 @@
         let ultimoCodigo = '';
         let tiempoUltimo = 0;
         let sedeActual = '';
+        let cameraTimeout = null;
+        let cameraStartTime = 0;
+        let cameraLayoutMode = 'overlay'; // 'overlay' o 'compact'
 
         // Configuración de sedes y sus archivos
         const sedesConfig = {
@@ -1041,19 +1252,27 @@
 
         // Funciones de cámara
         function iniciarCamera() {
-            const preview = document.getElementById('camera-preview');
+            const preview = cameraLayoutMode === 'overlay' ? 
+                document.getElementById('camera-preview') : 
+                document.getElementById('camera-preview-compact');
             const status = document.getElementById('cameraStatus');
             const startBtn = document.getElementById('startCameraBtn');
             const stopBtn = document.getElementById('stopCameraBtn');
-            const output = document.getElementById('codigoDetectado'); // opcional para mostrar el código
 
             if (cameraActive) {
                 console.warn('Cámara ya está activa');
                 return;
             }
 
+            // Limpiar timeout anterior si existe
+            if (cameraTimeout) {
+                clearTimeout(cameraTimeout);
+                cameraTimeout = null;
+            }
+
             status.textContent = 'Inicializando cámara...';
             startBtn.disabled = true;
+            cameraStartTime = Date.now();
 
             Quagga.init({
                 inputStream: {
@@ -1102,6 +1321,9 @@
                 stopBtn.disabled = false;
 
                 mostrarIndicadorDeteccion();
+                
+                // Iniciar timeout de 1 minuto
+                iniciarTimeoutCamera();
             });
 
             Quagga.onDetected(function (result) {
@@ -1131,10 +1353,20 @@
                 console.log('✅ Código detectado:', code);
                 if (navigator.vibrate) navigator.vibrate(100);
 
-                if (output) output.textContent = `📦 Código: ${code}`;
-
-                procesarCodigoDetectado(code);
-                mostrarDeteccionExitosa();
+                // Verificar si el código encuentra un producto
+                const producto = buscarProducto(code);
+                if (producto) {
+                    // Detener cámara automáticamente al encontrar producto
+                    detenerCamera();
+                    procesarCodigoDetectado(code);
+                    mostrarDeteccionExitosa();
+                    status.textContent = '✅ Producto encontrado - Cámara detenida';
+                } else {
+                    // Código no válido, no agregar al historial y NO reiniciar timeout
+                    console.log('❌ Código no válido:', code);
+                    status.textContent = '❌ Código no válido - Continuando búsqueda...';
+                    // El timeout continúa corriendo, no se reinicia
+                }
             });
         }
 
@@ -1142,6 +1374,12 @@
             if (cameraActive) {
                 Quagga.stop();
                 cameraActive = false;
+                
+                // Limpiar timeout
+                if (cameraTimeout) {
+                    clearTimeout(cameraTimeout);
+                    cameraTimeout = null;
+                }
                 
                 const status = document.getElementById('cameraStatus');
                 const startBtn = document.getElementById('startCameraBtn');
@@ -1151,10 +1389,72 @@
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
                 
-                const preview = document.getElementById('camera-preview');
+                // Limpiar preview según el layout actual
+                const preview = cameraLayoutMode === 'overlay' ? 
+                    document.getElementById('camera-preview') : 
+                    document.getElementById('camera-preview-compact');
                 preview.innerHTML = '';
                 
                 console.log('Cámara detenida');
+            }
+        }
+
+        function iniciarTimeoutCamera() {
+            // Limpiar timeout anterior si existe
+            if (cameraTimeout) {
+                clearTimeout(cameraTimeout);
+            }
+            
+            cameraTimeout = setTimeout(() => {
+                if (cameraActive) {
+                    console.log('⏰ Timeout de 1 minuto alcanzado - Sin detección válida');
+                    detenerCamera();
+                    mostrarPopupTimeout();
+                }
+            }, 60000); // 1 minuto
+            
+            console.log('⏰ Timeout iniciado - 1 minuto para detección válida');
+        }
+
+        function mostrarPopupTimeout() {
+            const popup = document.getElementById('timeoutPopup');
+            popup.style.display = 'flex';
+        }
+
+        function pasarAModoManual() {
+            document.getElementById('timeoutPopup').style.display = 'none';
+            cambiarModo('pistol');
+            mostrarAlerta('🔫 Cambiado a modo pistola', 'success');
+        }
+
+        function reintentarCamera() {
+            document.getElementById('timeoutPopup').style.display = 'none';
+            setTimeout(() => {
+                iniciarCamera();
+            }, 500);
+        }
+
+        function cambiarLayout(modo) {
+            cameraLayoutMode = modo;
+            
+            if (modo === 'overlay') {
+                document.getElementById('overlayBtn').classList.add('active');
+                document.getElementById('compactBtn').classList.remove('active');
+                document.getElementById('cameraOverlay').style.display = 'block';
+                document.getElementById('cameraCompact').style.display = 'none';
+            } else {
+                document.getElementById('overlayBtn').classList.remove('active');
+                document.getElementById('compactBtn').classList.add('active');
+                document.getElementById('cameraOverlay').style.display = 'none';
+                document.getElementById('cameraCompact').style.display = 'block';
+            }
+            
+            // Si la cámara está activa, reiniciarla con el nuevo layout
+            if (cameraActive) {
+                detenerCamera();
+                setTimeout(() => {
+                    iniciarCamera();
+                }, 500);
             }
         }
 
@@ -1231,7 +1531,10 @@
                 console.log('❌ Producto no encontrado para código:', codigo);
                 notFoundCount++;
                 mostrarProductoNoEncontrado(codigo);
-                agregarAHistorial(codigo, 'NO ENCONTRADO', false);
+                // Solo agregar al historial si viene del modo pistola
+                if (currentMode === 'pistol') {
+                    agregarAHistorial(codigo, 'NO ENCONTRADO', false);
+                }
             }
             
             actualizarEstadisticas();
@@ -1388,6 +1691,12 @@
                 notFoundCount = 0;
                 sedeActual = '';
                 currentMode = 'pistol';
+                ultimoCodigo = '';
+                tiempoUltimo = 0;
+                if (cameraTimeout) {
+                    clearTimeout(cameraTimeout);
+                    cameraTimeout = null;
+                }
                 
                 // Reset interfaz
                 document.getElementById('pistolBtn').classList.add('active');
