@@ -630,12 +630,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(54, 54, 54, 0.205);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.5s;
         }
 
         .timeout-content {
@@ -941,9 +941,7 @@
         <div class="timeout-content">
             <div class="timeout-title">⏰ Tiempo Agotado</div>
             <div class="timeout-message">
-                No se detectó ningún <strong>código de barras válido</strong> en 1 minuto.
-                <br><br>
-                <small style="color: #888;">(Solo se consideran válidos los códigos que encuentren productos en la base de datos)</small>
+                No se detectó ningún <strong>código de barras válido</strong> en 20 segundos.
                 <br><br>
                 ¿Qué deseas hacer?
             </div>
@@ -1413,13 +1411,13 @@
             
             cameraTimeout = setTimeout(() => {
                 if (cameraActive) {
-                    console.log('⏰ Timeout de 1 minuto alcanzado - Sin detección válida');
+                    console.log('⏰ Timeout de 20 segundos alcanzado - Sin detección válida');
                     detenerCamera();
                     mostrarPopupTimeout();
                 }
-            }, 60000); // 1 minuto
+            }, 20000); // 20 segundos
             
-            console.log('⏰ Timeout iniciado - 1 minuto para detección válida');
+            console.log('⏰ Timeout iniciado - 20 segundos para detección válida');
         }
 
         function mostrarPopupTimeout() {
