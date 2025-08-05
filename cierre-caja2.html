@@ -1162,6 +1162,9 @@
                         <button class="btn btn-secondary" onclick="limpiarCacheCompleto()" style="background: #dc3545; color: white;">
                             🗑️ Limpiar Caché
                         </button>
+                        <button class="btn btn-secondary" onclick="forzarSincronizacion()" style="background: #17a2b8; color: white;">
+                            🔄 Forzar Sincronización
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1216,7 +1219,7 @@
         // Sistema de caché
         const CACHE_KEY = 'cierre_caja_progress';
         const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
-        const AUTO_SAVE_INTERVAL = 5 * 60 * 1000; // 5 minutos en milisegundos
+        const AUTO_SAVE_INTERVAL = 1 * 60 * 1000; // 5 minutos en milisegundos
 
         // Variables para el sistema de auto-guardado
         let autoSaveTimer = null;
@@ -1453,6 +1456,8 @@
                         const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
                         if (input) {
                             input.value = cantidad;
+                            // Asegurar que el estado global esté sincronizado
+                            estado.paso1.denominaciones[valor] = parseInt(cantidad) || 0;
                             // Actualizar subtotal visual
                             actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso1');
                         }
@@ -1465,6 +1470,8 @@
                         const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
                         if (input) {
                             input.value = cantidad;
+                            // Asegurar que el estado global esté sincronizado
+                            estado.paso2.denominaciones[valor] = parseInt(cantidad) || 0;
                             // Actualizar subtotal visual
                             actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso2');
                         }
@@ -1487,6 +1494,9 @@
                 
                 // Actualizar todos los cálculos con delay para asegurar que los elementos estén listos
                 setTimeout(() => {
+                    // Validar que el estado esté sincronizado
+                    validarSincronizacionEstado();
+                    
                     actualizarProgresoPaso1();
                     actualizarTotalPaso2();
                     actualizarResumenFinalSinVerificacion();
@@ -1621,6 +1631,63 @@
             }
         });
 
+        function validarSincronizacionEstado() {
+            console.log('Validando sincronización del estado...');
+            
+            // Verificar denominaciones del Paso 1
+            Object.entries(estado.paso1.denominaciones || {}).forEach(([valor, cantidad]) => {
+                const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
+                if (input) {
+                    const valorInput = parseInt(input.value || 0);
+                    if (valorInput !== parseInt(cantidad || 0)) {
+                        console.log(`Corrigiendo denominación ${valor} del Paso 1: ${cantidad} -> ${valorInput}`);
+                        estado.paso1.denominaciones[valor] = valorInput;
+                    }
+                }
+            });
+            
+            // Verificar denominaciones del Paso 2
+            Object.entries(estado.paso2.denominaciones || {}).forEach(([valor, cantidad]) => {
+                const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
+                if (input) {
+                    const valorInput = parseInt(input.value || 0);
+                    if (valorInput !== parseInt(cantidad || 0)) {
+                        console.log(`Corrigiendo denominación ${valor} del Paso 2: ${cantidad} -> ${valorInput}`);
+                        estado.paso2.denominaciones[valor] = valorInput;
+                    }
+                }
+            });
+            
+            // Verificar monto base
+            const montoBaseInput = document.getElementById('monto-base');
+            if (montoBaseInput) {
+                const montoBaseInputValor = parseInt(montoBaseInput.value || 0);
+                if (montoBaseInputValor !== estado.paso1.montoBase) {
+                    console.log(`Corrigiendo monto base: ${estado.paso1.montoBase} -> ${montoBaseInputValor}`);
+                    estado.paso1.montoBase = montoBaseInputValor;
+                }
+            }
+            
+            console.log('Sincronización del estado completada');
+        }
+
+        function forzarSincronizacion() {
+            console.log('Forzando sincronización del estado...');
+            
+            // Validar y corregir sincronización
+            validarSincronizacionEstado();
+            
+            // Recalcular todos los totales
+            actualizarProgresoPaso1();
+            actualizarTotalPaso2();
+            actualizarResumenFinalSinVerificacion();
+            
+            // Guardar estado corregido
+            marcarCambiosSinGuardar();
+            
+            alert('✅ Sincronización forzada completada\n\nSe han corregido las discrepancias entre el estado y la interfaz.');
+        }
+
         function inicializarDenominaciones() {
             console.log('Inicializando denominaciones...');
             
@@ -1635,7 +1702,10 @@
             denominaciones.forEach(denom => {
                 const row = crearDenominacionRow(denom, 'paso1');
                 container1.appendChild(row);
-                estado.paso1.denominaciones[denom.valor] = 0;
+                // Asegurar que el estado esté inicializado correctamente
+                if (!estado.paso1.denominaciones[denom.valor]) {
+                    estado.paso1.denominaciones[denom.valor] = 0;
+                }
             });
 
             // Paso 2
@@ -1649,7 +1719,10 @@
             denominaciones.forEach(denom => {
                 const row = crearDenominacionRow(denom, 'paso2');
                 container2.appendChild(row);
-                estado.paso2.denominaciones[denom.valor] = 0;
+                // Asegurar que el estado esté inicializado correctamente
+                if (!estado.paso2.denominaciones[denom.valor]) {
+                    estado.paso2.denominaciones[denom.valor] = 0;
+                }
             });
             
             console.log('Denominaciones inicializadas correctamente');
@@ -2316,6 +2389,9 @@
         }
 
         function actualizarResumenFinalSinVerificacion() {
+            // Forzar sincronización del estado antes de calcular
+            validarSincronizacionEstado();
+            
             // Calcular totales
             const totalGastos = Object.values(estado.paso3.gastos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
             const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
