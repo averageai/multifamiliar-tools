@@ -2045,8 +2045,12 @@
                 return sum + (item.tipo === '+' ? monto : -monto);
             }, 0);
             
+            // Calcular efectivo del Paso 2
+            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
+                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            
             // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
-            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             // Sobra/Falta = Total - Z
             const sobraFalta = total - (estado.paso3.z || 0);
@@ -2060,7 +2064,7 @@
             const resumenZ = document.getElementById('resumen-z');
             const resumenSobraFalta = document.getElementById('resumen-sobrafalta');
             
-            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(estado.paso2.total || 0)}`;
+            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(efectivoPaso2)}`;
             if (resumenGastos) resumenGastos.textContent = `$${formatearNumero(totalGastos)}`;
             if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
             if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
@@ -2137,8 +2141,12 @@
                 return sum + (item.tipo === '+' ? monto : -monto);
             }, 0);
             
+            // Calcular efectivo del Paso 2
+            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
+                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            
             // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
-            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             // Sobra/Falta = Total - Z
             const sobraFalta = total - (estado.paso3.z || 0);
@@ -2152,7 +2160,7 @@
             const resumenZ = document.getElementById('resumen-z');
             const resumenSobraFalta = document.getElementById('resumen-sobrafalta');
             
-            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(estado.paso2.total || 0)}`;
+            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(efectivoPaso2)}`;
             if (resumenGastos) resumenGastos.textContent = `$${formatearNumero(totalGastos)}`;
             if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
             if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
@@ -2188,7 +2196,11 @@
                     return sum + (item.tipo === '+' ? monto : -monto);
                 }, 0);
             
-            const totalCalculado = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            // Calcular efectivo del Paso 2 desde las denominaciones
+            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
+                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            
+            const totalCalculado = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             const sobraFaltaCalculada = totalCalculado - (estado.paso3.z || 0);
             
             // Obtener valores mostrados en la interfaz
