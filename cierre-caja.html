@@ -1950,7 +1950,8 @@
                 document.getElementById('btn-exportar').disabled = false;
                 document.getElementById('warning-container').style.display = 'none';
                 document.getElementById('btn-autorizacion-manual').style.display = 'none';
-                // No llamar directamente a exportarReporte(), permitir que el usuario haga clic nuevamente
+                // Proceder directamente con la exportación después de autorizar
+                exportarReporte();
             } else {
                 alert('Contraseña incorrecta');
             }
@@ -2014,7 +2015,7 @@
             const totalCreditos = calcularTotalCreditos();
             const totalManuales = calcularTotalManuales();
             const z = estado.paso3.z || 0;
-            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales - z;
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             console.log('Datos del reporte:', {
                 efectivoPaso2,
@@ -2026,6 +2027,7 @@
                 total
             });
             
+            const sobraFalta = z - total;
             const reporte = {
                 fecha: new Date().toLocaleDateString('es-CO'),
                 hora: new Date().toLocaleTimeString('es-CO'),
