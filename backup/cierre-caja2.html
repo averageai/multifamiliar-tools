@@ -1165,6 +1165,10 @@
                         <button class="btn btn-secondary" onclick="forzarSincronizacion()" style="background: #17a2b8; color: white;">
                             🔄 Forzar Sincronización
                         </button>
+                        <button class="btn btn-secondary" onclick="debugCalculos()" style="background: #6f42c1; color: white;">
+                            🐛 Debug Cálculos
+                        </button>
+                        
                     </div>
                 </div>
             </div>
@@ -1301,14 +1305,46 @@
 
         function guardarEnCache() {
             try {
+                // Recopilar información de filas actuales
+                const infoFilas = {
+                    gastos: {},
+                    transferencias: {},
+                    creditos: {},
+                    manuales: 0
+                };
+                
+                // Contar filas de gastos por tipo
+                ['turno', 'flete', 'aseo', 'otros'].forEach(tipo => {
+                    const filas = document.querySelectorAll(`#gastos-${tipo} tr`);
+                    infoFilas.gastos[tipo] = filas.length;
+                });
+                
+                // Contar filas de transferencias por tipo
+                ['llave', 'transferencia', 'qr'].forEach(tipo => {
+                    const filas = document.querySelectorAll(`#transferencias-${tipo} tr`);
+                    infoFilas.transferencias[tipo] = filas.length;
+                });
+                
+                // Contar filas de créditos por tipo
+                ['addi', 'sistecredito'].forEach(tipo => {
+                    const filas = document.querySelectorAll(`#creditos-${tipo} tr`);
+                    infoFilas.creditos[tipo] = filas.length;
+                });
+                
+                // Contar filas de manuales
+                const filasManuales = document.querySelectorAll('#entradas-manuales tr');
+                infoFilas.manuales = filasManuales.length;
+                
                 const cacheData = {
                     estado: estado,
+                    infoFilas: infoFilas,
                     timestamp: Date.now()
                 };
+                
                 localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
                 hasUnsavedChanges = false;
                 lastSaveTime = Date.now();
-                console.log('Progreso guardado en caché');
+                console.log('Progreso guardado en caché con info de filas:', infoFilas);
                 
                 // Mostrar indicador de guardado exitoso
                 mostrarIndicadorGuardadoExitoso();
@@ -1412,8 +1448,11 @@
 
                 // Verificar si el caché no ha expirado (2 horas)
                 if (tiempoTranscurrido < CACHE_DURATION) {
+                    // Cargar el estado completo desde el caché
                     estado = data.estado;
                     console.log('Progreso cargado desde caché:', estado);
+                    console.log('Estado del Paso 1:', estado.paso1.denominaciones);
+                    console.log('Estado del Paso 2:', estado.paso2.denominaciones);
                     return true;
                 } else {
                     // Limpiar caché expirado
@@ -1452,30 +1491,50 @@
                 
                 // Restaurar denominaciones del Paso 1 y actualizar subtotales
                 if (estado.paso1.denominaciones) {
+                    console.log('Restaurando denominaciones del Paso 1:', estado.paso1.denominaciones);
                     Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
                         const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
+                        console.log(`Buscando input para denominación ${valor}:`, input);
                         if (input) {
+                            console.log(`Antes de restaurar - Input ${valor}: ${input.value}`);
                             input.value = cantidad;
-                            // Asegurar que el estado global esté sincronizado
-                            estado.paso1.denominaciones[valor] = parseInt(cantidad) || 0;
+                            console.log(`Después de restaurar - Input ${valor}: ${input.value}`);
+                            console.log(`Valor restaurado para ${valor}: ${cantidad}`);
+                            // NO sobrescribir el estado, solo sincronizar si es necesario
+                            if (estado.paso1.denominaciones[valor] !== parseInt(cantidad)) {
+                                estado.paso1.denominaciones[valor] = parseInt(cantidad) || 0;
+                            }
                             // Actualizar subtotal visual
                             actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso1');
+                        } else {
+                            console.error(`No se encontró input para denominación ${valor}`);
                         }
                     });
+                } else {
+                    console.log('No hay denominaciones del Paso 1 para restaurar');
                 }
                 
                 // Restaurar denominaciones del Paso 2 y actualizar subtotales
                 if (estado.paso2.denominaciones) {
+                    console.log('Restaurando denominaciones del Paso 2:', estado.paso2.denominaciones);
                     Object.entries(estado.paso2.denominaciones).forEach(([valor, cantidad]) => {
                         const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
+                        console.log(`Buscando input para denominación ${valor}:`, input);
                         if (input) {
                             input.value = cantidad;
-                            // Asegurar que el estado global esté sincronizado
-                            estado.paso2.denominaciones[valor] = parseInt(cantidad) || 0;
+                            console.log(`Valor restaurado para ${valor}: ${cantidad}`);
+                            // NO sobrescribir el estado, solo sincronizar si es necesario
+                            if (estado.paso2.denominaciones[valor] !== parseInt(cantidad)) {
+                                estado.paso2.denominaciones[valor] = parseInt(cantidad) || 0;
+                            }
                             // Actualizar subtotal visual
                             actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso2');
+                        } else {
+                            console.error(`No se encontró input para denominación ${valor}`);
                         }
                     });
+                } else {
+                    console.log('No hay denominaciones del Paso 2 para restaurar');
                 }
                 
                 // Restaurar valor Z
@@ -1487,7 +1546,10 @@
                 }
                 
                 // Restaurar items del Paso 3
-                restaurarItemsPaso3();
+                restaurarItemsPaso3Completo();
+                
+                // Reconfigurar event listeners para items restaurados
+                reconfigurarEventListenersPaso3();
                 
                 // Restaurar estados de completado
                 restaurarEstadosCompletado();
@@ -1509,6 +1571,125 @@
             }
             
             console.log('Interfaz restaurada desde caché');
+        }
+
+        function restaurarItemsPaso3Completo() {
+            // Obtener información de filas del caché
+            const cacheData = localStorage.getItem(CACHE_KEY);
+            let infoFilas = null;
+            if (cacheData) {
+                try {
+                    const parsed = JSON.parse(cacheData);
+                    infoFilas = parsed.infoFilas;
+                } catch (error) {
+                    console.error('Error al parsear info de filas:', error);
+                }
+            }
+            
+            // Limpiar todas las tablas antes de restaurar
+            const tablasPaso3 = [
+                'gastos-turno', 'gastos-flete', 'gastos-aseo', 'gastos-otros',
+                'transferencias-llave', 'transferencias-transferencia', 'transferencias-qr',
+                'creditos-addi', 'creditos-sistecredito', 'entradas-manuales'
+            ];
+            
+            tablasPaso3.forEach(id => {
+                const tbody = document.getElementById(id);
+                if (tbody) tbody.innerHTML = '';
+            });
+            
+            // Restaurar gastos usando info de filas
+            if (infoFilas && infoFilas.gastos) {
+                Object.entries(infoFilas.gastos).forEach(([tipo, numFilas]) => {
+                    for (let i = 0; i < numFilas; i++) {
+                        addGastoItem(tipo);
+                    }
+                });
+            }
+            
+            // Restaurar transferencias usando info de filas
+            if (infoFilas && infoFilas.transferencias) {
+                Object.entries(infoFilas.transferencias).forEach(([tipo, numFilas]) => {
+                    for (let i = 0; i < numFilas; i++) {
+                        addTransferenciaItem(tipo);
+                    }
+                });
+            }
+            
+            // Restaurar créditos usando info de filas
+            if (infoFilas && infoFilas.creditos) {
+                Object.entries(infoFilas.creditos).forEach(([tipo, numFilas]) => {
+                    for (let i = 0; i < numFilas; i++) {
+                        addCreditoItem(tipo);
+                    }
+                });
+            }
+            
+            // Restaurar manuales usando info de filas
+            if (infoFilas && infoFilas.manuales) {
+                for (let i = 0; i < infoFilas.manuales; i++) {
+                    addManualItem();
+                }
+            }
+            
+            // Ahora asignar valores desde el estado
+            // Asignar valores de gastos
+            Object.entries(estado.paso3.gastos || {}).forEach(([tipo, items]) => {
+                const filas = document.querySelectorAll(`#gastos-${tipo} tr`);
+                items.forEach((item, index) => {
+                    if (filas[index]) {
+                        const inputs = filas[index].querySelectorAll('input');
+                        const removeBtn = filas[index].querySelector('.btn-remove');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                        if (removeBtn) removeBtn.setAttribute('data-item-id', item.id);
+                    }
+                });
+            });
+            
+            // Asignar valores de transferencias
+            Object.entries(estado.paso3.transferencias || {}).forEach(([tipo, items]) => {
+                const filas = document.querySelectorAll(`#transferencias-${tipo} tr`);
+                items.forEach((item, index) => {
+                    if (filas[index]) {
+                        const inputs = filas[index].querySelectorAll('input');
+                        const removeBtn = filas[index].querySelector('.btn-remove');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                        if (removeBtn) removeBtn.setAttribute('data-item-id', item.id);
+                    }
+                });
+            });
+            
+            // Asignar valores de créditos
+            Object.entries(estado.paso3.creditos || {}).forEach(([tipo, items]) => {
+                const filas = document.querySelectorAll(`#creditos-${tipo} tr`);
+                items.forEach((item, index) => {
+                    if (filas[index]) {
+                        const inputs = filas[index].querySelectorAll('input');
+                        const removeBtn = filas[index].querySelector('.btn-remove');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                        if (removeBtn) removeBtn.setAttribute('data-item-id', item.id);
+                    }
+                });
+            });
+            
+            // Asignar valores de manuales
+            (estado.paso3.manuales || []).forEach((item, index) => {
+                const filas = document.querySelectorAll('#entradas-manuales tr');
+                if (filas[index]) {
+                    const inputs = filas[index].querySelectorAll('input');
+                    const select = filas[index].querySelector('select');
+                    const removeBtn = filas[index].querySelector('.btn-remove');
+                    if (inputs[0]) inputs[0].value = item.descripcion || '';
+                    if (select) select.value = item.tipo || '+';
+                    if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                    if (removeBtn) removeBtn.setAttribute('data-item-id', item.id);
+                }
+            });
+            
+
         }
 
         function restaurarItemsPaso3() {
@@ -1583,8 +1764,9 @@
             
             // Intentar cargar desde caché
             const cacheCargado = cargarDesdeCache();
+            console.log('¿Caché cargado?', cacheCargado);
             
-            // Inicializar denominaciones
+            // Inicializar denominaciones (sin sobrescribir valores del caché)
             inicializarDenominaciones();
             
             // Inicializar eventos
@@ -1607,16 +1789,19 @@
             // Actualizar progreso inicial del Paso 1
             actualizarProgresoPaso1();
             
-            // Si se cargó desde caché, restaurar la interfaz
+            // Si se cargó desde caché, restaurar la interfaz automáticamente
             if (cacheCargado) {
-                console.log('Caché detectado, restaurando...');
-                restaurarInterfazDesdeCache();
-                // Aplicar estilos a entradas manuales restauradas
-                setTimeout(aplicarEstilosManuales, 200);
-                // Limpiar entradas vacías del caché restaurado
-                setTimeout(limpiarEntradasVacias, 300);
-                // Verificar permisos de exportación después de restaurar
-                setTimeout(verificarPermisoExportacion, 400);
+                console.log('Caché detectado, restaurando interfaz automáticamente...');
+                // Delay para asegurar que el DOM esté completamente listo
+                setTimeout(() => {
+                    restaurarInterfazDesdeCache();
+                    // Aplicar estilos a entradas manuales restauradas
+                    setTimeout(aplicarEstilosManuales, 200);
+                    // Limpiar entradas vacías del caché restaurado
+                    setTimeout(limpiarEntradasVacias, 300);
+                    // Verificar permisos de exportación después de restaurar
+                    setTimeout(verificarPermisoExportacion, 400);
+                }, 500);
             } else {
                 console.log('No se encontró caché válido, iniciando desde cero');
             }
@@ -1632,7 +1817,6 @@
         });
 
         function validarSincronizacionEstado() {
-            console.log('Validando sincronización del estado...');
             
             // Verificar denominaciones del Paso 1
             Object.entries(estado.paso1.denominaciones || {}).forEach(([valor, cantidad]) => {
@@ -1640,7 +1824,6 @@
                 if (input) {
                     const valorInput = parseInt(input.value || 0);
                     if (valorInput !== parseInt(cantidad || 0)) {
-                        console.log(`Corrigiendo denominación ${valor} del Paso 1: ${cantidad} -> ${valorInput}`);
                         estado.paso1.denominaciones[valor] = valorInput;
                     }
                 }
@@ -1652,7 +1835,6 @@
                 if (input) {
                     const valorInput = parseInt(input.value || 0);
                     if (valorInput !== parseInt(cantidad || 0)) {
-                        console.log(`Corrigiendo denominación ${valor} del Paso 2: ${cantidad} -> ${valorInput}`);
                         estado.paso2.denominaciones[valor] = valorInput;
                     }
                 }
@@ -1663,16 +1845,130 @@
             if (montoBaseInput) {
                 const montoBaseInputValor = parseInt(montoBaseInput.value || 0);
                 if (montoBaseInputValor !== estado.paso1.montoBase) {
-                    console.log(`Corrigiendo monto base: ${estado.paso1.montoBase} -> ${montoBaseInputValor}`);
                     estado.paso1.montoBase = montoBaseInputValor;
                 }
             }
             
-            console.log('Sincronización del estado completada');
+
+        }
+
+        function reconfigurarEventListenersPaso3() {
+            
+            // Reconfigurar event listeners para gastos
+            Object.keys(estado.paso3.gastos || {}).forEach(tipo => {
+                const rows = document.querySelectorAll(`#gastos-${tipo} tr`);
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const removeBtn = row.querySelector('.btn-remove');
+                    
+                    if (inputs[0]) {
+                        inputs[0].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarGasto(itemId, 'descripcion', this.value, tipo);
+                        };
+                    }
+                    
+                    if (inputs[1]) {
+                        inputs[1].oninput = function() {
+                            formatCurrency(this);
+                        };
+                        inputs[1].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarGasto(itemId, 'monto', this.value, tipo);
+                        };
+                    }
+                });
+            });
+            
+            // Reconfigurar event listeners para transferencias
+            Object.keys(estado.paso3.transferencias || {}).forEach(tipo => {
+                const rows = document.querySelectorAll(`#transferencias-${tipo} tr`);
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const removeBtn = row.querySelector('.btn-remove');
+                    
+                    if (inputs[0]) {
+                        inputs[0].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarTransferencia(itemId, 'descripcion', this.value, tipo);
+                        };
+                    }
+                    
+                    if (inputs[1]) {
+                        inputs[1].oninput = function() {
+                            formatCurrency(this);
+                        };
+                        inputs[1].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarTransferencia(itemId, 'monto', this.value, tipo);
+                        };
+                    }
+                });
+            });
+            
+            // Reconfigurar event listeners para créditos
+            Object.keys(estado.paso3.creditos || {}).forEach(tipo => {
+                const rows = document.querySelectorAll(`#creditos-${tipo} tr`);
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const removeBtn = row.querySelector('.btn-remove');
+                    
+                    if (inputs[0]) {
+                        inputs[0].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarCredito(itemId, 'descripcion', this.value, tipo);
+                        };
+                    }
+                    
+                    if (inputs[1]) {
+                        inputs[1].oninput = function() {
+                            formatCurrency(this);
+                        };
+                        inputs[1].onchange = function() {
+                            const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                            actualizarCredito(itemId, 'monto', this.value, tipo);
+                        };
+                    }
+                });
+            });
+            
+            // Reconfigurar event listeners para manuales
+            const manualRows = document.querySelectorAll('#entradas-manuales tr');
+            manualRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const select = row.querySelector('select');
+                const removeBtn = row.querySelector('.btn-remove');
+                
+                if (inputs[0]) {
+                    inputs[0].onchange = function() {
+                        const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                        actualizarManual(itemId, 'descripcion', this.value);
+                    };
+                }
+                
+                if (select) {
+                    select.onchange = function() {
+                        const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                        actualizarManual(itemId, 'tipo', this.value);
+                        actualizarClaseTipo(this);
+                    };
+                }
+                
+                if (inputs[1]) {
+                    inputs[1].oninput = function() {
+                        formatCurrency(this);
+                    };
+                    inputs[1].onchange = function() {
+                        const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
+                        actualizarManual(itemId, 'monto', this.value);
+                    };
+                }
+            });
+            
+            console.log('Event listeners del Paso 3 reconfigurados');
         }
 
         function forzarSincronizacion() {
-            console.log('Forzando sincronización del estado...');
             
             // Validar y corregir sincronización
             validarSincronizacionEstado();
@@ -1688,6 +1984,10 @@
             alert('✅ Sincronización forzada completada\n\nSe han corregido las discrepancias entre el estado y la interfaz.');
         }
 
+
+
+
+
         function inicializarDenominaciones() {
             console.log('Inicializando denominaciones...');
             
@@ -1702,8 +2002,8 @@
             denominaciones.forEach(denom => {
                 const row = crearDenominacionRow(denom, 'paso1');
                 container1.appendChild(row);
-                // Asegurar que el estado esté inicializado correctamente
-                if (!estado.paso1.denominaciones[denom.valor]) {
+                // Solo inicializar si no existe el valor en el estado
+                if (typeof estado.paso1.denominaciones[denom.valor] === 'undefined') {
                     estado.paso1.denominaciones[denom.valor] = 0;
                 }
             });
@@ -1719,8 +2019,8 @@
             denominaciones.forEach(denom => {
                 const row = crearDenominacionRow(denom, 'paso2');
                 container2.appendChild(row);
-                // Asegurar que el estado esté inicializado correctamente
-                if (!estado.paso2.denominaciones[denom.valor]) {
+                // Solo inicializar si no existe el valor en el estado
+                if (typeof estado.paso2.denominaciones[denom.valor] === 'undefined') {
                     estado.paso2.denominaciones[denom.valor] = 0;
                 }
             });
@@ -2119,7 +2419,8 @@
             const item = estado.paso3.gastos[tipo].find(i => i.id === itemId);
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
-                actualizarResumenFinal();
+    
+                actualizarResumenFinalConSincronizacion();
                 marcarCambiosSinGuardar();
             }
         }
@@ -2129,7 +2430,8 @@
             const item = estado.paso3.transferencias[tipo].find(i => i.id === itemId);
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
-                actualizarResumenFinal();
+    
+                actualizarResumenFinalConSincronizacion();
                 marcarCambiosSinGuardar();
             }
         }
@@ -2139,7 +2441,8 @@
             const item = estado.paso3.creditos[tipo].find(i => i.id === itemId);
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
-                actualizarResumenFinal();
+    
+                actualizarResumenFinalConSincronizacion();
                 marcarCambiosSinGuardar();
             }
         }
@@ -2149,7 +2452,8 @@
             const item = estado.paso3.manuales.find(i => i.id === itemId);
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
-                actualizarResumenFinal();
+    
+                actualizarResumenFinalConSincronizacion();
                 marcarCambiosSinGuardar();
                 
                 // Limpiar entradas vacías después de actualizar
@@ -2271,48 +2575,63 @@
             const itemRow = button.closest('tr');
             const itemId = parseInt(button.getAttribute('data-item-id'));
             
+    
+            
             // Remover del estado
             if (categoria === 'gastos' && estado.paso3.gastos[tipo]) {
                 estado.paso3.gastos[tipo] = estado.paso3.gastos[tipo].filter(item => item.id !== itemId);
+                console.log(`Gastos ${tipo} después de remover:`, estado.paso3.gastos[tipo]);
             } else if (categoria === 'transferencias' && estado.paso3.transferencias[tipo]) {
                 estado.paso3.transferencias[tipo] = estado.paso3.transferencias[tipo].filter(item => item.id !== itemId);
+                console.log(`Transferencias ${tipo} después de remover:`, estado.paso3.transferencias[tipo]);
             } else if (categoria === 'creditos' && estado.paso3.creditos[tipo]) {
                 estado.paso3.creditos[tipo] = estado.paso3.creditos[tipo].filter(item => item.id !== itemId);
+                console.log(`Créditos ${tipo} después de remover:`, estado.paso3.creditos[tipo]);
             } else if (categoria === 'manuales' && estado.paso3.manuales) {
                 estado.paso3.manuales = estado.paso3.manuales.filter(item => item.id !== itemId);
+                console.log(`Manuales después de remover:`, estado.paso3.manuales);
             }
             
             if (itemRow) {
                 itemRow.remove();
             }
-            actualizarResumenFinal();
+            
+            // Forzar actualización del resumen con sincronización
+            actualizarResumenFinalConSincronizacion();
             marcarCambiosSinGuardar();
             
             // Limpiar entradas vacías del caché
             limpiarEntradasVacias();
         }
 
-        function actualizarResumenFinal() {
-            // Calcular totales
-            const totalGastos = Object.values(estado.paso3.gastos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
-            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
-            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+        function actualizarResumenFinalConSincronizacion() {
+            // Calcular totales desde los campos de la UI
+            const totalGastos = calcularTotalGastosDesdeUI();
+            const totalTransferencias = calcularTotalTransferenciasDesdeUI();
+            const totalCreditos = calcularTotalCreditosDesdeUI();
+            const totalManuales = calcularTotalManualesDesdeUI();
             
-            // Calcular total de entradas manuales
-            const totalManuales = (estado.paso3.manuales || []).reduce((sum, item) => {
-                const monto = item.monto || 0;
-                return sum + (item.tipo === '+' ? monto : -monto);
-            }, 0);
+            // Calcular efectivo del Paso 2 desde los campos
+            const efectivoPaso2 = calcularEfectivoPaso2DesdeUI();
             
-            // Calcular efectivo del Paso 2
-            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
-                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            // Calcular Z desde el campo
+            const z = calcularZDesdeUI();
             
             // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
             const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             // Sobra/Falta = Total - Z
-            const sobraFalta = total - (estado.paso3.z || 0);
+            const sobraFalta = total - z;
+            
+            console.log('Cálculos del resumen:', {
+                efectivoPaso2,
+                totalGastos,
+                totalTransferencias,
+                totalCreditos,
+                totalManuales,
+                total,
+                sobraFalta
+            });
             
             // Actualizar display
             const resumenEfectivo = document.getElementById('resumen-efectivo');
@@ -2328,7 +2647,53 @@
             if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
             if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
             if (resumenTotal) resumenTotal.textContent = `$${formatearNumero(total)}`;
-            if (resumenZ) resumenZ.textContent = `$${formatearNumero(estado.paso3.z || 0)}`;
+            if (resumenZ) resumenZ.textContent = `$${formatearNumero(z)}`;
+            
+            if (resumenSobraFalta) {
+                resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
+                resumenSobraFalta.className = sobraFalta >= 0 ? 'summary-value positive' : 'summary-value negative';
+            }
+
+            // Solo verificar permisos si no estamos en proceso de restauración
+            if (!window.restaurandoCache) {
+                verificarPermisoExportacion();
+            }
+        }
+
+        function actualizarResumenFinal() {
+            // Calcular totales desde los campos de la UI
+            const totalGastos = calcularTotalGastosDesdeUI();
+            const totalTransferencias = calcularTotalTransferenciasDesdeUI();
+            const totalCreditos = calcularTotalCreditosDesdeUI();
+            const totalManuales = calcularTotalManualesDesdeUI();
+            
+            // Calcular efectivo del Paso 2 desde los campos
+            const efectivoPaso2 = calcularEfectivoPaso2DesdeUI();
+            
+            // Calcular Z desde el campo
+            const z = calcularZDesdeUI();
+            
+            // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            
+            // Sobra/Falta = Total - Z
+            const sobraFalta = total - z;
+            
+            // Actualizar display
+            const resumenEfectivo = document.getElementById('resumen-efectivo');
+            const resumenGastos = document.getElementById('resumen-gastos');
+            const resumenTransferencias = document.getElementById('resumen-transferencias');
+            const resumenCreditos = document.getElementById('resumen-creditos');
+            const resumenTotal = document.getElementById('resumen-total');
+            const resumenZ = document.getElementById('resumen-z');
+            const resumenSobraFalta = document.getElementById('resumen-sobrafalta');
+            
+            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(efectivoPaso2)}`;
+            if (resumenGastos) resumenGastos.textContent = `$${formatearNumero(totalGastos)}`;
+            if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
+            if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
+            if (resumenTotal) resumenTotal.textContent = `$${formatearNumero(total)}`;
+            if (resumenZ) resumenZ.textContent = `$${formatearNumero(z)}`;
             
             if (resumenSobraFalta) {
                 resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
@@ -2388,30 +2753,101 @@
             return errores;
         }
 
+        // Funciones auxiliares para calcular desde la UI
+        function calcularTotalGastosDesdeUI() {
+            let total = 0;
+            
+            // Calcular desde los campos actuales de la UI
+            const gastosRows = document.querySelectorAll('#gastos-turno tr, #gastos-flete tr, #gastos-aseo tr, #gastos-otros tr');
+            gastosRows.forEach(row => {
+                const montoInput = row.querySelector('input[type="text"]:nth-child(2)');
+                if (montoInput && montoInput.value) {
+                    const monto = parseInt(montoInput.value.replace(/\D/g, '')) || 0;
+                    total += monto;
+                }
+            });
+            
+            return total;
+        }
+
+        function calcularTotalTransferenciasDesdeUI() {
+            let total = 0;
+            const transferenciasRows = document.querySelectorAll('#transferencias-llave tr, #transferencias-transferencia tr, #transferencias-qr tr');
+            transferenciasRows.forEach(row => {
+                const montoInput = row.querySelector('input[type="text"]:nth-child(2)');
+                if (montoInput && montoInput.value) {
+                    const monto = parseInt(montoInput.value.replace(/\D/g, '')) || 0;
+                    total += monto;
+                }
+            });
+            return total;
+        }
+
+        function calcularTotalCreditosDesdeUI() {
+            let total = 0;
+            const creditosRows = document.querySelectorAll('#creditos-addi tr, #creditos-sistecredito tr');
+            creditosRows.forEach(row => {
+                const montoInput = row.querySelector('input[type="text"]:nth-child(2)');
+                if (montoInput && montoInput.value) {
+                    const monto = parseInt(montoInput.value.replace(/\D/g, '')) || 0;
+                    total += monto;
+                }
+            });
+            return total;
+        }
+
+        function calcularTotalManualesDesdeUI() {
+            let total = 0;
+            const manualesRows = document.querySelectorAll('#entradas-manuales tr');
+            manualesRows.forEach(row => {
+                const montoInput = row.querySelector('input[type="text"]:nth-child(3)');
+                const tipoSelect = row.querySelector('select');
+                if (montoInput && montoInput.value) {
+                    const monto = parseInt(montoInput.value.replace(/\D/g, '')) || 0;
+                    const tipo = tipoSelect ? tipoSelect.value : '+';
+                    total += (tipo === '+' ? monto : -monto);
+                }
+            });
+            return total;
+        }
+
+        function calcularEfectivoPaso2DesdeUI() {
+            let total = 0;
+            const inputsPaso2 = document.querySelectorAll('input[data-paso="paso2"]');
+            inputsPaso2.forEach(input => {
+                const valor = parseInt(input.getAttribute('data-denominacion')) || 0;
+                const cantidad = parseInt(input.value) || 0;
+                total += valor * cantidad;
+            });
+            return total;
+        }
+
+        function calcularZDesdeUI() {
+            const zInput = document.getElementById('z-value');
+            if (zInput && zInput.value) {
+                return parseInt(zInput.value.replace(/\D/g, '')) || 0;
+            }
+            return 0;
+        }
+
         function actualizarResumenFinalSinVerificacion() {
-            // Forzar sincronización del estado antes de calcular
-            validarSincronizacionEstado();
+            // Calcular totales desde los campos de la UI
+            const totalGastos = calcularTotalGastosDesdeUI();
+            const totalTransferencias = calcularTotalTransferenciasDesdeUI();
+            const totalCreditos = calcularTotalCreditosDesdeUI();
+            const totalManuales = calcularTotalManualesDesdeUI();
             
-            // Calcular totales
-            const totalGastos = Object.values(estado.paso3.gastos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
-            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
-            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            // Calcular efectivo del Paso 2 desde los campos
+            const efectivoPaso2 = calcularEfectivoPaso2DesdeUI();
             
-            // Calcular total de entradas manuales
-            const totalManuales = (estado.paso3.manuales || []).reduce((sum, item) => {
-                const monto = item.monto || 0;
-                return sum + (item.tipo === '+' ? monto : -monto);
-            }, 0);
-            
-            // Calcular efectivo del Paso 2
-            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
-                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            // Calcular Z desde el campo
+            const z = calcularZDesdeUI();
             
             // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
             const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             // Sobra/Falta = Total - Z
-            const sobraFalta = total - (estado.paso3.z || 0);
+            const sobraFalta = total - z;
             
             // Actualizar display
             const resumenEfectivo = document.getElementById('resumen-efectivo');
@@ -2427,7 +2863,7 @@
             if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
             if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
             if (resumenTotal) resumenTotal.textContent = `$${formatearNumero(total)}`;
-            if (resumenZ) resumenZ.textContent = `$${formatearNumero(estado.paso3.z || 0)}`;
+            if (resumenZ) resumenZ.textContent = `$${formatearNumero(z)}`;
             
             if (resumenSobraFalta) {
                 resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
@@ -2438,40 +2874,28 @@
         function validarCalculos() {
             const errores = [];
             
-            // Recalcular totales desde cero
-            const totalGastos = Object.values(estado.paso3.gastos || {}).flat()
-                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
-                .reduce((sum, item) => sum + (item.monto || 0), 0);
-                
-            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat()
-                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
-                .reduce((sum, item) => sum + (item.monto || 0), 0);
-                
-            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat()
-                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
-                .reduce((sum, item) => sum + (item.monto || 0), 0);
-                
-            const totalManuales = (estado.paso3.manuales || [])
-                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
-                .reduce((sum, item) => {
-                    const monto = item.monto || 0;
-                    return sum + (item.tipo === '+' ? monto : -monto);
-                }, 0);
+            // Recalcular totales desde la UI
+            const totalGastos = calcularTotalGastosDesdeUI();
+            const totalTransferencias = calcularTotalTransferenciasDesdeUI();
+            const totalCreditos = calcularTotalCreditosDesdeUI();
+            const totalManuales = calcularTotalManualesDesdeUI();
             
-            // Calcular efectivo del Paso 2 desde las denominaciones
-            const efectivoPaso2 = Object.entries(estado.paso2.denominaciones || {})
-                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            // Calcular efectivo del Paso 2 desde la UI
+            const efectivoPaso2 = calcularEfectivoPaso2DesdeUI();
+            
+            // Calcular Z desde la UI
+            const z = calcularZDesdeUI();
             
             const totalCalculado = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
-            const sobraFaltaCalculada = totalCalculado - (estado.paso3.z || 0);
+            const sobraFaltaCalculada = totalCalculado - z;
             
             // Obtener valores mostrados en la interfaz
             const resumenTotalElement = document.getElementById('resumen-total');
             const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
             
             if (resumenTotalElement && resumenSobraFaltaElement) {
-                const totalMostrado = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
-                const sobraFaltaMostrada = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+                const totalMostrado = parseInt(resumenTotalElement.textContent.replace(/[^\d-]/g, '')) || 0;
+                const sobraFaltaMostrada = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d-]/g, '')) || 0;
                 
                 // Verificar si hay discrepancia en el total
                 if (Math.abs(totalCalculado - totalMostrado) > 1) {
@@ -2678,7 +3102,7 @@
                 }
                 
                 const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
-                const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+                const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d-]/g, '')) || 0;
                 const z = estado.paso3.z || 0;
                 
                 // Calcular porcentaje de diferencia
@@ -2739,7 +3163,7 @@
             if (!resumenTotalElement || !resumenSobraFaltaElement) return;
             
             const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
-            const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+                            const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d-]/g, '')) || 0;
             const z = estado.paso3.z || 0;
             
             // Calcular porcentaje de diferencia
@@ -2823,6 +3247,62 @@
             }
         }
 
+        // Función de debug para verificar cálculos
+        function debugCalculos() {
+            console.log('=== DEBUG CÁLCULOS ===');
+            
+            // Verificar gastos
+            const gastosRows = document.querySelectorAll('#gastos-turno tr, #gastos-flete tr, #gastos-aseo tr, #gastos-otros tr');
+            console.log('Filas de gastos encontradas:', gastosRows.length);
+            gastosRows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                const montoInput = row.querySelector('input[type="text"]:nth-child(2)');
+                console.log(`Fila ${index + 1}:`, {
+                    descripcion: inputs[0]?.value || 'N/A',
+                    monto: montoInput?.value || 'N/A',
+                    montoParseado: montoInput ? parseInt(montoInput.value.replace(/\D/g, '')) || 0 : 0
+                });
+            });
+            
+            // Verificar transferencias
+            const transferenciasRows = document.querySelectorAll('#transferencias-llave tr, #transferencias-transferencia tr, #transferencias-qr tr');
+            console.log('Filas de transferencias encontradas:', transferenciasRows.length);
+            
+            // Verificar créditos
+            const creditosRows = document.querySelectorAll('#creditos-addi tr, #creditos-sistecredito tr');
+            console.log('Filas de créditos encontradas:', creditosRows.length);
+            
+            // Verificar manuales
+            const manualesRows = document.querySelectorAll('#entradas-manuales tr');
+            console.log('Filas de manuales encontradas:', manualesRows.length);
+            manualesRows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                const montoInput = row.querySelector('input[type="text"]:nth-child(3)');
+                const select = row.querySelector('select');
+                console.log(`Manual ${index + 1}:`, {
+                    descripcion: inputs[0]?.value || 'N/A',
+                    tipo: select?.value || 'N/A',
+                    monto: montoInput?.value || 'N/A',
+                    montoParseado: montoInput ? parseInt(montoInput.value.replace(/\D/g, '')) || 0 : 0
+                });
+            });
+            
+            // Calcular totales
+            const totalGastos = calcularTotalGastosDesdeUI();
+            const totalTransferencias = calcularTotalTransferenciasDesdeUI();
+            const totalCreditos = calcularTotalCreditosDesdeUI();
+            const totalManuales = calcularTotalManualesDesdeUI();
+            
+            console.log('Totales calculados:', {
+                gastos: totalGastos,
+                transferencias: totalTransferencias,
+                creditos: totalCreditos,
+                manuales: totalManuales
+            });
+            
+            console.log('=== FIN DEBUG ===');
+        }
+
         function exportarReporte() {
             try {
                 // Limpiar entradas vacías antes de exportar
@@ -2832,7 +3312,7 @@
                 const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
                 
                 const total = resumenTotalElement ? parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0 : 0;
-                const sobraFalta = resumenSobraFaltaElement ? parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0 : 0;
+                const sobraFalta = resumenSobraFaltaElement ? parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d-]/g, '')) || 0 : 0;
                 
                 const reporte = {
                     fecha: new Date().toLocaleDateString('es-CO'),
