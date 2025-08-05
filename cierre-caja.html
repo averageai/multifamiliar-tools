@@ -1764,7 +1764,23 @@
                 esValido = false;
             }
             
-            if (erroresCalculos.length > 0) {
+            // Verificar si hay diferencia excesiva
+            const efectivoPaso2 = estado.paso2.total || 0;
+            const totalGastos = calcularTotalGastos();
+            const totalTransferencias = calcularTotalTransferencias();
+            const totalCreditos = calcularTotalCreditos();
+            const totalManuales = calcularTotalManuales();
+            const z = estado.paso3.z || 0;
+            
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            const sobraFalta = z - total;
+            const diferencia = Math.abs(sobraFalta);
+            const porcentaje = efectivoPaso2 > 0 ? (diferencia / efectivoPaso2) * 100 : 0;
+            
+            if (porcentaje > MAX_DIFFERENCE_PERCENTAGE) {
+                mensaje += `⚠️ DIFERENCIA EXCESIVA: ${porcentaje.toFixed(2)}% (límite: ${MAX_DIFFERENCE_PERCENTAGE}%)\nSe requiere autorización de administrador.\n\n`;
+                esValido = false;
+            } else if (erroresCalculos.length > 0) {
                 mensaje += '⚠️ ERRORES DE CÁLCULO:\n' + erroresCalculos.join('\n') + '\n\n';
                 esValido = false;
                 // Forzar recálculo
@@ -1853,23 +1869,11 @@
         function validarCalculos() {
             const errores = [];
             
-            // Calcular diferencia
-            const efectivoPaso2 = estado.paso2.total || 0;
-            const totalGastos = calcularTotalGastos();
-            const totalTransferencias = calcularTotalTransferencias();
-            const totalCreditos = calcularTotalCreditos();
-            const totalManuales = calcularTotalManuales();
-            const z = estado.paso3.z || 0;
+            // Esta función ahora solo valida errores de cálculo básicos
+            // La validación de diferencia excesiva se maneja en validarManualmente()
             
-            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
-            const sobraFalta = z - total;
-            const diferencia = Math.abs(sobraFalta);
-            const porcentaje = efectivoPaso2 > 0 ? (diferencia / efectivoPaso2) * 100 : 0;
-            
-            // Validar que los cálculos sean coherentes
-            if (porcentaje > MAX_DIFFERENCE_PERCENTAGE) {
-                errores.push(`⚠️ Diferencia excesiva: ${porcentaje.toFixed(2)}% (límite: ${MAX_DIFFERENCE_PERCENTAGE}%)`);
-            }
+            // Aquí se pueden agregar otras validaciones de cálculo si es necesario
+            // Por ejemplo, verificar que los totales sean números válidos
             
             return errores;
         }
@@ -1900,6 +1904,30 @@
         }
 
         function verificarExportacion() {
+            // Primero verificar si hay diferencia excesiva
+            const efectivoPaso2 = estado.paso2.total || 0;
+            const totalGastos = calcularTotalGastos();
+            const totalTransferencias = calcularTotalTransferencias();
+            const totalCreditos = calcularTotalCreditos();
+            const totalManuales = calcularTotalManuales();
+            const z = estado.paso3.z || 0;
+            
+            const total = efectivoPaso2 + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            const sobraFalta = z - total;
+            const diferencia = Math.abs(sobraFalta);
+            const porcentaje = efectivoPaso2 > 0 ? (diferencia / efectivoPaso2) * 100 : 0;
+            
+            // Si hay diferencia excesiva, mostrar modal de autorización
+            if (porcentaje > MAX_DIFFERENCE_PERCENTAGE) {
+                document.getElementById('warning-container').style.display = 'block';
+                document.getElementById('warning-percentage').textContent = `${porcentaje.toFixed(2)}%`;
+                document.getElementById('btn-autorizacion-manual').style.display = 'inline-block';
+                document.getElementById('btn-exportar').disabled = true;
+                mostrarModalAdmin();
+                return;
+            }
+            
+            // Si no hay diferencia excesiva, proceder con validación normal
             if (validarManualmente()) {
                 exportarReporte();
             }
@@ -1921,7 +1949,8 @@
                 cerrarModalAdmin();
                 document.getElementById('btn-exportar').disabled = false;
                 document.getElementById('warning-container').style.display = 'none';
-                exportarReporte();
+                document.getElementById('btn-autorizacion-manual').style.display = 'none';
+                // No llamar directamente a exportarReporte(), permitir que el usuario haga clic nuevamente
             } else {
                 alert('Contraseña incorrecta');
             }
