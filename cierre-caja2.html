@@ -1994,7 +1994,84 @@
             return numero.toLocaleString('es-CO');
         }
 
+        function validarDatosCompletos() {
+            const errores = [];
+            
+            // Validar que el Paso 1 esté completado
+            if (!estado.paso1.completado) {
+                errores.push("❌ Paso 1: Ajuste Base no está completado");
+            }
+            
+            // Validar que el Paso 2 esté completado
+            if (!estado.paso2.completado) {
+                errores.push("❌ Paso 2: Conteo de Efectivo no está completado");
+            }
+            
+            // Validar que hay un valor Z
+            if (!estado.paso3.z || estado.paso3.z <= 0) {
+                errores.push("❌ Valor Z no está definido o es 0");
+            }
+            
+            // Validar que hay efectivo contado
+            if (!estado.paso2.total || estado.paso2.total <= 0) {
+                errores.push("❌ No hay efectivo contado en el Paso 2");
+            }
+            
+            return errores;
+        }
+
+        function validarCalculos() {
+            const errores = [];
+            
+            // Recalcular totales desde cero
+            const totalGastos = Object.values(estado.paso3.gastos || {}).flat()
+                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
+                .reduce((sum, item) => sum + (item.monto || 0), 0);
+                
+            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat()
+                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
+                .reduce((sum, item) => sum + (item.monto || 0), 0);
+                
+            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat()
+                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
+                .reduce((sum, item) => sum + (item.monto || 0), 0);
+                
+            const totalManuales = (estado.paso3.manuales || [])
+                .filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''))
+                .reduce((sum, item) => {
+                    const monto = item.monto || 0;
+                    return sum + (item.tipo === '+' ? monto : -monto);
+                }, 0);
+            
+            const totalCalculado = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            const sobraFaltaCalculada = totalCalculado - (estado.paso3.z || 0);
+            
+            // Obtener valores mostrados en la interfaz
+            const resumenTotalElement = document.getElementById('resumen-total');
+            const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
+            
+            if (resumenTotalElement && resumenSobraFaltaElement) {
+                const totalMostrado = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
+                const sobraFaltaMostrada = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+                
+                // Verificar si hay discrepancia en el total
+                if (Math.abs(totalCalculado - totalMostrado) > 1) {
+                    errores.push(`⚠️ Discrepancia en el total: Calculado $${formatearNumero(totalCalculado)} vs Mostrado $${formatearNumero(totalMostrado)}`);
+                }
+                
+                // Verificar si hay discrepancia en sobra/falta
+                if (Math.abs(sobraFaltaCalculada - sobraFaltaMostrada) > 1) {
+                    errores.push(`⚠️ Discrepancia en sobra/falta: Calculado $${formatearNumero(sobraFaltaCalculada)} vs Mostrado $${formatearNumero(sobraFaltaMostrada)}`);
+                }
+            }
+            
+            return errores;
+        }
+
         function verificarPermisoExportacion() {
+            // Limpiar entradas vacías antes de validar
+            limpiarEntradasVacias();
+            
             const resumenTotalElement = document.getElementById('resumen-total');
             const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
             const btnExportar = document.getElementById('btn-exportar');
@@ -2003,6 +2080,24 @@
             const warningPercentage = document.getElementById('warning-percentage');
             
             if (!resumenTotalElement || !resumenSobraFaltaElement || !btnExportar) return;
+            
+            // Validar datos completos
+            const erroresCompletos = validarDatosCompletos();
+            if (erroresCompletos.length > 0) {
+                btnExportar.disabled = true;
+                btnAutorizacionManual.style.display = 'none';
+                warningContainer.style.display = 'block';
+                warningPercentage.textContent = 'Datos incompletos';
+                return;
+            }
+            
+            // Validar cálculos
+            const erroresCalculos = validarCalculos();
+            if (erroresCalculos.length > 0) {
+                console.warn('Errores de cálculo detectados:', erroresCalculos);
+                // Forzar recálculo
+                actualizarResumenFinal();
+            }
             
             const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
             const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
@@ -2036,6 +2131,20 @@
         }
 
         function verificarExportacion() {
+            // Validar antes de exportar
+            const erroresCompletos = validarDatosCompletos();
+            if (erroresCompletos.length > 0) {
+                alert('❌ No se puede exportar:\n\n' + erroresCompletos.join('\n'));
+                return;
+            }
+            
+            const erroresCalculos = validarCalculos();
+            if (erroresCalculos.length > 0) {
+                console.warn('Errores de cálculo detectados:', erroresCalculos);
+                // Forzar recálculo y continuar
+                actualizarResumenFinal();
+            }
+            
             const resumenTotalElement = document.getElementById('resumen-total');
             const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
             
@@ -2094,6 +2203,21 @@
             
             if (password === ADMIN_PASSWORD) {
                 cerrarModalAdmin();
+                
+                // Validar antes de exportar con autorización
+                const erroresCompletos = validarDatosCompletos();
+                if (erroresCompletos.length > 0) {
+                    alert('❌ No se puede exportar:\n\n' + erroresCompletos.join('\n'));
+                    return;
+                }
+                
+                const erroresCalculos = validarCalculos();
+                if (erroresCalculos.length > 0) {
+                    console.warn('Errores de cálculo detectados:', erroresCalculos);
+                    // Forzar recálculo y continuar
+                    actualizarResumenFinal();
+                }
+                
                 exportarReporte();
             } else {
                 alert('❌ Contraseña incorrecta. Intente nuevamente.');
