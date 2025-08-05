@@ -1147,11 +1147,21 @@
                             La diferencia de <span class="percentage" id="warning-percentage">0%</span> excede el límite del 5%<br>
                             Se requiere autorización de administrador para exportar
                         </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <button class="btn btn-primary" onclick="mostrarModalAdmin()">
+                                🔐 Solicitar Autorización
+                            </button>
+                        </div>
                     </div>
 
-                    <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()">
-                        📄 Exportar Reporte
-                    </button>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()">
+                            📄 Exportar Reporte
+                        </button>
+                        <button class="btn btn-secondary" onclick="mostrarModalAdmin()" style="display: none;" id="btn-autorizacion-manual">
+                            🔐 Autorización Manual
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1945,6 +1955,7 @@
             const resumenTotalElement = document.getElementById('resumen-total');
             const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
             const btnExportar = document.getElementById('btn-exportar');
+            const btnAutorizacionManual = document.getElementById('btn-autorizacion-manual');
             const warningContainer = document.getElementById('warning-container');
             const warningPercentage = document.getElementById('warning-percentage');
             
@@ -1960,14 +1971,24 @@
             
             // Verificar si excede el límite del 5%
             if (porcentajeDiferencia > MAX_DIFFERENCE_PERCENTAGE && z > 0) {
-                // Bloquear exportación
+                // Bloquear exportación y mostrar opciones de autorización
                 btnExportar.disabled = true;
                 warningContainer.style.display = 'block';
                 warningPercentage.textContent = `${porcentajeDiferencia.toFixed(1)}%`;
+                
+                // Mostrar botón de autorización manual
+                if (btnAutorizacionManual) {
+                    btnAutorizacionManual.style.display = 'inline-block';
+                }
             } else {
                 // Permitir exportación
                 btnExportar.disabled = false;
                 warningContainer.style.display = 'none';
+                
+                // Ocultar botón de autorización manual
+                if (btnAutorizacionManual) {
+                    btnAutorizacionManual.style.display = 'none';
+                }
             }
         }
 
