@@ -511,6 +511,16 @@
                 <span class="tool-badge">Manual</span>
             </a>
 
+            <!-- Sistema de Cierre de Caja -->
+            <a href="#" class="tool-card administrativo" id="tool-cierre-caja" onclick="navigateTo('/cierre-caja2'); return false;">
+                <div class="tool-icon">💰</div>
+                <h3>Sistema de Cierre de Caja</h3>
+                <p>Control profesional de efectivo con interfaz compacta y tablas organizadas. 3 pasos: ajuste base, conteo efectivo y reporte final. Denominaciones colombianas y exportación de reportes.</p>
+                <span class="tool-badge">Mejorado</span>
+            </a>
+
+
+
         </div>
 
         <div style="text-align: center;">
@@ -531,13 +541,13 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones']
+                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -683,7 +693,8 @@
                 'tool-spav2': 'spav2',
                 'tool-duplicados': 'duplicados',
                 'tool-codigos-disponibles': 'codigos-disponibles',
-                'tool-cotizaciones': 'cotizaciones'
+                'tool-cotizaciones': 'cotizaciones',
+                'tool-cierre-caja': 'cierre-caja'
             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -734,7 +745,8 @@
             '/spav2': 'spav2.html',
             '/duplicados': 'duplicados.html',
             '/codigos-disponibles': 'codigos-disponibles.html',
-            '/cotizaciones': 'cotizaciones.html'
+            '/cotizaciones': 'cotizaciones.html',
+            '/cierre-caja': 'cierre-caja2.html'
         };
 
         // Función de navegación

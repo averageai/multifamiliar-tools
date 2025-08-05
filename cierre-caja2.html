@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cierre de Caja - Multifamiliar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-header:hover {
+            background: #34495e;
+        }
+
+        .section-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s;
+        }
+
+        .status-indicator.complete {
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        .status-indicator.pending {
+            background: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .section-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 8px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .progress-bar {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+
+        .progress-bar-fill.error {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%);
+        }
+
+        .progress-bar-fill.success {
+            background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        /* Alineación específica para tablas de gastos, transferencias y créditos */
+        .gastos th:nth-child(1),
+        .transferencias th:nth-child(1),
+        .creditos th:nth-child(1) {
+            text-align: left;
+        }
+
+        .gastos th:nth-child(2),
+        .transferencias th:nth-child(2),
+        .creditos th:nth-child(2) {
+            text-align: right;
+        }
+
+        .gastos th:nth-child(3),
+        .transferencias th:nth-child(3),
+        .creditos th:nth-child(3) {
+            text-align: center;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        /* Alineación específica para celdas de gastos, transferencias y créditos */
+        .gastos td:nth-child(1),
+        .transferencias td:nth-child(1),
+        .creditos td:nth-child(1) {
+            text-align: left;
+        }
+
+        .gastos td:nth-child(2),
+        .transferencias td:nth-child(2),
+        .creditos td:nth-child(2) {
+            text-align: right;
+        }
+
+        .gastos td:nth-child(3),
+        .transferencias td:nth-child(3),
+        .creditos td:nth-child(3) {
+            text-align: center;
+        }
+
+        /* Alineación específica para inputs dentro de las celdas */
+        .gastos td:nth-child(1) input,
+        .transferencias td:nth-child(1) input,
+        .creditos td:nth-child(1) input {
+            text-align: left !important;
+        }
+
+        .gastos td:nth-child(2) input,
+        .transferencias td:nth-child(2) input,
+        .creditos td:nth-child(2) input {
+            text-align: right !important;
+        }
+
+        .gastos td:nth-child(3) button,
+        .transferencias td:nth-child(3) button,
+        .creditos td:nth-child(3) button {
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Asegurar que los inputs de monto tengan alineación correcta */
+        .gastos input[type="text"],
+        .transferencias input[type="text"],
+        .creditos input[type="text"] {
+            text-align: inherit;
+        }
+
+        /* Estilos específicos para inputs dentro de celdas de tabla */
+        .gastos td input,
+        .transferencias td input,
+        .creditos td input {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .gastos td input:focus,
+        .transferencias td input:focus,
+        .creditos td input:focus {
+            outline: none;
+            background: rgba(42, 42, 42, 0.3);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+        }
+
+        .gastos td input::placeholder,
+        .transferencias td input::placeholder,
+        .creditos td input::placeholder {
+            color: #666;
+            font-style: italic;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .denomination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-control {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-control:hover {
+            background: #667eea;
+            transform: scale(1.1);
+        }
+
+        .btn-control:active {
+            transform: scale(0.95);
+        }
+
+        .denomination-input {
+            width: 80px;
+            text-align: center;
+            padding: 6px 8px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-export {
+            background: #4ade80;
+        }
+
+        .btn-export:hover {
+            background: #22c55e;
+        }
+
+        .summary-card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 16px;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 20px;
+            color: #667eea;
+        }
+
+        .summary-label {
+            color: #a0a0a0;
+        }
+
+        .summary-value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .summary-value.positive {
+            color: #4ade80;
+        }
+
+        .summary-value.negative {
+            color: #ff6b6b;
+        }
+
+        .category-section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Estilos para elementos flex (no para tablas) */
+        .flex-item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .flex-item-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .flex-item-row input:focus {
+            outline: none;
+            background: rgba(42, 42, 42, 0.3);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+        }
+
+        .flex-item-row input::placeholder {
+            color: #666;
+            font-style: italic;
+        }
+
+        .flex-item-row input[type="number"] {
+            width: 120px;
+        }
+
+        /* Colores para montos según categoría */
+        .gastos input[type="text"] {
+            color: #ff6b6b !important;
+        }
+
+        .transferencias input[type="text"] {
+            color: #4ade80 !important;
+        }
+
+        .creditos input[type="text"] {
+            color: #fbbf24 !important;
+        }
+
+        /* Estilo especial para el input del valor Z */
+        .z-input {
+            padding: 16px 20px;
+            border: 2px solid #16b63e;
+            border-radius: 12px;
+            background: #1a1a1a;
+            color: #16b63e;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            transition: all 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(22, 182, 62, 0.1);
+        }
+
+        .z-input:focus {
+            outline: none;
+            background: #2a2a2a;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 4px rgba(22, 182, 62, 0.3), 0 8px 20px rgba(22, 182, 62, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .z-input::placeholder {
+            color: #666;
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        .z-input-container {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-remove {
+            background: #ff6b6b;
+            color: #ffffff;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-remove:hover {
+            background: #ff5252;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .section-header {
+                background: #f0f0f0;
+                color: black;
+            }
+            
+            .section-content {
+                display: block !important;
+            }
+            
+            .btn-control, .btn, .btn-remove {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">
+                ← Volver
+            </a>
+            <div class="logo">💰</div>
+            <div class="header-text">
+                <h1>Sistema de Cierre de Caja</h1>
+                <p>Control profesional de efectivo y reportes diarios</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Paso 1: Ajuste Base Próximo Día -->
+            <div class="section" id="paso1">
+                <div class="section-header" onclick="toggleSection('paso1')">
+                    <h2>📋 Paso 1: Ajuste Base Próximo Día</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-indicator" id="status-paso1"></div>
+                        <span id="status-text-paso1">Pendiente</span>
+                    </div>
+                </div>
+                <div class="section-content" id="content-paso1">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="monto-base">Monto Base (COP)</label>
+                            <input type="number" id="monto-base" value="100000" min="0" step="1000">
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-info">
+                            <span>Progreso: <span id="progreso-texto">$0 / $100,000</span></span>
+                            <span id="diferencia-texto">Falta: $100,000</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progreso-barra" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Denominación</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="denominaciones-paso1">
+                                <!-- Denominaciones se generan dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-completar-paso1" disabled>
+                        ✅ Completar Paso 1
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 2: Conteo Efectivo del Día -->
+            <div class="section" id="paso2">
+                <div class="section-header" onclick="toggleSection('paso2')">
+                    <h2>💵 Paso 2: Conteo Efectivo del Día</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-indicator" id="status-paso2"></div>
+                        <span id="status-text-paso2">Pendiente</span>
+                    </div>
+                </div>
+                <div class="section-content" id="content-paso2">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Denominación</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="denominaciones-paso2">
+                                <!-- Denominaciones se generan dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span class="summary-label">Total Efectivo:</span>
+                            <span class="summary-value" id="total-efectivo">$0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-completar-paso2">
+                        ✅ Completar Paso 2
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Reporte Final -->
+            <div class="section" id="paso3">
+                <div class="section-header" onclick="toggleSection('paso3')">
+                    <h2>📊 Paso 3: Reporte Final</h2>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="status-indicator" id="status-paso3"></div>
+                        <span id="status-text-paso3">Pendiente</span>
+                    </div>
+                </div>
+                <div class="section-content" id="content-paso3">
+                    <div class="z-input-container" style="
+                        max-width: 500px; 
+                        margin: 0 auto 24px auto; /* <--- aquí se añade separación inferior */
+                        padding: 12px; 
+                        background-color: #1e1e1e; 
+                        border-radius: 10px;
+                    ">
+                      <div class="form-group" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                        <label for="z-value" style="
+                          font-size: 16px; 
+                          font-weight: 600; 
+                          color: #ffffff; 
+                          margin: 0; 
+                          text-align: center;
+                        ">🧾 Valor Z (COP)</label>
+                        <input type="text" id="z-value" placeholder="0" data-paso="paso3" oninput="formatCurrency(this)" class="z-input" 
+                          style="
+                            padding: 10px 14px;
+                            border: 1px solid #16b63e;
+                            background-color: transparent;
+                            border-radius: 6px;
+                            color: #16b63e;
+                            font-weight: bold;
+                            text-align: center;
+                            width: 100%;
+                            font-size: 18px;
+                            margin: 0;
+                          "
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Gastos -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h3 class="category-title">💸 Turno</h3>
+                            <button class="btn btn-secondary" onclick="addGastoItem('turno')">+ Turno</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="gastos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gastos-turno"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">🚚 Flete</h3>
+                            <button class="btn btn-secondary" onclick="addGastoItem('flete')">+ Flete</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="gastos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gastos-flete"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">🧹 Aseo</h3>
+                            <button class="btn btn-secondary" onclick="addGastoItem('aseo')">+ Aseo</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="gastos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gastos-aseo"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">📝 Otros</h3>
+                            <button class="btn btn-secondary" onclick="addGastoItem('otros')">+ Otro</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="gastos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="gastos-otros"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Transferencias -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h3 class="category-title">🔑 Llave</h3>
+                            <button class="btn btn-secondary" onclick="addTransferenciaItem('llave')">+ Llave</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="transferencias">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transferencias-llave"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">☑️ Transferencia</h3>
+                            <button class="btn btn-secondary" onclick="addTransferenciaItem('transferencia')">+ Transferencia</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="transferencias">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transferencias-transferencia"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">📱 QR</h3>
+                            <button class="btn btn-secondary" onclick="addTransferenciaItem('qr')">+ QR</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="transferencias">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transferencias-qr"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Créditos -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h3 class="category-title">🅰️ ADDI</h3>
+                            <button class="btn btn-secondary" onclick="addCreditoItem('addi')">+ Addi</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="creditos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="creditos-addi"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="category-header">
+                            <h3 class="category-title">🥬 SisteCrédito</h3>
+                            <button class="btn btn-secondary" onclick="addCreditoItem('sistecredito')">+ SisteCrédito</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="creditos">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="creditos-sistecredito"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Resumen Final -->
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span class="summary-label">Efectivo:</span>
+                            <span class="summary-value" id="resumen-efectivo">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Gastos:</span>
+                            <span class="summary-value" id="resumen-gastos">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Transferencias:</span>
+                            <span class="summary-value" id="resumen-transferencias">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Créditos:</span>
+                            <span class="summary-value" id="resumen-creditos">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total:</span>
+                            <span class="summary-value" id="resumen-total">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Z:</span>
+                            <span class="summary-value" id="resumen-z">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Sobra/Falta:</span>
+                            <span class="summary-value" id="resumen-sobrafalta">$0</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-export" onclick="exportarReporte()">
+                        📄 Exportar Reporte
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Denominaciones colombianas
+        const denominaciones = [
+            { valor: 100000, label: '100.000' },
+            { valor: 50000, label: '50.000' },
+            { valor: 20000, label: '20.000' },
+            { valor: 10000, label: '10.000' },
+            { valor: 5000, label: '5.000' },
+            { valor: 2000, label: '2.000' },
+            { valor: 1000, label: '1.000' },
+            { valor: 500, label: '500' },
+            { valor: 200, label: '200' },
+            { valor: 100, label: '100' },
+            { valor: 50, label: '50' }
+        ];
+
+        // Estado global
+        let estado = {
+            paso1: { completado: false, montoBase: 100000, denominaciones: {} },
+            paso2: { completado: false, denominaciones: {}, total: 0 },
+            paso3: { completado: false, z: 0, gastos: {}, transferencias: {}, creditos: {} }
+        };
+
+        // Sistema de caché
+        const CACHE_KEY = 'cierre_caja_progress';
+        const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+
+        function guardarEnCache() {
+            try {
+                const cacheData = {
+                    estado: estado,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+                console.log('Progreso guardado en caché');
+            } catch (error) {
+                console.error('Error al guardar en caché:', error);
+            }
+        }
+
+        function cargarDesdeCache() {
+            try {
+                const cacheData = localStorage.getItem(CACHE_KEY);
+                if (!cacheData) return false;
+
+                const data = JSON.parse(cacheData);
+                const tiempoTranscurrido = Date.now() - data.timestamp;
+
+                // Verificar si el caché no ha expirado (2 horas)
+                if (tiempoTranscurrido < CACHE_DURATION) {
+                    estado = data.estado;
+                    console.log('Progreso cargado desde caché');
+                    return true;
+                } else {
+                    // Limpiar caché expirado
+                    localStorage.removeItem(CACHE_KEY);
+                    console.log('Caché expirado, iniciando desde cero');
+                }
+            } catch (error) {
+                console.error('Error al cargar desde caché:', error);
+            }
+            return false;
+        }
+
+        function limpiarCache() {
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                console.log('Caché limpiado');
+            } catch (error) {
+                console.error('Error al limpiar caché:', error);
+            }
+        }
+
+        function restaurarInterfazDesdeCache() {
+            console.log('Restaurando interfaz desde caché...');
+            
+            // Restaurar denominaciones del Paso 1
+            if (estado.paso1.denominaciones) {
+                Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
+                    const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
+                    if (input) {
+                        input.value = cantidad;
+                    }
+                });
+            }
+            
+            // Restaurar denominaciones del Paso 2
+            if (estado.paso2.denominaciones) {
+                Object.entries(estado.paso2.denominaciones).forEach(([valor, cantidad]) => {
+                    const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
+                    if (input) {
+                        input.value = cantidad;
+                    }
+                });
+            }
+            
+            // Restaurar valor Z
+            if (estado.paso3.z) {
+                const zInput = document.getElementById('z-value');
+                if (zInput) {
+                    zInput.value = formatearNumero(estado.paso3.z);
+                }
+            }
+            
+            // Restaurar items del Paso 3
+            restaurarItemsPaso3();
+            
+            // Actualizar todos los cálculos
+            actualizarProgresoPaso1();
+            actualizarProgresoPaso2();
+            actualizarResumenFinal();
+            
+            console.log('Interfaz restaurada desde caché');
+        }
+
+        function restaurarItemsPaso3() {
+            // Restaurar gastos
+            Object.entries(estado.paso3.gastos || {}).forEach(([tipo, items]) => {
+                items.forEach(item => {
+                    addGastoItem(tipo);
+                    const lastRow = document.querySelector(`#gastos-${tipo} tr:last-child`);
+                    if (lastRow) {
+                        const inputs = lastRow.querySelectorAll('input');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                    }
+                });
+            });
+            
+            // Restaurar transferencias
+            Object.entries(estado.paso3.transferencias || {}).forEach(([tipo, items]) => {
+                items.forEach(item => {
+                    addTransferenciaItem(tipo);
+                    const lastRow = document.querySelector(`#transferencias-${tipo} tr:last-child`);
+                    if (lastRow) {
+                        const inputs = lastRow.querySelectorAll('input');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                    }
+                });
+            });
+            
+            // Restaurar créditos
+            Object.entries(estado.paso3.creditos || {}).forEach(([tipo, items]) => {
+                items.forEach(item => {
+                    addCreditoItem(tipo);
+                    const lastRow = document.querySelector(`#creditos-${tipo} tr:last-child`);
+                    if (lastRow) {
+                        const inputs = lastRow.querySelectorAll('input');
+                        if (inputs[0]) inputs[0].value = item.descripcion || '';
+                        if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                    }
+                });
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando Sistema de Cierre de Caja...');
+            
+            // Intentar cargar desde caché
+            const cacheCargado = cargarDesdeCache();
+            
+            // Inicializar denominaciones
+            inicializarDenominaciones();
+            
+            // Inicializar eventos
+            inicializarEventos();
+            
+            // Actualizar estados iniciales
+            actualizarEstados();
+            
+            // Si no se cargó desde caché, mostrar el primer paso por defecto
+            if (!cacheCargado) {
+                const paso1Content = document.getElementById('content-paso1');
+                if (paso1Content) {
+                    paso1Content.classList.add('active');
+                }
+            }
+            
+            // Actualizar progreso inicial del Paso 1
+            actualizarProgresoPaso1();
+            
+            // Si se cargó desde caché, restaurar la interfaz
+            if (cacheCargado) {
+                restaurarInterfazDesdeCache();
+            }
+            
+            console.log('Sistema inicializado correctamente');
+        });
+
+        function inicializarDenominaciones() {
+            console.log('Inicializando denominaciones...');
+            
+            // Paso 1
+            const container1 = document.getElementById('denominaciones-paso1');
+            if (!container1) {
+                console.error('No se encontró el contenedor de denominaciones del Paso 1');
+                return;
+            }
+            container1.innerHTML = '';
+            
+            denominaciones.forEach(denom => {
+                const row = crearDenominacionRow(denom, 'paso1');
+                container1.appendChild(row);
+                estado.paso1.denominaciones[denom.valor] = 0;
+            });
+
+            // Paso 2
+            const container2 = document.getElementById('denominaciones-paso2');
+            if (!container2) {
+                console.error('No se encontró el contenedor de denominaciones del Paso 2');
+                return;
+            }
+            container2.innerHTML = '';
+            
+            denominaciones.forEach(denom => {
+                const row = crearDenominacionRow(denom, 'paso2');
+                container2.appendChild(row);
+                estado.paso2.denominaciones[denom.valor] = 0;
+            });
+            
+            console.log('Denominaciones inicializadas correctamente');
+        }
+
+        function crearDenominacionRow(denom, paso) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>$${denom.label} COP</strong></td>
+                <td>
+                    <div class="denomination-controls">
+                        <button class="btn-control" onclick="cambiarCantidad(${denom.valor}, -1, '${paso}')">-</button>
+                        <input type="number" class="denomination-input" 
+                               value="" min="0" 
+                               onchange="cambiarCantidadDirecta(${denom.valor}, this.value, '${paso}')"
+                               data-denominacion="${denom.valor}" data-paso="${paso}">
+                        <button class="btn-control" onclick="cambiarCantidad(${denom.valor}, 1, '${paso}')">+</button>
+                    </div>
+                </td>
+                <td id="subtotal-${paso}-${denom.valor}">$0</td>
+                <td>
+                    <button class="btn btn-secondary" onclick="limpiarDenominacion(${denom.valor}, '${paso}')">
+                        Limpiar
+                    </button>
+                </td>
+            `;
+            return row;
+        }
+
+        function cambiarCantidad(valor, delta, paso) {
+            const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="${paso}"]`);
+            if (!input) {
+                console.error(`No se encontró input para denominación ${valor} en paso ${paso}`);
+                return;
+            }
+            
+            const nuevaCantidad = Math.max(0, parseInt(input.value || 0) + delta);
+            input.value = nuevaCantidad;
+            
+            if (paso === 'paso1') {
+                estado.paso1.denominaciones[valor] = nuevaCantidad;
+                actualizarSubtotal(valor, nuevaCantidad, paso);
+                actualizarProgresoPaso1();
+            } else if (paso === 'paso2') {
+                estado.paso2.denominaciones[valor] = nuevaCantidad;
+                actualizarSubtotal(valor, nuevaCantidad, paso);
+                actualizarTotalPaso2();
+            }
+        }
+
+        function cambiarCantidadDirecta(valor, cantidad, paso) {
+            const nuevaCantidad = Math.max(0, parseInt(cantidad || 0));
+            
+            if (paso === 'paso1') {
+                estado.paso1.denominaciones[valor] = nuevaCantidad;
+                actualizarSubtotal(valor, nuevaCantidad, paso);
+                actualizarProgresoPaso1();
+                guardarEnCache();
+            } else if (paso === 'paso2') {
+                estado.paso2.denominaciones[valor] = nuevaCantidad;
+                actualizarSubtotal(valor, nuevaCantidad, paso);
+                actualizarTotalPaso2();
+                guardarEnCache();
+            }
+        }
+
+        function actualizarSubtotal(valor, cantidad, paso) {
+            const subtotal = valor * cantidad;
+            const subtotalElement = document.getElementById(`subtotal-${paso}-${valor}`);
+            if (subtotalElement) {
+                subtotalElement.textContent = `$${formatearNumero(subtotal)}`;
+            }
+        }
+
+        function limpiarDenominacion(valor, paso) {
+            const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="${paso}"]`);
+            if (input) {
+                input.value = "";
+                cambiarCantidadDirecta(valor, 0, paso);
+            }
+        }
+
+        function actualizarProgresoPaso1() {
+            const montoBaseElement = document.getElementById('monto-base');
+            if (!montoBaseElement) return;
+            
+            const montoBase = parseInt(montoBaseElement.value) || 0;
+            const totalActual = Object.entries(estado.paso1.denominaciones)
+                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            
+            const diferencia = montoBase - totalActual;
+            const porcentaje = montoBase > 0 ? Math.min(100, Math.max(0, (totalActual / montoBase) * 100)) : 0;
+            
+            const progresoTexto = document.getElementById('progreso-texto');
+            const diferenciaTexto = document.getElementById('diferencia-texto');
+            const barra = document.getElementById('progreso-barra');
+            const btnCompletar = document.getElementById('btn-completar-paso1');
+            
+            if (progresoTexto) {
+                progresoTexto.textContent = `$${formatearNumero(totalActual)} / $${formatearNumero(montoBase)}`;
+            }
+            if (diferenciaTexto) {
+                diferenciaTexto.textContent = diferencia >= 0 ? `Falta: $${formatearNumero(diferencia)}` : `Sobra: $${formatearNumero(Math.abs(diferencia))}`;
+            }
+            if (barra) {
+                barra.style.width = `${porcentaje}%`;
+                
+                if (diferencia === 0) {
+                    barra.className = 'progress-bar-fill success';
+                    if (btnCompletar) btnCompletar.disabled = false;
+                } else {
+                    barra.className = diferencia > 0 ? 'progress-bar-fill' : 'progress-bar-fill error';
+                    if (btnCompletar) btnCompletar.disabled = true;
+                }
+            }
+        }
+
+        function actualizarTotalPaso2() {
+            const total = Object.entries(estado.paso2.denominaciones)
+                .reduce((sum, [valor, cantidad]) => sum + (parseInt(valor) * (cantidad || 0)), 0);
+            
+            estado.paso2.total = total;
+            const totalElement = document.getElementById('total-efectivo');
+            if (totalElement) {
+                totalElement.textContent = `$${formatearNumero(total)}`;
+            }
+        }
+
+        function inicializarEventos() {
+            // Eventos del Paso 1
+            const montoBaseElement = document.getElementById('monto-base');
+            if (montoBaseElement) {
+                montoBaseElement.addEventListener('input', function() {
+                    estado.paso1.montoBase = parseInt(this.value) || 0;
+                    actualizarProgresoPaso1();
+                });
+            }
+
+            const btnCompletarPaso1 = document.getElementById('btn-completar-paso1');
+            if (btnCompletarPaso1) {
+                btnCompletarPaso1.addEventListener('click', function() {
+                    completarPaso(1);
+                });
+            }
+
+            // Eventos del Paso 2
+            const btnCompletarPaso2 = document.getElementById('btn-completar-paso2');
+            if (btnCompletarPaso2) {
+                btnCompletarPaso2.addEventListener('click', function() {
+                    completarPaso(2);
+                });
+            }
+
+            // Eventos del Paso 3
+            const zValueElement = document.getElementById('z-value');
+            if (zValueElement) {
+                zValueElement.addEventListener('input', function() {
+                    const zValue = parseInt(this.value.replace(/\D/g, '')) || 0;
+                    estado.paso3.z = zValue;
+                    actualizarResumenFinal();
+                });
+            }
+        }
+
+        function completarPaso(numero) {
+            if (numero === 1) {
+                estado.paso1.completado = true;
+                const statusIndicator = document.getElementById('status-paso1');
+                const statusText = document.getElementById('status-text-paso1');
+                if (statusIndicator) statusIndicator.className = 'status-indicator complete';
+                if (statusText) statusText.textContent = 'Completado';
+                
+                // Colapsar el paso completado
+                const paso1Content = document.getElementById('content-paso1');
+                if (paso1Content) {
+                    paso1Content.classList.remove('active');
+                }
+            } else if (numero === 2) {
+                estado.paso2.completado = true;
+                const statusIndicator = document.getElementById('status-paso2');
+                const statusText = document.getElementById('status-text-paso2');
+                if (statusIndicator) statusIndicator.className = 'status-indicator complete';
+                if (statusText) statusText.textContent = 'Completado';
+                
+                // Colapsar el paso completado
+                const paso2Content = document.getElementById('content-paso2');
+                if (paso2Content) {
+                    paso2Content.classList.remove('active');
+                }
+                
+                // Transferir efectivo automáticamente al Paso 3
+                actualizarResumenFinal();
+            }
+            
+            actualizarEstados();
+            guardarEnCache();
+        }
+
+        function actualizarEstados() {
+            // Habilitar/deshabilitar pasos según progreso
+            const paso2Content = document.getElementById('content-paso2');
+            const paso3Content = document.getElementById('content-paso3');
+            
+            // Solo abrir Paso 2 si no está completado
+            if (estado.paso1.completado && !estado.paso2.completado && paso2Content) {
+                paso2Content.classList.add('active');
+            }
+            
+            if (estado.paso2.completado && paso3Content) {
+                paso3Content.classList.add('active');
+                // Inicializar el resumen del Paso 3 cuando se activa
+                actualizarResumenFinal();
+            }
+        }
+
+        function toggleSection(pasoId) {
+            const content = document.getElementById(`content-${pasoId}`);
+            if (content) {
+                content.classList.toggle('active');
+                
+                // Si se abre el Paso 3 y está completado el Paso 2, actualizar resumen
+                if (pasoId === 'paso3' && estado.paso2.completado) {
+                    actualizarResumenFinal();
+                }
+            }
+        }
+
+        function addGastoItem(tipo) {
+            const container = document.getElementById(`gastos-${tipo}`);
+            if (!container) return;
+            
+            const itemId = Date.now();
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="text" placeholder="Descripción" 
+                           onchange="actualizarGasto(${itemId}, 'descripcion', this.value, '${tipo}')"
+                           oninput="this.placeholder = this.value ? '' : 'Descripción'">
+                </td>
+                <td>
+                    <input type="text" placeholder="Monto" 
+                           onchange="actualizarGasto(${itemId}, 'monto', this.value, '${tipo}')"
+                           oninput="formatCurrency(this); this.placeholder = this.value ? '' : 'Monto'">
+                </td>
+                <td>
+                    <button class="btn btn-remove" data-item-id="${itemId}" onclick="removerItem(this, 'gastos', '${tipo}')">×</button>
+                </td>
+            `;
+            
+            container.appendChild(row);
+            
+            if (!estado.paso3.gastos[tipo]) {
+                estado.paso3.gastos[tipo] = [];
+            }
+            estado.paso3.gastos[tipo].push({ id: itemId, descripcion: '', monto: 0 });
+            guardarEnCache();
+        }
+
+        function addTransferenciaItem(tipo) {
+            const container = document.getElementById(`transferencias-${tipo}`);
+            if (!container) return;
+            
+            const itemId = Date.now();
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="text" placeholder="Descripción" 
+                           onchange="actualizarTransferencia(${itemId}, 'descripcion', this.value, '${tipo}')"
+                           oninput="this.placeholder = this.value ? '' : 'Descripción'">
+                </td>
+                <td>
+                    <input type="text" placeholder="Monto" 
+                           onchange="actualizarTransferencia(${itemId}, 'monto', this.value, '${tipo}')"
+                           oninput="formatCurrency(this); this.placeholder = this.value ? '' : 'Monto'">
+                </td>
+                <td>
+                    <button class="btn btn-remove" data-item-id="${itemId}" onclick="removerItem(this, 'transferencias', '${tipo}')">×</button>
+                </td>
+            `;
+            
+            container.appendChild(row);
+            
+            if (!estado.paso3.transferencias[tipo]) {
+                estado.paso3.transferencias[tipo] = [];
+            }
+            estado.paso3.transferencias[tipo].push({ id: itemId, descripcion: '', monto: 0 });
+            guardarEnCache();
+        }
+
+        function addCreditoItem(tipo) {
+            const container = document.getElementById(`creditos-${tipo}`);
+            if (!container) return;
+            
+            const itemId = Date.now();
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="text" placeholder="Descripción" 
+                           onchange="actualizarCredito(${itemId}, 'descripcion', this.value, '${tipo}')"
+                           oninput="this.placeholder = this.value ? '' : 'Descripción'">
+                </td>
+                <td>
+                    <input type="text" placeholder="Monto" 
+                           onchange="actualizarCredito(${itemId}, 'monto', this.value, '${tipo}')"
+                           oninput="formatCurrency(this); this.placeholder = this.value ? '' : 'Monto'">
+                </td>
+                <td>
+                    <button class="btn btn-remove" data-item-id="${itemId}" onclick="removerItem(this, 'creditos', '${tipo}')">×</button>
+                </td>
+            `;
+            
+            container.appendChild(row);
+            
+            if (!estado.paso3.creditos[tipo]) {
+                estado.paso3.creditos[tipo] = [];
+            }
+            estado.paso3.creditos[tipo].push({ id: itemId, descripcion: '', monto: 0 });
+            guardarEnCache();
+        }
+
+        function actualizarGasto(itemId, campo, valor, tipo) {
+            if (!estado.paso3.gastos[tipo]) return;
+            const item = estado.paso3.gastos[tipo].find(i => i.id === itemId);
+            if (item) {
+                item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
+                actualizarResumenFinal();
+                guardarEnCache();
+            }
+        }
+
+        function actualizarTransferencia(itemId, campo, valor, tipo) {
+            if (!estado.paso3.transferencias[tipo]) return;
+            const item = estado.paso3.transferencias[tipo].find(i => i.id === itemId);
+            if (item) {
+                item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
+                actualizarResumenFinal();
+                guardarEnCache();
+            }
+        }
+
+        function actualizarCredito(itemId, campo, valor, tipo) {
+            if (!estado.paso3.creditos[tipo]) return;
+            const item = estado.paso3.creditos[tipo].find(i => i.id === itemId);
+            if (item) {
+                item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
+                actualizarResumenFinal();
+                guardarEnCache();
+            }
+        }
+
+        function removerItem(button, categoria, tipo) {
+            const itemRow = button.closest('tr');
+            const itemId = parseInt(button.getAttribute('data-item-id'));
+            
+            // Remover del estado
+            if (categoria === 'gastos' && estado.paso3.gastos[tipo]) {
+                estado.paso3.gastos[tipo] = estado.paso3.gastos[tipo].filter(item => item.id !== itemId);
+            } else if (categoria === 'transferencias' && estado.paso3.transferencias[tipo]) {
+                estado.paso3.transferencias[tipo] = estado.paso3.transferencias[tipo].filter(item => item.id !== itemId);
+            } else if (categoria === 'creditos' && estado.paso3.creditos[tipo]) {
+                estado.paso3.creditos[tipo] = estado.paso3.creditos[tipo].filter(item => item.id !== itemId);
+            }
+            
+            if (itemRow) {
+                itemRow.remove();
+            }
+            actualizarResumenFinal();
+            guardarEnCache();
+        }
+
+        function actualizarResumenFinal() {
+            // Calcular totales
+            const totalGastos = Object.values(estado.paso3.gastos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            
+            // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos)
+            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos;
+            
+            // Sobra/Falta = Total - Z
+            const sobraFalta = total - (estado.paso3.z || 0);
+            
+            // Actualizar display
+            const resumenEfectivo = document.getElementById('resumen-efectivo');
+            const resumenGastos = document.getElementById('resumen-gastos');
+            const resumenTransferencias = document.getElementById('resumen-transferencias');
+            const resumenCreditos = document.getElementById('resumen-creditos');
+            const resumenTotal = document.getElementById('resumen-total');
+            const resumenZ = document.getElementById('resumen-z');
+            const resumenSobraFalta = document.getElementById('resumen-sobrafalta');
+            
+            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(estado.paso2.total || 0)}`;
+            if (resumenGastos) resumenGastos.textContent = `$${formatearNumero(totalGastos)}`;
+            if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
+            if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
+            if (resumenTotal) resumenTotal.textContent = `$${formatearNumero(total)}`;
+            if (resumenZ) resumenZ.textContent = `$${formatearNumero(estado.paso3.z || 0)}`;
+            
+            if (resumenSobraFalta) {
+                resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
+                resumenSobraFalta.className = sobraFalta >= 0 ? 'summary-value positive' : 'summary-value negative';
+            }
+        }
+
+        function formatCurrency(input) {
+            if (!input) return;
+            let value = input.value.replace(/\D/g, '');
+            value = parseInt(value) || 0;
+            
+            // Formatear visualmente
+            input.value = value.toLocaleString('es-CO');
+            
+            // Solo actualizar estado si es el input del valor Z
+            if (input.id === 'z-value') {
+                estado.paso3.z = value;
+                actualizarResumenFinal();
+                guardarEnCache();
+            }
+        }
+
+        function formatearNumero(numero) {
+            if (isNaN(numero)) return '0';
+            return numero.toLocaleString('es-CO');
+        }
+
+        function exportarReporte() {
+            try {
+                const resumenTotalElement = document.getElementById('resumen-total');
+                const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
+                
+                const total = resumenTotalElement ? parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0 : 0;
+                const sobraFalta = resumenSobraFaltaElement ? parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0 : 0;
+                
+                const reporte = {
+                    fecha: new Date().toLocaleDateString('es-CO'),
+                    hora: new Date().toLocaleTimeString('es-CO'),
+                    efectivo: estado.paso2.total || 0,
+                    gastos: estado.paso3.gastos || {},
+                    transferencias: estado.paso3.transferencias || {},
+                    creditos: estado.paso3.creditos || {},
+                    z: estado.paso3.z || 0,
+                    total: total,
+                    sobraFalta: sobraFalta
+                };
+
+                const ventana = window.open('', '_blank');
+                if (!ventana) {
+                    alert('No se pudo abrir la ventana de impresión. Verifica que los bloqueadores de ventanas emergentes estén deshabilitados.');
+                    return;
+                }
+                
+                // Esperar a que la ventana esté lista antes de escribir
+                setTimeout(() => {
+                    ventana.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Reporte de Cierre de Caja</title>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif; 
+                                    margin: 15px; 
+                                    background: white;
+                                    color: black;
+                                    font-size: 12px;
+                                }
+                                .header { 
+                                    text-align: center; 
+                                    margin-bottom: 20px; 
+                                    border-bottom: 2px solid #333;
+                                    padding-bottom: 15px;
+                                }
+                                .section { 
+                                    margin-bottom: 15px; 
+                                    border: 1px solid #ddd;
+                                    border-radius: 6px;
+                                    padding: 10px;
+                                }
+                                .section h2 {
+                                    color: #2c3e50;
+                                    border-bottom: 1px solid #eee;
+                                    padding-bottom: 8px;
+                                    margin-bottom: 10px;
+                                    font-size: 14px;
+                                }
+                                .item { 
+                                    margin: 4px 0; 
+                                    padding: 3px 0;
+                                    border-bottom: 1px solid #f0f0f0;
+                                }
+                                .total { 
+                                    font-weight: bold; 
+                                    margin-top: 15px; 
+                                    font-size: 16px;
+                                    color: #2c3e50;
+                                }
+                                table { 
+                                    width: 100%; 
+                                    border-collapse: collapse; 
+                                    margin-top: 8px;
+                                }
+                                th, td { 
+                                    border: 1px solid #ddd; 
+                                    padding: 6px 8px; 
+                                    text-align: left; 
+                                    font-size: 11px;
+                                }
+                                th { 
+                                    background-color: #f8f9fa; 
+                                    font-weight: bold;
+                                    color: #2c3e50;
+                                }
+                                .summary-table {
+                                    background: #f8f9fa;
+                                    border-radius: 8px;
+                                    overflow: hidden;
+                                }
+                                .summary-table th {
+                                    background: #2c3e50;
+                                    color: white;
+                                }
+                                .positive { color: #28a745; }
+                                .negative { color: #dc3545; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>Reporte de Cierre de Caja</h1>
+                                <p><strong>Fecha:</strong> ${reporte.fecha} | <strong>Hora:</strong> ${reporte.hora}</p>
+                            </div>
+                            
+                            <div class="section">
+                                <h2>Efectivo</h2>
+                                <p><strong>Total:</strong> $${formatearNumero(reporte.efectivo)}</p>
+                            </div>
+                            
+                            <div class="section">
+                                <h2>Gastos</h2>
+                                ${Object.entries(reporte.gastos).map(([tipo, items]) => `
+                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    ${items.length > 0 ? items.map(item => `
+                                        <div class="item">
+                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                        </div>
+                                    `).join('') : '<div class="item">Sin gastos registrados</div>'}
+                                `).join('')}
+                            </div>
+                            
+                            <div class="section">
+                                <h2>Transferencias</h2>
+                                ${Object.entries(reporte.transferencias).map(([tipo, items]) => `
+                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    ${items.length > 0 ? items.map(item => `
+                                        <div class="item">
+                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                        </div>
+                                    `).join('') : '<div class="item">Sin transferencias registradas</div>'}
+                                `).join('')}
+                            </div>
+                            
+                            <div class="section">
+                                <h2>Créditos</h2>
+                                ${Object.entries(reporte.creditos).map(([tipo, items]) => `
+                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    ${items.length > 0 ? items.map(item => `
+                                        <div class="item">
+                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                        </div>
+                                    `).join('') : '<div class="item">Sin créditos registrados</div>'}
+                                `).join('')}
+                            </div>
+                            
+                            <div class="section">
+                                <h2>Resumen Final</h2>
+                                <table class="summary-table">
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Efectivo</strong></td>
+                                        <td>$${formatearNumero(reporte.efectivo)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Gastos</strong></td>
+                                        <td>$${formatearNumero(Object.values(reporte.gastos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Transferencias</strong></td>
+                                        <td>$${formatearNumero(Object.values(reporte.transferencias).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Créditos</strong></td>
+                                        <td>$${formatearNumero(Object.values(reporte.creditos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                    </tr>
+                                    <tr style="background: #e9ecef;">
+                                        <td><strong>Total General</strong></td>
+                                        <td><strong>$${formatearNumero(reporte.total)}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Valor Z</strong></td>
+                                        <td>$${formatearNumero(reporte.z)}</td>
+                                    </tr>
+                                    <tr style="background: ${reporte.sobraFalta >= 0 ? '#d4edda' : '#f8d7da'};">
+                                        <td><strong>Sobra/Falta</strong></td>
+                                        <td class="${reporte.sobraFalta >= 0 ? 'positive' : 'negative'}">
+                                            <strong>$${formatearNumero(reporte.sobraFalta)}</strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 10px;">
+                                <p>Reporte generado automáticamente por el Sistema de Cierre de Caja Multifamiliar</p>
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                    ventana.document.close();
+                    
+                    // Esperar un poco más antes de imprimir
+                    setTimeout(() => {
+                        ventana.print();
+                    }, 500);
+                }, 300);
+            } catch (error) {
+                console.error('Error al exportar reporte:', error);
+                alert('Error al generar el reporte. Verifica la consola para más detalles.');
+            }
+        }
+    </script>
+</body>
+</html>
+        
