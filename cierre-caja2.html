@@ -1658,161 +1658,215 @@
                         <head>
                             <title>Reporte de Cierre de Caja</title>
                             <style>
+                                @media print {
+                                    @page {
+                                        size: 80mm auto;
+                                        margin: 0;
+                                    }
+                                }
+                                
                                 body { 
-                                    font-family: Arial, sans-serif; 
-                                    margin: 15px; 
+                                    font-family: 'Courier New', monospace; 
+                                    margin: 0; 
+                                    padding: 5px;
                                     background: white;
                                     color: black;
-                                    font-size: 12px;
+                                    font-size: 10px;
+                                    line-height: 1.2;
+                                    width: 80mm;
+                                    max-width: 80mm;
                                 }
+                                
                                 .header { 
                                     text-align: center; 
-                                    margin-bottom: 20px; 
-                                    border-bottom: 2px solid #333;
-                                    padding-bottom: 15px;
+                                    margin-bottom: 10px; 
+                                    border-bottom: 1px solid #000;
+                                    padding-bottom: 5px;
                                 }
+                                
+                                .header h1 {
+                                    font-size: 12px;
+                                    margin: 0 0 5px 0;
+                                    font-weight: bold;
+                                }
+                                
+                                .header p {
+                                    font-size: 8px;
+                                    margin: 0;
+                                }
+                                
                                 .section { 
-                                    margin-bottom: 15px; 
-                                    border: 1px solid #ddd;
-                                    border-radius: 6px;
-                                    padding: 10px;
+                                    margin-bottom: 8px; 
+                                    border: none;
+                                    padding: 0;
                                 }
+                                
                                 .section h2 {
-                                    color: #2c3e50;
-                                    border-bottom: 1px solid #eee;
-                                    padding-bottom: 8px;
-                                    margin-bottom: 10px;
-                                    font-size: 14px;
+                                    color: #000;
+                                    border-bottom: 1px solid #000;
+                                    padding-bottom: 2px;
+                                    margin-bottom: 5px;
+                                    font-size: 10px;
+                                    font-weight: bold;
+                                    text-align: center;
                                 }
+                                
+                                .section h3 {
+                                    font-size: 9px;
+                                    margin: 3px 0 2px 0;
+                                    font-weight: bold;
+                                    text-align: center;
+                                }
+                                
                                 .item { 
-                                    margin: 4px 0; 
-                                    padding: 3px 0;
-                                    border-bottom: 1px solid #f0f0f0;
+                                    margin: 1px 0; 
+                                    padding: 1px 0;
+                                    border-bottom: none;
+                                    font-size: 8px;
+                                    display: flex;
+                                    justify-content: space-between;
                                 }
-                                .total { 
-                                    font-weight: bold; 
-                                    margin-top: 15px; 
-                                    font-size: 16px;
-                                    color: #2c3e50;
+                                
+                                .item strong {
+                                    font-weight: bold;
                                 }
+                                
                                 table { 
                                     width: 100%; 
                                     border-collapse: collapse; 
-                                    margin-top: 8px;
+                                    margin-top: 3px;
+                                    font-size: 8px;
                                 }
+                                
                                 th, td { 
-                                    border: 1px solid #ddd; 
-                                    padding: 6px 8px; 
+                                    border: 1px solid #000; 
+                                    padding: 2px 3px; 
                                     text-align: left; 
-                                    font-size: 11px;
+                                    font-size: 8px;
                                 }
+                                
                                 th { 
-                                    background-color: #f8f9fa; 
+                                    background-color: #f0f0f0; 
                                     font-weight: bold;
-                                    color: #2c3e50;
+                                    color: #000;
+                                    text-align: center;
                                 }
+                                
                                 .summary-table {
-                                    background: #f8f9fa;
-                                    border-radius: 8px;
-                                    overflow: hidden;
+                                    background: #fff;
+                                    border: 1px solid #000;
                                 }
+                                
                                 .summary-table th {
-                                    background: #2c3e50;
+                                    background: #000;
                                     color: white;
                                 }
-                                .positive { color: #28a745; }
-                                .negative { color: #dc3545; }
+                                
+                                .positive { color: #000; }
+                                .negative { color: #000; }
+                                
+                                .footer {
+                                    text-align: center;
+                                    margin-top: 10px;
+                                    font-size: 7px;
+                                    color: #666;
+                                }
                             </style>
                         </head>
                         <body>
                             <div class="header">
-                                <h1>Reporte de Cierre de Caja</h1>
-                                <p><strong>Fecha:</strong> ${reporte.fecha} | <strong>Hora:</strong> ${reporte.hora}</p>
+                                <h1>CIERRE DE CAJA</h1>
+                                <p>${reporte.fecha} ${reporte.hora}</p>
                             </div>
                             
                             <div class="section">
-                                <h2>Efectivo</h2>
-                                <p><strong>Total:</strong> $${formatearNumero(reporte.efectivo)}</p>
+                                <h2>EFECTIVO</h2>
+                                <div class="item">
+                                    <span>Total:</span>
+                                    <span>$${formatearNumero(reporte.efectivo)}</span>
+                                </div>
                             </div>
                             
                             <div class="section">
-                                <h2>Gastos</h2>
+                                <h2>GASTOS</h2>
                                 ${Object.entries(reporte.gastos).map(([tipo, items]) => `
-                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    <h3>${tipo.toUpperCase()}</h3>
                                     ${items.length > 0 ? items.map(item => `
                                         <div class="item">
-                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                            <span>${item.descripcion || 'Sin descripción'}</span>
+                                            <span>$${formatearNumero(item.monto)}</span>
                                         </div>
-                                    `).join('') : '<div class="item">Sin gastos registrados</div>'}
+                                    `).join('') : '<div class="item">Sin gastos</div>'}
                                 `).join('')}
                             </div>
                             
                             <div class="section">
-                                <h2>Transferencias</h2>
+                                <h2>TRANSFERENCIAS</h2>
                                 ${Object.entries(reporte.transferencias).map(([tipo, items]) => `
-                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    <h3>${tipo.toUpperCase()}</h3>
                                     ${items.length > 0 ? items.map(item => `
                                         <div class="item">
-                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                            <span>${item.descripcion || 'Sin descripción'}</span>
+                                            <span>$${formatearNumero(item.monto)}</span>
                                         </div>
-                                    `).join('') : '<div class="item">Sin transferencias registradas</div>'}
+                                    `).join('') : '<div class="item">Sin transferencias</div>'}
                                 `).join('')}
                             </div>
                             
                             <div class="section">
-                                <h2>Créditos</h2>
+                                <h2>CREDITOS</h2>
                                 ${Object.entries(reporte.creditos).map(([tipo, items]) => `
-                                    <h3>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h3>
+                                    <h3>${tipo.toUpperCase()}</h3>
                                     ${items.length > 0 ? items.map(item => `
                                         <div class="item">
-                                            <strong>${item.descripcion || 'Sin descripción'}:</strong> $${formatearNumero(item.monto)}
+                                            <span>${item.descripcion || 'Sin descripción'}</span>
+                                            <span>$${formatearNumero(item.monto)}</span>
                                         </div>
-                                    `).join('') : '<div class="item">Sin créditos registrados</div>'}
+                                    `).join('') : '<div class="item">Sin créditos</div>'}
                                 `).join('')}
                             </div>
                             
                             <div class="section">
-                                <h2>Resumen Final</h2>
+                                <h2>RESUMEN</h2>
                                 <table class="summary-table">
                                     <tr>
-                                        <th>Concepto</th>
-                                        <th>Valor</th>
+                                        <th>CONCEPTO</th>
+                                        <th>VALOR</th>
                                     </tr>
                                     <tr>
-                                        <td><strong>Total Efectivo</strong></td>
+                                        <td>Efectivo</td>
                                         <td>$${formatearNumero(reporte.efectivo)}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Total Gastos</strong></td>
+                                        <td>Gastos</td>
                                         <td>$${formatearNumero(Object.values(reporte.gastos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Total Transferencias</strong></td>
+                                        <td>Transferencias</td>
                                         <td>$${formatearNumero(Object.values(reporte.transferencias).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Total Créditos</strong></td>
+                                        <td>Créditos</td>
                                         <td>$${formatearNumero(Object.values(reporte.creditos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
-                                    <tr style="background: #e9ecef;">
-                                        <td><strong>Total General</strong></td>
+                                    <tr style="background: #f0f0f0;">
+                                        <td><strong>TOTAL</strong></td>
                                         <td><strong>$${formatearNumero(reporte.total)}</strong></td>
                                     </tr>
                                     <tr>
-                                        <td><strong>Valor Z</strong></td>
+                                        <td>Valor Z</td>
                                         <td>$${formatearNumero(reporte.z)}</td>
                                     </tr>
-                                    <tr style="background: ${reporte.sobraFalta >= 0 ? '#d4edda' : '#f8d7da'};">
-                                        <td><strong>Sobra/Falta</strong></td>
-                                        <td class="${reporte.sobraFalta >= 0 ? 'positive' : 'negative'}">
-                                            <strong>$${formatearNumero(reporte.sobraFalta)}</strong>
-                                        </td>
+                                    <tr style="background: #f0f0f0;">
+                                        <td><strong>SOBRA/FALTA</strong></td>
+                                        <td><strong>$${formatearNumero(reporte.sobraFalta)}</strong></td>
                                     </tr>
                                 </table>
                             </div>
                             
-                            <div style="margin-top: 20px; text-align: center; color: #666; font-size: 10px;">
-                                <p>Reporte generado automáticamente por el Sistema de Cierre de Caja Multifamiliar</p>
+                            <div class="footer">
+                                <p>--- FIN DEL REPORTE ---</p>
+                                <p>Sistema Multifamiliar</p>
                             </div>
                         </body>
                         </html>
