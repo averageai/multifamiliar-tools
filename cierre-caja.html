@@ -1501,7 +1501,7 @@
             row.setAttribute('data-item-id', itemId);
             row.innerHTML = `
                 <td><input type="text" placeholder="Descripción" onchange="actualizarGasto(${itemId}, 'descripcion', this.value)"></td>
-                <td><input type="text" placeholder="0" onchange="actualizarGasto(${itemId}, 'monto', this.value)" class="tipo-negativo"></td>
+                <td><input type="text" placeholder="0" oninput="formatCurrency(this); actualizarGasto(${itemId}, 'monto', this.value)" class="tipo-negativo"></td>
                 <td><button class="btn-remove" onclick="removeGastoItem(${itemId}, '${tipo}')">🗑️</button></td>
             `;
             
@@ -1523,7 +1523,7 @@
             row.setAttribute('data-item-id', itemId);
             row.innerHTML = `
                 <td><input type="text" placeholder="Descripción" onchange="actualizarTransferencia(${itemId}, 'descripcion', this.value)"></td>
-                <td><input type="text" placeholder="0" onchange="actualizarTransferencia(${itemId}, 'monto', this.value)" class="tipo-positivo"></td>
+                <td><input type="text" placeholder="0" oninput="formatCurrency(this); actualizarTransferencia(${itemId}, 'monto', this.value)" class="tipo-positivo"></td>
                 <td><button class="btn-remove" onclick="removeTransferenciaItem(${itemId}, '${tipo}')">🗑️</button></td>
             `;
             
@@ -1545,7 +1545,7 @@
             row.setAttribute('data-item-id', itemId);
             row.innerHTML = `
                 <td><input type="text" placeholder="Descripción" onchange="actualizarCredito(${itemId}, 'descripcion', this.value)"></td>
-                <td><input type="text" placeholder="0" onchange="actualizarCredito(${itemId}, 'monto', this.value)"></td>
+                <td><input type="text" placeholder="0" oninput="formatCurrency(this); actualizarCredito(${itemId}, 'monto', this.value)"></td>
                 <td><button class="btn-remove" onclick="removeCreditoItem(${itemId}, '${tipo}')">🗑️</button></td>
             `;
             
@@ -1573,7 +1573,7 @@
                         <option value="negativo">Negativo</option>
                     </select>
                 </td>
-                <td><input type="text" placeholder="0" onchange="actualizarManual(${itemId}, 'monto', this.value)"></td>
+                <td><input type="text" placeholder="0" oninput="formatCurrency(this); actualizarManual(${itemId}, 'monto', this.value)"></td>
                 <td><button class="btn-remove" onclick="removeManualItem(${itemId})">🗑️</button></td>
             `;
             
@@ -1946,6 +1946,10 @@
                 return;
             }
             const number = parseInt(value);
+            if (isNaN(number)) {
+                input.value = '';
+                return;
+            }
             input.value = number.toLocaleString('es-CO');
         }
 
