@@ -519,6 +519,14 @@
                 <span class="tool-badge">Mejorado</span>
             </a>
 
+            <!-- Sistema de Faltantes Multi-Sede -->
+            <a href="#" class="tool-card operativo" id="tool-faltantes" onclick="navigateTo('/faltantes'); return false;">
+                <div class="tool-icon">📦</div>
+                <h3>Sistema de Faltantes Multi-Sede</h3>
+                <p>Carga archivos Excel con códigos de faltantes, consulta automática en base de datos por sede (Manizales/Dorada), obtiene nombre y costo. Exporta a Excel o imprime en formato POS 80mm.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
+
 
 
         </div>
@@ -541,13 +549,13 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja']
+                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'faltantes']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'faltantes']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -694,7 +702,8 @@
                 'tool-duplicados': 'duplicados',
                 'tool-codigos-disponibles': 'codigos-disponibles',
                 'tool-cotizaciones': 'cotizaciones',
-                'tool-cierre-caja': 'cierre-caja'
+                'tool-cierre-caja': 'cierre-caja',
+                'tool-faltantes': 'faltantes'
             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -746,7 +755,8 @@
             '/duplicados': 'duplicados.html',
             '/codigos-disponibles': 'codigos-disponibles.html',
             '/cotizaciones': 'cotizaciones.html',
-            '/cierre-caja': 'cierre-caja.html'
+            '/cierre-caja': 'cierre-caja.html',
+            '/faltantes': 'faltantes.html'
         };
 
         // Función de navegación

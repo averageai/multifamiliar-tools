@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Faltantes Multi-Sede</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .upload-section {
+            background: #2a2a2a;
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .upload-section p {
+            font-size: 12px;
+            margin: 4px 0;
+            color: #a0a0a0;
+        }
+
+        .upload-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+        }
+
+        .upload-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .sede-selector {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sede-selector h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sede-btn {
+            background: #333;
+            color: #ffffff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .sede-btn:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .sede-btn.active:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+        }
+
+        .main-section {
+            display: none;
+        }
+
+        .top-bar {
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .system-info {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
+        .stats-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .stat-chip {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .file-upload-area {
+            background: #2a2a2a;
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area:hover {
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .file-upload-area h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .file-upload-area p {
+            color: #a0a0a0;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #218838;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            color: #2c3e50;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left-color: #dc3545;
+            font-size: 12px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .summary-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .producto-encontrado {
+            background: #1f3d2e !important;
+            color: #ffffff;
+        }
+
+        .producto-no-encontrado {
+            background: #3d1f1f !important;
+            color: #ffffff;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: #a0a0a0;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📦</div>
+            <div class="header-text">
+                <h1>Sistema de Faltantes Multi-Sede</h1>
+                <p>Gestión de productos faltantes con consulta automática de precios</p>
+            </div>
+            <a href="index.html" class="back-btn">← Volver al MENU</a>
+        </div>
+
+        <div class="content">
+            <!-- Selector de Sede -->
+            <div class="sede-selector" id="sedeSelector">
+                <h2>🏢 Seleccionar Sede</h2>
+                <div class="sede-buttons">
+                    <button class="sede-btn" data-sede="manizales" onclick="seleccionarSede('manizales')">
+                        <div class="sede-icon">🏪</div>
+                        <div>Manizales</div>
+                    </button>
+                    <button class="sede-btn" data-sede="dorada" onclick="seleccionarSede('dorada')">
+                        <div class="sede-icon">🏬</div>
+                        <div>Dorada</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cargando base de datos...</p>
+                <p id="loadingDetail">Conectando con la sede...</p>
+            </div>
+
+            <div class="main-section" id="mainSection">
+                <div class="top-bar">
+                    <div class="system-info" id="systemInfo">
+                        Sistema Cargado - Sede: <span id="sedeInfo">-</span>
+                    </div>
+                    <div class="stats-chips" id="statsChips">
+                        <!-- Stats aquí -->
+                    </div>
+                    <button class="btn btn-warning" onclick="cambiarSede()" style="font-size: 11px; padding: 4px 8px;">
+                        🔄 Cambiar Sede
+                    </button>
+                </div>
+
+                <!-- Área de carga de archivo -->
+                <div class="file-upload-area" id="fileUploadArea">
+                    <h3>📁 Cargar Archivo de Faltantes</h3>
+                    <p>Arrastra y suelta tu archivo Excel aquí o haz clic para seleccionar</p>
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        📂 Seleccionar Archivo
+                    </button>
+                    <p style="margin-top: 10px; font-size: 11px; color: #888;">
+                        El archivo debe contener una columna con códigos de productos
+                    </p>
+                </div>
+
+                <div class="summary-info" id="summaryInfo" style="display: none;">
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalFaltantes">0</div>
+                        <div class="summary-label">Faltantes</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productosEncontrados">0</div>
+                        <div class="summary-label">Encontrados</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="productosNoEncontrados">0</div>
+                        <div class="summary-label">No Encontrados</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalCosto">$0</div>
+                        <div class="summary-label">Costo Total</div>
+                    </div>
+                </div>
+
+                <div class="section" id="resultsSection" style="display: none;">
+                    <div class="section-header">
+                        <span>Resultados de Consulta de Faltantes</span>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="exportarExcel()">📊 Exportar Excel</button>
+                            <button class="btn" onclick="imprimirPOS()">🖨️ Imprimir POS 80mm</button>
+                            <button class="btn btn-danger" onclick="limpiarDatos()">🗑️ Limpiar Datos</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="resultsContainer">
+                        <!-- Tabla de resultados aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="https://ai.average.lat" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let productosData = [];
+        let faltantesData = [];
+        let sedeActual = '';
+
+        // Configuración de sedes
+        const sedesConfig = {
+            manizales: {
+                nombre: 'Manizales',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                icon: '🏪',
+                color: '#28a745'
+            },
+            dorada: {
+                nombre: 'Dorada',
+                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                icon: '🏬',
+                color: '#3498db'
+            }
+        };
+
+        function seleccionarSede(sede) {
+            console.log('🏢 Seleccionando sede:', sede);
+            sedeActual = sede;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sede="${sede}"]`).classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede(sede);
+        }
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        async function cargarDatosSede(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                mostrarError('Sede no encontrada');
+                return;
+            }
+
+            console.log('📂 Cargando datos de:', config.nombre);
+            
+            document.getElementById('sedeSelector').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                actualizarProgreso(`Conectando con ${config.nombre}...`);
+                
+                const datosReales = await cargarDatosReales(sede);
+                
+                actualizarProgreso('Procesando productos y precios...');
+                procesarDatosProductos(datosReales, sede);
+                
+                actualizarProgreso('Inicializando sistema...');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('mainSection').style.display = 'block';
+                    
+                    actualizarInfoSede(config);
+                    
+                    mostrarAlerta(`✅ ${config.nombre} conectado - Sistema listo`, 'success');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error cargando sede:', error);
+                mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sedeSelector').style.display = 'block';
+            }
+        }
+
+        async function cargarDatosReales(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                throw new Error(`Sede '${sede}' no encontrada`);
+            }
+
+            try {
+                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
+
+                const response = await fetch(config.archivo);
+                if (!response.ok) {
+                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
+                return jsonData;
+
+            } catch (error) {
+                console.error(`Error cargando base de datos ${sede}:`, error);
+                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
+            }
+        }
+
+        function actualizarInfoSede(config) {
+            document.getElementById('sedeInfo').textContent = config.nombre;
+        }
+
+        function procesarDatosProductos(jsonData, sede) {
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+            
+            console.log('Headers encontrados:', headers);
+            console.log('Total filas de datos:', dataRows.length);
+            console.log('Sede:', sede);
+            
+            // Mapeo de índices basado en la estructura real
+            const indices = {
+                codigoInterno: 0,      // "Código Interno"
+                nombre: 2,             // "Nombre"
+                costo: 5,              // "Costo"
+                porcentajeMayorista: 8, // "Porcentaje Mayorista"
+                porcentajeMinorista: 9, // "Porcentaje Minorista"
+                porcentajeEstandar: 10, // "Porcentaje Estándar"
+                precioMayorista: 11,   // "Precio Mayorista"
+                precioMinorista: 12,   // "Precio Minorista"
+                precioEstandar: 13,    // "Precio Estándar"
+                stockTotal: 14,        // "Stock Total"
+                proveedor: 16,         // "Proveedor"
+                fechaActualizacion: 20 // "Última Actualización"
+            };
+            
+            productosData = dataRows.map((row, index) => {
+                if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                    return null;
+                }
+                
+                const costo = parseFloat(row[indices.costo]) || 0;
+                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+                
+                return {
+                    codigoInterno: row[indices.codigoInterno].toString().trim(),
+                    nombre: row[indices.nombre].trim(),
+                    costo: costo,
+                    porcentajeMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0,
+                    porcentajeMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0,
+                    porcentajeEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,
+                    precioMayorista: precioMayorista,
+                    precioMinorista: precioMinorista,
+                    precioEstandar: precioEstandar,
+                    margenMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0,
+                    margenMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0,
+                    margenEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,
+                    stockTotal: parseInt(row[indices.stockTotal]) || 0,
+                    proveedor: row[indices.proveedor] || '',
+                    fechaActualizacion: row[indices.fechaActualizacion] || ''
+                };
+            }).filter(p => p !== null);
+            
+            console.log('Productos procesados:', productosData.length);
+            actualizarEstadisticas();
+        }
+
+        function actualizarEstadisticas() {
+            const sedeInfo = sedeActual ? ` - ${sedeActual.toUpperCase()}` : '';
+            document.getElementById('statsChips').innerHTML = `
+                <span class="stat-chip">${productosData.length.toLocaleString()} productos</span>
+                <span class="stat-chip">Sistema activo${sedeInfo}</span>
+            `;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    procesarArchivoFaltantes(jsonData);
+                } catch (error) {
+                    mostrarError('Error procesando el archivo: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function procesarArchivoFaltantes(jsonData) {
+            if (jsonData.length < 2) {
+                mostrarError('El archivo debe contener al menos una fila de datos');
+                return;
+            }
+
+            const headers = jsonData[0];
+            const dataRows = jsonData.slice(1);
+
+            console.log('Headers del archivo de faltantes:', headers);
+            console.log('Filas de datos:', dataRows.length);
+
+            // Buscar la columna que contiene códigos
+            let codigoColumnIndex = -1;
+            for (let i = 0; i < headers.length; i++) {
+                const header = headers[i] ? headers[i].toString().toLowerCase() : '';
+                if (header.includes('código') || header.includes('codigo') || header.includes('code') || header.includes('producto')) {
+                    codigoColumnIndex = i;
+                    break;
+                }
+            }
+
+            if (codigoColumnIndex === -1) {
+                // Si no encuentra una columna específica, usar la primera
+                codigoColumnIndex = 0;
+                mostrarAlerta('⚠️ No se encontró columna de códigos específica, usando primera columna', 'warning');
+            }
+
+                         faltantesData = [];
+             let encontrados = 0;
+             let noEncontrados = 0;
+             let totalCosto = 0;
+
+             dataRows.forEach((row, index) => {
+                 const codigo = row[codigoColumnIndex] ? row[codigoColumnIndex].toString().trim() : '';
+                 const sedeReporto = row[1] ? row[1].toString().trim() : sedeActual.toUpperCase(); // Columna B
+                 const fechaReporte = row[4] ? row[4].toString().trim() : new Date().toLocaleDateString('es-CO'); // Columna E
+                 
+                 if (!codigo) return;
+
+                 const producto = productosData.find(p => p.codigoInterno === codigo);
+                 
+                 if (producto) {
+                     faltantesData.push({
+                         codigo: codigo,
+                         nombre: producto.nombre,
+                         costo: producto.costo,
+                         precioMayorista: producto.precioMayorista,
+                         precioMinorista: producto.precioMinorista,
+                         precioEstandar: producto.precioEstandar,
+                         margenMayorista: producto.margenMayorista,
+                         margenMinorista: producto.margenMinorista,
+                         margenEstandar: producto.margenEstandar,
+                         stock: producto.stockTotal,
+                         sedeReporto: sedeReporto,
+                         fechaReporte: fechaReporte,
+                         encontrado: true
+                     });
+                     encontrados++;
+                     totalCosto += producto.costo;
+                 } else {
+                     faltantesData.push({
+                         codigo: codigo,
+                         nombre: 'PRODUCTO NO ENCONTRADO',
+                         costo: 0,
+                         precioMayorista: 0,
+                         precioMinorista: 0,
+                         precioEstandar: 0,
+                         margenMayorista: 0,
+                         margenMinorista: 0,
+                         margenEstandar: 0,
+                         stock: 0,
+                         sedeReporto: sedeReporto,
+                         fechaReporte: fechaReporte,
+                         encontrado: false
+                     });
+                     noEncontrados++;
+                 }
+             });
+
+            actualizarResumen(encontrados, noEncontrados, totalCosto);
+            mostrarResultados();
+            mostrarAlerta(`✅ Procesados ${dataRows.length} productos: ${encontrados} encontrados, ${noEncontrados} no encontrados`, 'success');
+        }
+
+        function actualizarResumen(encontrados, noEncontrados, totalCosto) {
+            document.getElementById('totalFaltantes').textContent = faltantesData.length;
+            document.getElementById('productosEncontrados').textContent = encontrados;
+            document.getElementById('productosNoEncontrados').textContent = noEncontrados;
+            document.getElementById('totalCosto').textContent = `$${totalCosto.toLocaleString('es-CO')}`;
+            document.getElementById('summaryInfo').style.display = 'flex';
+        }
+
+        function mostrarResultados() {
+            const container = document.getElementById('resultsContainer');
+            
+            if (faltantesData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <h3>📝 No hay datos para mostrar</h3>
+                        <p>Carga un archivo de faltantes para ver los resultados</p>
+                    </div>
+                `;
+                return;
+            }
+
+                         let tableHTML = `
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>#</th>
+                             <th>Código</th>
+                             <th>Nombre</th>
+                             <th>Costo</th>
+                             <th>Sede Reportó</th>
+                             <th>Fecha Reporte</th>
+                             <th>Estado</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+             `;
+
+             faltantesData.forEach((item, index) => {
+                 const rowClass = item.encontrado ? 'producto-encontrado' : 'producto-no-encontrado';
+                 
+                                   if (item.encontrado) {
+                      tableHTML += `
+                          <tr class="${rowClass}">
+                              <td>${index + 1}</td>
+                              <td><span class="code">${item.codigo}</span></td>
+                              <td>${item.nombre}</td>
+                              <td>$${item.costo.toLocaleString('es-CO')}</td>
+                              <td>${item.sedeReporto}</td>
+                              <td>${item.fechaReporte}</td>
+                              <td><span style="color: #28a745; font-weight: bold;">✓ ENCONTRADO</span></td>
+                          </tr>
+                      `;
+                  } else {
+                      tableHTML += `
+                          <tr class="${rowClass}">
+                              <td>${index + 1}</td>
+                              <td><span class="code">${item.codigo}</span></td>
+                              <td>${item.nombre}</td>
+                              <td>-</td>
+                              <td>${item.sedeReporto}</td>
+                              <td>${item.fechaReporte}</td>
+                              <td><span style="color: #dc3545; font-weight: bold;">✗ NO ENCONTRADO</span></td>
+                          </tr>
+                      `;
+                  }
+             });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function exportarExcel() {
+            if (faltantesData.length === 0) {
+                mostrarAlerta('⚠️ No hay datos para exportar', 'warning');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            
+            const datos = [];
+            datos.push(['REPORTE DE FALTANTES - CONSULTA DE PRECIOS', '', '', '', '', '', '', '', '', '', '']);
+            datos.push([`Sede: ${sedeActual.toUpperCase()}`, `Fecha: ${new Date().toLocaleDateString()}`, `Hora: ${new Date().toLocaleTimeString()}`, '', '', '', '', '', '', '', '']);
+            datos.push(['', '', '', '', '', '', '', '', '', '', '']);
+                         datos.push([
+                 'Código',
+                 'Nombre',
+                 'Costo',
+                 'Sede Reportó',
+                 'Fecha Reporte',
+                 'Estado'
+             ]);
+             
+             let totalCosto = 0;
+             let encontrados = 0;
+             let noEncontrados = 0;
+
+                           faltantesData.forEach(item => {
+                  if (item.encontrado) {
+                      datos.push([
+                          item.codigo,
+                          item.nombre,
+                          item.costo,
+                          item.sedeReporto,
+                          item.fechaReporte,
+                          'ENCONTRADO'
+                      ]);
+                      encontrados++;
+                      totalCosto += item.costo;
+                  } else {
+                      datos.push([
+                          item.codigo,
+                          item.nombre,
+                          'N/A',
+                          item.sedeReporto,
+                          item.fechaReporte,
+                          'NO ENCONTRADO'
+                      ]);
+                      noEncontrados++;
+                  }
+              });
+            
+            // Agregar resumen
+            datos.push(['', '', '', '', '', '', '', '', '', '', '']);
+            datos.push(['RESUMEN', '', '', '', '', '', '', '', '', '', '']);
+            datos.push(['Total faltantes:', faltantesData.length, '', '', '', '', '', '', '', '', '']);
+            datos.push(['Productos encontrados:', encontrados, '', '', '', '', '', '', '', '', '']);
+            datos.push(['Productos no encontrados:', noEncontrados, '', '', '', '', '', '', '', '', '']);
+            datos.push(['Costo total encontrados:', `$${totalCosto.toLocaleString('es-CO')}`, '', '', '', '', '', '', '', '', '']);
+            
+            const ws = XLSX.utils.aoa_to_sheet(datos);
+            XLSX.utils.book_append_sheet(wb, ws, 'Faltantes');
+            
+            const fecha = new Date().toISOString().slice(0,10);
+            XLSX.writeFile(wb, `faltantes_${sedeActual}_${fecha}.xlsx`);
+            
+            mostrarAlerta('✅ Reporte Excel descargado', 'success');
+        }
+
+        function imprimirPOS() {
+            if (faltantesData.length === 0) {
+                mostrarAlerta('⚠️ No hay datos para imprimir', 'warning');
+                return;
+            }
+
+            console.log('Abriendo ventana de impresión...');
+            const ventana = window.open('', '_blank');
+            if (!ventana) {
+                console.error('No se pudo abrir la ventana de impresión');
+                alert('Error: No se pudo abrir la ventana de impresión. Verifique que el bloqueador de ventanas emergentes esté deshabilitado.');
+                return;
+            }
+            console.log('Ventana abierta correctamente');
+            
+            let encontrados = 0;
+            let noEncontrados = 0;
+            
+            faltantesData.forEach(item => {
+                if (item.encontrado) {
+                    encontrados++;
+                } else {
+                    noEncontrados++;
+                }
+            });
+
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Reporte de Faltantes</title>
+                    <style>
+                        @media print {
+                            @page {
+                                size: 80mm auto;
+                                margin: 0;
+                            }
+                        }
+                        
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            margin: 0; 
+                            padding: 5px;
+                            background: white;
+                            color: black;
+                            font-size: 10px;
+                            line-height: 1.2;
+                            width: 80mm;
+                            max-width: 80mm;
+                        }
+                        
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 10px; 
+                            border-bottom: 1px solid #000;
+                            padding-bottom: 5px;
+                        }
+                        
+                        .header h1 {
+                            font-size: 12px;
+                            margin: 0 0 5px 0;
+                            font-weight: bold;
+                        }
+                        
+                        .header p {
+                            font-size: 8px;
+                            margin: 0;
+                        }
+                        
+                        .section { 
+                            margin-bottom: 8px; 
+                            border: none;
+                            padding: 0;
+                        }
+                        
+                        .section h2 {
+                            color: #000;
+                            border-bottom: 1px solid #000;
+                            padding-bottom: 2px;
+                            margin-bottom: 5px;
+                            font-size: 10px;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+                        
+                        .item { 
+                            margin: 1px 0; 
+                            padding: 1px 0;
+                            border-bottom: none;
+                            font-size: 8px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        
+                        .item strong {
+                            font-weight: bold;
+                        }
+                        
+                        .producto-encontrado {
+                            background: #f0f0f0;
+                        }
+                        
+                        .producto-no-encontrado {
+                            background: #ffe6e6;
+                        }
+                        
+                        .footer {
+                            text-align: center;
+                            margin-top: 10px;
+                            font-size: 7px;
+                            color: #666;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>FALTANTES</h1>
+                        <p>${sedeActual.toUpperCase()}</p>
+                        <p>${new Date().toLocaleDateString('es-CO')} ${new Date().toLocaleTimeString('es-CO')}</p>
+                    </div>
+                    
+                                         <div class="section">
+                         <h2>PRODUCTOS</h2>
+                         ${faltantesData.map((item, index) => `
+                             <div class="item ${item.encontrado ? 'producto-encontrado' : 'producto-no-encontrado'}">
+                                 <span>${(index + 1).toString().padStart(2)}. ${item.codigo} - ${item.nombre.substring(0, 25)}</span>
+                             </div>
+                         `).join('')}
+                     </div>
+                    
+                    <div class="section">
+                        <h2>RESUMEN</h2>
+                        <div class="item">
+                            <span>Total:</span>
+                            <span>${faltantesData.length}</span>
+                        </div>
+                        <div class="item">
+                            <span>Encontrados:</span>
+                            <span>${encontrados}</span>
+                        </div>
+                        <div class="item">
+                            <span>No encontrados:</span>
+                            <span>${noEncontrados}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>--- FIN DEL REPORTE ---</p>
+                        <p>Sistema Multifamiliar</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            console.log('Documento escrito, cerrando y imprimiendo...');
+            ventana.document.close();
+            ventana.print();
+            console.log('Función de impresión completada');
+        }
+
+        function limpiarDatos() {
+            if (faltantesData.length === 0) {
+                mostrarAlerta('⚠️ No hay datos para limpiar', 'warning');
+                return;
+            }
+            
+            if (confirm('¿Estás seguro de que quieres limpiar todos los datos?')) {
+                faltantesData = [];
+                document.getElementById('summaryInfo').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('fileInput').value = '';
+                mostrarAlerta('✅ Datos limpiados', 'success');
+            }
+        }
+
+        function cambiarSede() {
+            if (faltantesData.length > 0) {
+                if (!confirm('¿Estás seguro de que quieres cambiar de sede? Se perderán todos los datos actuales.')) {
+                    return;
+                }
+            }
+            
+            // Limpiar datos actuales
+            productosData = [];
+            faltantesData = [];
+            sedeActual = '';
+            
+            // Volver a la pantalla de selección
+            document.getElementById('mainSection').style.display = 'none';
+            document.getElementById('sedeSelector').style.display = 'block';
+            
+            // Limpiar botones activos
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById('sedeInfo').textContent = '-';
+            
+            mostrarAlerta('🔄 Selecciona una nueva sede', 'success');
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+
+        // Configurar drag and drop
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('fileUploadArea');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                        document.getElementById('fileInput').files = files;
+                        handleFileUpload({ target: { files: files } });
+                    } else {
+                        mostrarError('Por favor selecciona un archivo Excel (.xlsx o .xls)');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
