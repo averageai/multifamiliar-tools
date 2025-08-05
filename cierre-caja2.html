@@ -1149,12 +1149,18 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()">
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="validarManualmente()" id="btn-validar">
+                            🔍 Validar Datos
+                        </button>
+                        <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()" disabled>
                             📄 Exportar Reporte
                         </button>
                         <button class="btn btn-primary" onclick="mostrarModalAdmin()" style="display: none;" id="btn-autorizacion-manual">
                             🔐 Solicitar Autorización
+                        </button>
+                        <button class="btn btn-secondary" onclick="limpiarCacheCompleto()" style="background: #dc3545; color: white;">
+                            🗑️ Limpiar Caché
                         </button>
                     </div>
                 </div>
@@ -2068,6 +2074,154 @@
             return errores;
         }
 
+        function validarManualmente() {
+            // Limpiar entradas vacías antes de validar
+            limpiarEntradasVacias();
+            
+            const btnValidar = document.getElementById('btn-validar');
+            const btnExportar = document.getElementById('btn-exportar');
+            
+            // Cambiar estado del botón durante validación
+            btnValidar.textContent = '🔍 Validando...';
+            btnValidar.disabled = true;
+            
+            setTimeout(() => {
+                // Validar datos completos
+                const erroresCompletos = validarDatosCompletos();
+                const erroresCalculos = validarCalculos();
+                
+                let mensaje = '';
+                let esValido = true;
+                
+                if (erroresCompletos.length > 0) {
+                    mensaje += '❌ DATOS INCOMPLETOS:\n' + erroresCompletos.join('\n') + '\n\n';
+                    esValido = false;
+                }
+                
+                if (erroresCalculos.length > 0) {
+                    mensaje += '⚠️ ERRORES DE CÁLCULO:\n' + erroresCalculos.join('\n') + '\n\n';
+                    esValido = false;
+                    // Forzar recálculo
+                    actualizarResumenFinal();
+                }
+                
+                if (esValido) {
+                    mensaje = '✅ VALIDACIÓN EXITOSA\n\nTodos los datos están completos y los cálculos son correctos.\n\nPuede proceder con la exportación.';
+                    btnExportar.disabled = false;
+                } else {
+                    btnExportar.disabled = true;
+                }
+                
+                // Mostrar resultado
+                alert(mensaje);
+                
+                // Restaurar botón
+                btnValidar.textContent = '🔍 Validar Datos';
+                btnValidar.disabled = false;
+                
+                // Actualizar estado de exportación
+                verificarPermisoExportacion();
+                
+            }, 500); // Pequeña pausa para mostrar el estado "validando"
+        }
+
+        function limpiarCacheCompleto() {
+            if (confirm('⚠️ ¿Está seguro de que desea limpiar todo el caché?\n\nEsto eliminará todos los datos guardados y reiniciará el sistema desde cero.\n\nEsta acción no se puede deshacer.')) {
+                // Limpiar caché
+                limpiarCache();
+                
+                // Reiniciar estado
+                estado = {
+                    paso1: { completado: false, montoBase: 100000, denominaciones: {} },
+                    paso2: { completado: false, denominaciones: {}, total: 0 },
+                    paso3: { completado: false, z: 0, gastos: {}, transferencias: {}, creditos: {}, manuales: [] }
+                };
+                
+                // Limpiar interfaz
+                limpiarInterfaz();
+                
+                // Reinicializar
+                inicializarDenominaciones();
+                actualizarEstados();
+                actualizarProgresoPaso1();
+                actualizarResumenFinal();
+                
+                // Mostrar mensaje de confirmación
+                alert('✅ Caché limpiado exitosamente\n\nEl sistema ha sido reiniciado desde cero.');
+                
+                // Redirigir al primer paso
+                const paso1Content = document.getElementById('content-paso1');
+                if (paso1Content) {
+                    paso1Content.classList.add('active');
+                }
+            }
+        }
+
+        function limpiarInterfaz() {
+            // Limpiar inputs del Paso 1
+            const inputsPaso1 = document.querySelectorAll('input[data-paso="paso1"]');
+            inputsPaso1.forEach(input => input.value = '');
+            
+            // Limpiar inputs del Paso 2
+            const inputsPaso2 = document.querySelectorAll('input[data-paso="paso2"]');
+            inputsPaso2.forEach(input => input.value = '');
+            
+            // Limpiar valor Z
+            const zInput = document.getElementById('z-value');
+            if (zInput) zInput.value = '';
+            
+            // Limpiar todas las tablas del Paso 3
+            const tablasPaso3 = [
+                'gastos-turno', 'gastos-flete', 'gastos-aseo', 'gastos-otros',
+                'transferencias-llave', 'transferencias-transferencia', 'transferencias-qr',
+                'creditos-addi', 'creditos-sistecredito', 'entradas-manuales'
+            ];
+            
+            tablasPaso3.forEach(id => {
+                const tbody = document.getElementById(id);
+                if (tbody) tbody.innerHTML = '';
+            });
+            
+            // Limpiar resumen
+            const elementosResumen = [
+                'resumen-efectivo', 'resumen-gastos', 'resumen-transferencias',
+                'resumen-creditos', 'resumen-total', 'resumen-z', 'resumen-sobrafalta'
+            ];
+            
+            elementosResumen.forEach(id => {
+                const elemento = document.getElementById(id);
+                if (elemento) elemento.textContent = '$0';
+            });
+            
+            // Limpiar progreso del Paso 1
+            const progresoTexto = document.getElementById('progreso-texto');
+            const diferenciaTexto = document.getElementById('diferencia-texto');
+            const barra = document.getElementById('progreso-barra');
+            
+            if (progresoTexto) progresoTexto.textContent = '$0 / $100,000';
+            if (diferenciaTexto) diferenciaTexto.textContent = 'Falta: $100,000';
+            if (barra) {
+                barra.style.width = '0%';
+                barra.className = 'progress-bar-fill';
+            }
+            
+            // Limpiar total del Paso 2
+            const totalEfectivo = document.getElementById('total-efectivo');
+            if (totalEfectivo) totalEfectivo.textContent = '$0';
+            
+            // Limpiar advertencias
+            const warningContainer = document.getElementById('warning-container');
+            if (warningContainer) warningContainer.style.display = 'none';
+            
+            // Deshabilitar botón de exportar
+            const btnExportar = document.getElementById('btn-exportar');
+            if (btnExportar) btnExportar.disabled = true;
+            
+            // Ocultar botón de autorización
+            const btnAutorizacionManual = document.getElementById('btn-autorizacion-manual');
+            if (btnAutorizacionManual) btnAutorizacionManual.style.display = 'none';
+        }
+
         function verificarPermisoExportacion() {
             // Limpiar entradas vacías antes de validar
             limpiarEntradasVacias();
@@ -2131,6 +2285,13 @@
         }
 
         function verificarExportacion() {
+            // Verificar si se ha validado manualmente
+            const btnExportar = document.getElementById('btn-exportar');
+            if (btnExportar && btnExportar.disabled) {
+                alert('❌ Debe validar los datos antes de exportar.\n\nHaga clic en "🔍 Validar Datos" primero.');
+                return;
+            }
+            
             // Validar antes de exportar
             const erroresCompletos = validarDatosCompletos();
             if (erroresCompletos.length > 0) {
@@ -2203,6 +2364,13 @@
             
             if (password === ADMIN_PASSWORD) {
                 cerrarModalAdmin();
+                
+                // Verificar si se ha validado manualmente
+                const btnExportar = document.getElementById('btn-exportar');
+                if (btnExportar && btnExportar.disabled) {
+                    alert('❌ Debe validar los datos antes de exportar.\n\nHaga clic en "🔍 Validar Datos" primero.');
+                    return;
+                }
                 
                 // Validar antes de exportar con autorización
                 const erroresCompletos = validarDatosCompletos();
