@@ -1269,59 +1269,68 @@
         function restaurarInterfazDesdeCache() {
             console.log('Restaurando interfaz desde caché...');
             
-            // Restaurar monto base del Paso 1
-            if (estado.paso1.montoBase) {
-                const montoBaseInput = document.getElementById('monto-base');
-                if (montoBaseInput) {
-                    montoBaseInput.value = estado.paso1.montoBase;
-                }
-            }
+            // Marcar que estamos restaurando para evitar bucles
+            window.restaurandoCache = true;
             
-            // Restaurar denominaciones del Paso 1 y actualizar subtotales
-            if (estado.paso1.denominaciones) {
-                Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
-                    const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
-                    if (input) {
-                        input.value = cantidad;
-                        // Actualizar subtotal visual
-                        actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso1');
+            try {
+                // Restaurar monto base del Paso 1
+                if (estado.paso1.montoBase) {
+                    const montoBaseInput = document.getElementById('monto-base');
+                    if (montoBaseInput) {
+                        montoBaseInput.value = estado.paso1.montoBase;
                     }
-                });
-            }
-            
-            // Restaurar denominaciones del Paso 2 y actualizar subtotales
-            if (estado.paso2.denominaciones) {
-                Object.entries(estado.paso2.denominaciones).forEach(([valor, cantidad]) => {
-                    const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
-                    if (input) {
-                        input.value = cantidad;
-                        // Actualizar subtotal visual
-                        actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso2');
-                    }
-                });
-            }
-            
-            // Restaurar valor Z
-            if (estado.paso3.z) {
-                const zInput = document.getElementById('z-value');
-                if (zInput) {
-                    zInput.value = formatearNumero(estado.paso3.z);
                 }
+                
+                // Restaurar denominaciones del Paso 1 y actualizar subtotales
+                if (estado.paso1.denominaciones) {
+                    Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
+                        const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
+                        if (input) {
+                            input.value = cantidad;
+                            // Actualizar subtotal visual
+                            actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso1');
+                        }
+                    });
+                }
+                
+                // Restaurar denominaciones del Paso 2 y actualizar subtotales
+                if (estado.paso2.denominaciones) {
+                    Object.entries(estado.paso2.denominaciones).forEach(([valor, cantidad]) => {
+                        const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
+                        if (input) {
+                            input.value = cantidad;
+                            // Actualizar subtotal visual
+                            actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso2');
+                        }
+                    });
+                }
+                
+                // Restaurar valor Z
+                if (estado.paso3.z) {
+                    const zInput = document.getElementById('z-value');
+                    if (zInput) {
+                        zInput.value = formatearNumero(estado.paso3.z);
+                    }
+                }
+                
+                // Restaurar items del Paso 3
+                restaurarItemsPaso3();
+                
+                // Restaurar estados de completado
+                restaurarEstadosCompletado();
+                
+                // Actualizar todos los cálculos con delay para asegurar que los elementos estén listos
+                setTimeout(() => {
+                    actualizarProgresoPaso1();
+                    actualizarTotalPaso2();
+                    actualizarResumenFinalSinVerificacion();
+                    console.log('Cálculos actualizados después de restaurar caché');
+                }, 100);
+                
+            } finally {
+                // Desmarcar que estamos restaurando
+                window.restaurandoCache = false;
             }
-            
-            // Restaurar items del Paso 3
-            restaurarItemsPaso3();
-            
-            // Restaurar estados de completado
-            restaurarEstadosCompletado();
-            
-            // Actualizar todos los cálculos con delay para asegurar que los elementos estén listos
-            setTimeout(() => {
-                actualizarProgresoPaso1();
-                actualizarTotalPaso2();
-                actualizarResumenFinal();
-                console.log('Cálculos actualizados después de restaurar caché');
-            }, 100);
             
             console.log('Interfaz restaurada desde caché');
         }
@@ -2063,8 +2072,10 @@
                 resumenSobraFalta.className = sobraFalta >= 0 ? 'summary-value positive' : 'summary-value negative';
             }
 
-            // Verificar si se puede exportar
-            verificarPermisoExportacion();
+            // Solo verificar permisos si no estamos en proceso de restauración
+            if (!window.restaurandoCache) {
+                verificarPermisoExportacion();
+            }
         }
 
         function formatCurrency(input) {
@@ -2112,6 +2123,46 @@
             }
             
             return errores;
+        }
+
+        function actualizarResumenFinalSinVerificacion() {
+            // Calcular totales
+            const totalGastos = Object.values(estado.paso3.gastos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            const totalCreditos = Object.values(estado.paso3.creditos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
+            
+            // Calcular total de entradas manuales
+            const totalManuales = (estado.paso3.manuales || []).reduce((sum, item) => {
+                const monto = item.monto || 0;
+                return sum + (item.tipo === '+' ? monto : -monto);
+            }, 0);
+            
+            // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
+            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
+            
+            // Sobra/Falta = Total - Z
+            const sobraFalta = total - (estado.paso3.z || 0);
+            
+            // Actualizar display
+            const resumenEfectivo = document.getElementById('resumen-efectivo');
+            const resumenGastos = document.getElementById('resumen-gastos');
+            const resumenTransferencias = document.getElementById('resumen-transferencias');
+            const resumenCreditos = document.getElementById('resumen-creditos');
+            const resumenTotal = document.getElementById('resumen-total');
+            const resumenZ = document.getElementById('resumen-z');
+            const resumenSobraFalta = document.getElementById('resumen-sobrafalta');
+            
+            if (resumenEfectivo) resumenEfectivo.textContent = `$${formatearNumero(estado.paso2.total || 0)}`;
+            if (resumenGastos) resumenGastos.textContent = `$${formatearNumero(totalGastos)}`;
+            if (resumenTransferencias) resumenTransferencias.textContent = `$${formatearNumero(totalTransferencias)}`;
+            if (resumenCreditos) resumenCreditos.textContent = `$${formatearNumero(totalCreditos)}`;
+            if (resumenTotal) resumenTotal.textContent = `$${formatearNumero(total)}`;
+            if (resumenZ) resumenZ.textContent = `$${formatearNumero(estado.paso3.z || 0)}`;
+            
+            if (resumenSobraFalta) {
+                resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
+                resumenSobraFalta.className = sobraFalta >= 0 ? 'summary-value positive' : 'summary-value negative';
+            }
         }
 
         function validarCalculos() {
@@ -2311,64 +2362,72 @@
         }
 
         function verificarPermisoExportacion() {
-            // Limpiar entradas vacías antes de validar
-            limpiarEntradasVacias();
+            // Evitar bucle infinito
+            if (window.verificandoPermisos) return;
+            window.verificandoPermisos = true;
             
-            const resumenTotalElement = document.getElementById('resumen-total');
-            const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
-            const btnExportar = document.getElementById('btn-exportar');
-            const btnAutorizacionManual = document.getElementById('btn-autorizacion-manual');
-            const warningContainer = document.getElementById('warning-container');
-            const warningPercentage = document.getElementById('warning-percentage');
-            
-            if (!resumenTotalElement || !resumenSobraFaltaElement || !btnExportar) return;
-            
-            // Validar datos completos
-            const erroresCompletos = validarDatosCompletos();
-            if (erroresCompletos.length > 0) {
-                btnExportar.disabled = true;
-                btnAutorizacionManual.style.display = 'none';
-                warningContainer.style.display = 'block';
-                warningPercentage.textContent = 'Datos incompletos';
-                return;
-            }
-            
-            // Validar cálculos
-            const erroresCalculos = validarCalculos();
-            if (erroresCalculos.length > 0) {
-                console.warn('Errores de cálculo detectados:', erroresCalculos);
-                // Forzar recálculo
-                actualizarResumenFinal();
-            }
-            
-            const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
-            const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
-            const z = estado.paso3.z || 0;
-            
-            // Calcular porcentaje de diferencia
-            const diferenciaAbsoluta = Math.abs(sobraFalta);
-            const porcentajeDiferencia = z > 0 ? (diferenciaAbsoluta / z) * 100 : 0;
-            
-            // Verificar si excede el límite del 5%
-            if (porcentajeDiferencia > MAX_DIFFERENCE_PERCENTAGE && z > 0) {
-                // Bloquear exportación y mostrar opciones de autorización
-                btnExportar.disabled = true;
-                warningContainer.style.display = 'block';
-                warningPercentage.textContent = `${porcentajeDiferencia.toFixed(1)}%`;
+            try {
+                // Limpiar entradas vacías antes de validar
+                limpiarEntradasVacias();
                 
-                // Mostrar botón de autorización
-                if (btnAutorizacionManual) {
-                    btnAutorizacionManual.style.display = 'inline-block';
-                }
-            } else {
-                // Permitir exportación
-                btnExportar.disabled = false;
-                warningContainer.style.display = 'none';
+                const resumenTotalElement = document.getElementById('resumen-total');
+                const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
+                const btnExportar = document.getElementById('btn-exportar');
+                const btnAutorizacionManual = document.getElementById('btn-autorizacion-manual');
+                const warningContainer = document.getElementById('warning-container');
+                const warningPercentage = document.getElementById('warning-percentage');
                 
-                // Ocultar botón de autorización
-                if (btnAutorizacionManual) {
+                if (!resumenTotalElement || !resumenSobraFaltaElement || !btnExportar) return;
+                
+                // Validar datos completos
+                const erroresCompletos = validarDatosCompletos();
+                if (erroresCompletos.length > 0) {
+                    btnExportar.disabled = true;
                     btnAutorizacionManual.style.display = 'none';
+                    warningContainer.style.display = 'block';
+                    warningPercentage.textContent = 'Datos incompletos';
+                    return;
                 }
+                
+                // Validar cálculos
+                const erroresCalculos = validarCalculos();
+                if (erroresCalculos.length > 0) {
+                    console.warn('Errores de cálculo detectados:', erroresCalculos);
+                    // Forzar recálculo sin llamar a verificarPermisoExportacion
+                    actualizarResumenFinalSinVerificacion();
+                }
+                
+                const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
+                const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+                const z = estado.paso3.z || 0;
+                
+                // Calcular porcentaje de diferencia
+                const diferenciaAbsoluta = Math.abs(sobraFalta);
+                const porcentajeDiferencia = z > 0 ? (diferenciaAbsoluta / z) * 100 : 0;
+                
+                // Verificar si excede el límite del 5%
+                if (porcentajeDiferencia > MAX_DIFFERENCE_PERCENTAGE && z > 0) {
+                    // Bloquear exportación y mostrar opciones de autorización
+                    btnExportar.disabled = true;
+                    warningContainer.style.display = 'block';
+                    warningPercentage.textContent = `${porcentajeDiferencia.toFixed(1)}%`;
+                    
+                    // Mostrar botón de autorización
+                    if (btnAutorizacionManual) {
+                        btnAutorizacionManual.style.display = 'inline-block';
+                    }
+                } else {
+                    // Permitir exportación
+                    btnExportar.disabled = false;
+                    warningContainer.style.display = 'none';
+                    
+                    // Ocultar botón de autorización
+                    if (btnAutorizacionManual) {
+                        btnAutorizacionManual.style.display = 'none';
+                    }
+                }
+            } finally {
+                window.verificandoPermisos = false;
             }
         }
 
