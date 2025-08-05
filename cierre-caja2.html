@@ -294,19 +294,22 @@
         /* Alineación específica para inputs dentro de las celdas */
         .gastos td:nth-child(1) input,
         .transferencias td:nth-child(1) input,
-        .creditos td:nth-child(1) input {
+        .creditos td:nth-child(1) input,
+        .manual td:nth-child(1) input {
             text-align: left !important;
         }
 
         .gastos td:nth-child(2) input,
         .transferencias td:nth-child(2) input,
-        .creditos td:nth-child(2) input {
+        .creditos td:nth-child(2) input,
+        .manual td:nth-child(3) input {
             text-align: right !important;
         }
 
         .gastos td:nth-child(3) button,
         .transferencias td:nth-child(3) button,
-        .creditos td:nth-child(3) button {
+        .creditos td:nth-child(3) button,
+        .manual td:nth-child(4) button {
             margin: 0 auto;
             display: block;
         }
@@ -321,7 +324,8 @@
         /* Estilos específicos para inputs dentro de celdas de tabla */
         .gastos td input,
         .transferencias td input,
-        .creditos td input {
+        .creditos td input,
+        .manual td input {
             width: 100%;
             padding: 8px 12px;
             border: none;
@@ -335,7 +339,8 @@
 
         .gastos td input:focus,
         .transferencias td input:focus,
-        .creditos td input:focus {
+        .creditos td input:focus,
+        .manual td input:focus {
             outline: none;
             background: rgba(42, 42, 42, 0.3);
             box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
@@ -343,7 +348,8 @@
 
         .gastos td input::placeholder,
         .transferencias td input::placeholder,
-        .creditos td input::placeholder {
+        .creditos td input::placeholder,
+        .manual td input::placeholder {
             color: #666;
             font-style: italic;
         }
@@ -667,6 +673,7 @@
         }
 
         .manual select {
+            width: 100%;
             padding: 8px 12px;
             border: none;
             border-radius: 6px;
@@ -675,6 +682,7 @@
             font-size: 14px;
             transition: all 0.3s;
             cursor: pointer;
+            box-sizing: border-box;
         }
 
         .manual select:focus {
@@ -1370,6 +1378,8 @@
             // Si se cargó desde caché, restaurar la interfaz
             if (cacheCargado) {
                 restaurarInterfazDesdeCache();
+                // Aplicar estilos a entradas manuales restauradas
+                setTimeout(aplicarEstilosManuales, 100);
             }
             
             console.log('Sistema inicializado correctamente');
@@ -1763,6 +1773,18 @@
             }
             estado.paso3.manuales.push({ id: itemId, descripcion: '', tipo: '+', monto: 0 });
             guardarEnCache();
+            
+            // Aplicar estilos iniciales
+            setTimeout(() => {
+                const newRow = container.querySelector('tr:last-child');
+                if (newRow) {
+                    const select = newRow.querySelector('select');
+                    const montoInput = newRow.querySelector('input[type="text"]:last-of-type');
+                    if (select && montoInput) {
+                        montoInput.className = 'tipo-positivo';
+                    }
+                }
+            }, 10);
         }
 
         function actualizarGasto(itemId, campo, valor, tipo) {
@@ -1815,6 +1837,22 @@
                     montoInput.className = 'tipo-negativo';
                 }
             }
+        }
+
+        // Función para aplicar estilos iniciales a entradas manuales
+        function aplicarEstilosManuales() {
+            const manualRows = document.querySelectorAll('#entradas-manuales tr');
+            manualRows.forEach(row => {
+                const select = row.querySelector('select');
+                const montoInput = row.querySelector('input[type="text"]:last-of-type');
+                if (select && montoInput) {
+                    if (select.value === '+') {
+                        montoInput.className = 'tipo-positivo';
+                    } else {
+                        montoInput.className = 'tipo-negativo';
+                    }
+                }
+            });
         }
 
         function removerItem(button, categoria, tipo) {
