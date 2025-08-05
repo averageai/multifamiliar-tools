@@ -1233,7 +1233,10 @@
         function cargarDesdeCache() {
             try {
                 const cacheData = localStorage.getItem(CACHE_KEY);
-                if (!cacheData) return false;
+                if (!cacheData) {
+                    console.log('No se encontró caché en localStorage');
+                    return false;
+                }
 
                 const data = JSON.parse(cacheData);
                 const tiempoTranscurrido = Date.now() - data.timestamp;
@@ -1241,7 +1244,7 @@
                 // Verificar si el caché no ha expirado (2 horas)
                 if (tiempoTranscurrido < CACHE_DURATION) {
                     estado = data.estado;
-                    console.log('Progreso cargado desde caché');
+                    console.log('Progreso cargado desde caché:', estado);
                     return true;
                 } else {
                     // Limpiar caché expirado
@@ -1274,22 +1277,26 @@
                 }
             }
             
-            // Restaurar denominaciones del Paso 1
+            // Restaurar denominaciones del Paso 1 y actualizar subtotales
             if (estado.paso1.denominaciones) {
                 Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
                     const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso1"]`);
                     if (input) {
                         input.value = cantidad;
+                        // Actualizar subtotal visual
+                        actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso1');
                     }
                 });
             }
             
-            // Restaurar denominaciones del Paso 2
+            // Restaurar denominaciones del Paso 2 y actualizar subtotales
             if (estado.paso2.denominaciones) {
                 Object.entries(estado.paso2.denominaciones).forEach(([valor, cantidad]) => {
                     const input = document.querySelector(`input[data-denominacion="${valor}"][data-paso="paso2"]`);
                     if (input) {
                         input.value = cantidad;
+                        // Actualizar subtotal visual
+                        actualizarSubtotal(parseInt(valor), parseInt(cantidad), 'paso2');
                     }
                 });
             }
@@ -1308,15 +1315,30 @@
             // Restaurar estados de completado
             restaurarEstadosCompletado();
             
-            // Actualizar todos los cálculos
-            actualizarProgresoPaso1();
-            actualizarProgresoPaso2();
-            actualizarResumenFinal();
+            // Actualizar todos los cálculos con delay para asegurar que los elementos estén listos
+            setTimeout(() => {
+                actualizarProgresoPaso1();
+                actualizarTotalPaso2();
+                actualizarResumenFinal();
+                console.log('Cálculos actualizados después de restaurar caché');
+            }, 100);
             
             console.log('Interfaz restaurada desde caché');
         }
 
         function restaurarItemsPaso3() {
+            // Limpiar todas las tablas antes de restaurar
+            const tablasPaso3 = [
+                'gastos-turno', 'gastos-flete', 'gastos-aseo', 'gastos-otros',
+                'transferencias-llave', 'transferencias-transferencia', 'transferencias-qr',
+                'creditos-addi', 'creditos-sistecredito', 'entradas-manuales'
+            ];
+            
+            tablasPaso3.forEach(id => {
+                const tbody = document.getElementById(id);
+                if (tbody) tbody.innerHTML = '';
+            });
+            
             // Restaurar gastos
             Object.entries(estado.paso3.gastos || {}).forEach(([tipo, items]) => {
                 items.forEach(item => {
@@ -1399,13 +1421,16 @@
             
             // Si se cargó desde caché, restaurar la interfaz
             if (cacheCargado) {
+                console.log('Caché detectado, restaurando...');
                 restaurarInterfazDesdeCache();
                 // Aplicar estilos a entradas manuales restauradas
-                setTimeout(aplicarEstilosManuales, 100);
+                setTimeout(aplicarEstilosManuales, 200);
                 // Limpiar entradas vacías del caché restaurado
-                setTimeout(limpiarEntradasVacias, 200);
+                setTimeout(limpiarEntradasVacias, 300);
                 // Verificar permisos de exportación después de restaurar
-                setTimeout(verificarPermisoExportacion, 300);
+                setTimeout(verificarPermisoExportacion, 400);
+            } else {
+                console.log('No se encontró caché válido, iniciando desde cero');
             }
             
             console.log('Sistema inicializado correctamente');
