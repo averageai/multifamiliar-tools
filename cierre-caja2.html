@@ -1147,19 +1147,14 @@
                             La diferencia de <span class="percentage" id="warning-percentage">0%</span> excede el límite del 5%<br>
                             Se requiere autorización de administrador para exportar
                         </div>
-                        <div style="text-align: center; margin-top: 10px;">
-                            <button class="btn btn-primary" onclick="mostrarModalAdmin()">
-                                🔐 Solicitar Autorización
-                            </button>
-                        </div>
                     </div>
 
                     <div style="display: flex; gap: 10px; justify-content: center;">
                         <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()">
                             📄 Exportar Reporte
                         </button>
-                        <button class="btn btn-secondary" onclick="mostrarModalAdmin()" style="display: none;" id="btn-autorizacion-manual">
-                            🔐 Autorización Manual
+                        <button class="btn btn-primary" onclick="mostrarModalAdmin()" style="display: none;" id="btn-autorizacion-manual">
+                            🔐 Solicitar Autorización
                         </button>
                     </div>
                 </div>
@@ -1390,6 +1385,8 @@
                 restaurarInterfazDesdeCache();
                 // Aplicar estilos a entradas manuales restauradas
                 setTimeout(aplicarEstilosManuales, 100);
+                // Limpiar entradas vacías del caché restaurado
+                setTimeout(limpiarEntradasVacias, 200);
             }
             
             console.log('Sistema inicializado correctamente');
@@ -1834,6 +1831,9 @@
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
                 actualizarResumenFinal();
                 guardarEnCache();
+                
+                // Limpiar entradas vacías después de actualizar
+                limpiarEntradasVacias();
             }
         }
 
@@ -1865,6 +1865,46 @@
             });
         }
 
+        // Función para limpiar entradas vacías del estado
+        function limpiarEntradasVacias() {
+            // Limpiar entradas manuales vacías
+            if (estado.paso3.manuales) {
+                estado.paso3.manuales = estado.paso3.manuales.filter(item => 
+                    item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')
+                );
+            }
+            
+            // Limpiar gastos vacíos
+            Object.keys(estado.paso3.gastos || {}).forEach(tipo => {
+                if (estado.paso3.gastos[tipo]) {
+                    estado.paso3.gastos[tipo] = estado.paso3.gastos[tipo].filter(item => 
+                        item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')
+                    );
+                }
+            });
+            
+            // Limpiar transferencias vacías
+            Object.keys(estado.paso3.transferencias || {}).forEach(tipo => {
+                if (estado.paso3.transferencias[tipo]) {
+                    estado.paso3.transferencias[tipo] = estado.paso3.transferencias[tipo].filter(item => 
+                        item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')
+                    );
+                }
+            });
+            
+            // Limpiar créditos vacíos
+            Object.keys(estado.paso3.creditos || {}).forEach(tipo => {
+                if (estado.paso3.creditos[tipo]) {
+                    estado.paso3.creditos[tipo] = estado.paso3.creditos[tipo].filter(item => 
+                        item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')
+                    );
+                }
+            });
+            
+            // Guardar el estado limpio en caché
+            guardarEnCache();
+        }
+
         function removerItem(button, categoria, tipo) {
             const itemRow = button.closest('tr');
             const itemId = parseInt(button.getAttribute('data-item-id'));
@@ -1885,6 +1925,9 @@
             }
             actualizarResumenFinal();
             guardarEnCache();
+            
+            // Limpiar entradas vacías del caché
+            limpiarEntradasVacias();
         }
 
         function actualizarResumenFinal() {
@@ -1976,7 +2019,7 @@
                 warningContainer.style.display = 'block';
                 warningPercentage.textContent = `${porcentajeDiferencia.toFixed(1)}%`;
                 
-                // Mostrar botón de autorización manual
+                // Mostrar botón de autorización
                 if (btnAutorizacionManual) {
                     btnAutorizacionManual.style.display = 'inline-block';
                 }
@@ -1985,7 +2028,7 @@
                 btnExportar.disabled = false;
                 warningContainer.style.display = 'none';
                 
-                // Ocultar botón de autorización manual
+                // Ocultar botón de autorización
                 if (btnAutorizacionManual) {
                     btnAutorizacionManual.style.display = 'none';
                 }
@@ -2063,6 +2106,9 @@
 
         function exportarReporte() {
             try {
+                // Limpiar entradas vacías antes de exportar
+                limpiarEntradasVacias();
+                
                 const resumenTotalElement = document.getElementById('resumen-total');
                 const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
                 
@@ -2227,51 +2273,63 @@
                             
                             <div class="section">
                                 <h2>GASTOS</h2>
-                                ${Object.entries(reporte.gastos).map(([tipo, items]) => `
-                                    <h3>${tipo.toUpperCase()}</h3>
-                                    ${items.length > 0 ? items.map(item => `
-                                        <div class="item">
-                                            <span>${item.descripcion || 'Sin descripción'}</span>
-                                            <span>$${formatearNumero(item.monto)}</span>
-                                        </div>
-                                    `).join('') : '<div class="item">Sin gastos</div>'}
-                                `).join('')}
+                                ${Object.entries(reporte.gastos).map(([tipo, items]) => {
+                                    const itemsConDatos = items.filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''));
+                                    return `
+                                        <h3>${tipo.toUpperCase()}</h3>
+                                        ${itemsConDatos.length > 0 ? itemsConDatos.map(item => `
+                                            <div class="item">
+                                                <span>${item.descripcion || 'Sin descripción'}</span>
+                                                <span>$${formatearNumero(item.monto)}</span>
+                                            </div>
+                                        `).join('') : '<div class="item">Sin gastos</div>'}
+                                    `;
+                                }).join('')}
                             </div>
                             
                             <div class="section">
                                 <h2>TRANSFERENCIAS</h2>
-                                ${Object.entries(reporte.transferencias).map(([tipo, items]) => `
-                                    <h3>${tipo.toUpperCase()}</h3>
-                                    ${items.length > 0 ? items.map(item => `
-                                        <div class="item">
-                                            <span>${item.descripcion || 'Sin descripción'}</span>
-                                            <span>$${formatearNumero(item.monto)}</span>
-                                        </div>
-                                    `).join('') : '<div class="item">Sin transferencias</div>'}
-                                `).join('')}
+                                ${Object.entries(reporte.transferencias).map(([tipo, items]) => {
+                                    const itemsConDatos = items.filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''));
+                                    return `
+                                        <h3>${tipo.toUpperCase()}</h3>
+                                        ${itemsConDatos.length > 0 ? itemsConDatos.map(item => `
+                                            <div class="item">
+                                                <span>${item.descripcion || 'Sin descripción'}</span>
+                                                <span>$${formatearNumero(item.monto)}</span>
+                                            </div>
+                                        `).join('') : '<div class="item">Sin transferencias</div>'}
+                                    `;
+                                }).join('')}
                             </div>
                             
                             <div class="section">
                                 <h2>CREDITOS</h2>
-                                ${Object.entries(reporte.creditos).map(([tipo, items]) => `
-                                    <h3>${tipo.toUpperCase()}</h3>
-                                    ${items.length > 0 ? items.map(item => `
-                                        <div class="item">
-                                            <span>${item.descripcion || 'Sin descripción'}</span>
-                                            <span>$${formatearNumero(item.monto)}</span>
-                                        </div>
-                                    `).join('') : '<div class="item">Sin créditos</div>'}
-                                `).join('')}
+                                ${Object.entries(reporte.creditos).map(([tipo, items]) => {
+                                    const itemsConDatos = items.filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''));
+                                    return `
+                                        <h3>${tipo.toUpperCase()}</h3>
+                                        ${itemsConDatos.length > 0 ? itemsConDatos.map(item => `
+                                            <div class="item">
+                                                <span>${item.descripcion || 'Sin descripción'}</span>
+                                                <span>$${formatearNumero(item.monto)}</span>
+                                            </div>
+                                        `).join('') : '<div class="item">Sin créditos</div>'}
+                                    `;
+                                }).join('')}
                             </div>
                             
                             <div class="section">
                                 <h2>ENTRADAS MANUALES</h2>
-                                ${(reporte.manuales || []).length > 0 ? (reporte.manuales || []).map(item => `
-                                    <div class="item">
-                                        <span>${item.descripcion || 'Sin descripción'} (${item.tipo === '+' ? 'Positivo' : 'Negativo'})</span>
-                                        <span>${item.tipo === '+' ? '+' : '-'}$${formatearNumero(item.monto)}</span>
-                                    </div>
-                                `).join('') : '<div class="item">Sin entradas manuales</div>'}
+                                ${(() => {
+                                    const manualesConDatos = (reporte.manuales || []).filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== ''));
+                                    return manualesConDatos.length > 0 ? manualesConDatos.map(item => `
+                                        <div class="item">
+                                            <span>${item.descripcion || 'Sin descripción'} (${item.tipo === '+' ? 'Positivo' : 'Negativo'})</span>
+                                            <span>${item.tipo === '+' ? '+' : '-'}$${formatearNumero(item.monto)}</span>
+                                        </div>
+                                    `).join('') : '<div class="item">Sin entradas manuales</div>';
+                                })()}
                             </div>
                             
                             <div class="section">
@@ -2287,19 +2345,19 @@
                                     </tr>
                                     <tr>
                                         <td>Gastos</td>
-                                        <td>$${formatearNumero(Object.values(reporte.gastos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                        <td>$${formatearNumero(Object.values(reporte.gastos).flat().filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')).reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
                                     <tr>
                                         <td>Transferencias</td>
-                                        <td>$${formatearNumero(Object.values(reporte.transferencias).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                        <td>$${formatearNumero(Object.values(reporte.transferencias).flat().filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')).reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
                                     <tr>
                                         <td>Créditos</td>
-                                        <td>$${formatearNumero(Object.values(reporte.creditos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                        <td>$${formatearNumero(Object.values(reporte.creditos).flat().filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')).reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
                                     </tr>
                                     <tr>
                                         <td>Entradas Manuales</td>
-                                        <td>$${formatearNumero((reporte.manuales || []).reduce((sum, item) => {
+                                        <td>$${formatearNumero((reporte.manuales || []).filter(item => item.monto > 0 || (item.descripcion && item.descripcion.trim() !== '')).reduce((sum, item) => {
                                             const monto = item.monto || 0;
                                             return sum + (item.tipo === '+' ? monto : -monto);
                                         }, 0))}</td>
