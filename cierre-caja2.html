@@ -1266,6 +1266,14 @@
         function restaurarInterfazDesdeCache() {
             console.log('Restaurando interfaz desde caché...');
             
+            // Restaurar monto base del Paso 1
+            if (estado.paso1.montoBase) {
+                const montoBaseInput = document.getElementById('monto-base');
+                if (montoBaseInput) {
+                    montoBaseInput.value = estado.paso1.montoBase;
+                }
+            }
+            
             // Restaurar denominaciones del Paso 1
             if (estado.paso1.denominaciones) {
                 Object.entries(estado.paso1.denominaciones).forEach(([valor, cantidad]) => {
@@ -1296,6 +1304,9 @@
             
             // Restaurar items del Paso 3
             restaurarItemsPaso3();
+            
+            // Restaurar estados de completado
+            restaurarEstadosCompletado();
             
             // Actualizar todos los cálculos
             actualizarProgresoPaso1();
@@ -1393,6 +1404,8 @@
                 setTimeout(aplicarEstilosManuales, 100);
                 // Limpiar entradas vacías del caché restaurado
                 setTimeout(limpiarEntradasVacias, 200);
+                // Verificar permisos de exportación después de restaurar
+                setTimeout(verificarPermisoExportacion, 300);
             }
             
             console.log('Sistema inicializado correctamente');
@@ -1542,6 +1555,9 @@
                     if (btnCompletar) btnCompletar.disabled = true;
                 }
             }
+            
+            // Actualizar estado del monto base en el estado global
+            estado.paso1.montoBase = montoBase;
         }
 
         function actualizarTotalPaso2() {
@@ -1552,6 +1568,11 @@
             const totalElement = document.getElementById('total-efectivo');
             if (totalElement) {
                 totalElement.textContent = `$${formatearNumero(total)}`;
+            }
+            
+            // Actualizar resumen final si el paso 2 está completado
+            if (estado.paso2.completado) {
+                actualizarResumenFinal();
             }
         }
 
@@ -1869,6 +1890,48 @@
                     }
                 }
             });
+        }
+
+        // Función para restaurar estados de completado
+        function restaurarEstadosCompletado() {
+            // Restaurar estado del Paso 1
+            if (estado.paso1.completado) {
+                const statusIndicator1 = document.getElementById('status-paso1');
+                const statusText1 = document.getElementById('status-text-paso1');
+                if (statusIndicator1) statusIndicator1.className = 'status-indicator complete';
+                if (statusText1) statusText1.textContent = 'Completado';
+                
+                // Colapsar el paso completado
+                const paso1Content = document.getElementById('content-paso1');
+                if (paso1Content) {
+                    paso1Content.classList.remove('active');
+                }
+            }
+            
+            // Restaurar estado del Paso 2
+            if (estado.paso2.completado) {
+                const statusIndicator2 = document.getElementById('status-paso2');
+                const statusText2 = document.getElementById('status-text-paso2');
+                if (statusIndicator2) statusIndicator2.className = 'status-indicator complete';
+                if (statusText2) statusText2.textContent = 'Completado';
+                
+                // Colapsar el paso completado
+                const paso2Content = document.getElementById('content-paso2');
+                if (paso2Content) {
+                    paso2Content.classList.remove('active');
+                }
+            }
+            
+            // Restaurar estado del Paso 3
+            if (estado.paso3.completado) {
+                const statusIndicator3 = document.getElementById('status-paso3');
+                const statusText3 = document.getElementById('status-text-paso3');
+                if (statusIndicator3) statusIndicator3.className = 'status-indicator complete';
+                if (statusText3) statusText3.textContent = 'Completado';
+            }
+            
+            // Actualizar estados de navegación
+            actualizarEstados();
         }
 
         // Función para limpiar entradas vacías del estado
