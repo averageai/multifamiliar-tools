@@ -1216,6 +1216,85 @@
         // Sistema de caché
         const CACHE_KEY = 'cierre_caja_progress';
         const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+        const AUTO_SAVE_INTERVAL = 5 * 60 * 1000; // 5 minutos en milisegundos
+
+        // Variables para el sistema de auto-guardado
+        let autoSaveTimer = null;
+        let lastSaveTime = 0;
+        let hasUnsavedChanges = false;
+
+        function iniciarAutoGuardado() {
+            // Limpiar timer existente si hay uno
+            if (autoSaveTimer) {
+                clearInterval(autoSaveTimer);
+            }
+            
+            // Iniciar timer de auto-guardado cada 5 minutos
+            autoSaveTimer = setInterval(() => {
+                if (hasUnsavedChanges) {
+                    console.log('Auto-guardando cambios...');
+                    guardarEnCache();
+                    hasUnsavedChanges = false;
+                    lastSaveTime = Date.now();
+                }
+            }, AUTO_SAVE_INTERVAL);
+            
+            console.log('Auto-guardado iniciado cada 5 minutos');
+        }
+
+        function detenerAutoGuardado() {
+            if (autoSaveTimer) {
+                clearInterval(autoSaveTimer);
+                autoSaveTimer = null;
+                console.log('Auto-guardado detenido');
+            }
+        }
+
+        function marcarCambiosSinGuardar() {
+            hasUnsavedChanges = true;
+            console.log('Cambios marcados para guardar en próximo ciclo');
+            
+            // Mostrar indicador visual de cambios sin guardar
+            mostrarIndicadorCambios();
+        }
+
+        function mostrarIndicadorCambios() {
+            // Crear o actualizar indicador de cambios sin guardar
+            let indicador = document.getElementById('indicador-cambios');
+            if (!indicador) {
+                indicador = document.createElement('div');
+                indicador.id = 'indicador-cambios';
+                indicador.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    background: #fbbf24;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                `;
+                document.body.appendChild(indicador);
+            }
+            
+            indicador.innerHTML = `
+                <span>💾</span>
+                <span>Guardando en ${Math.ceil((AUTO_SAVE_INTERVAL - (Date.now() - lastSaveTime)) / 1000)}s</span>
+            `;
+            indicador.style.display = 'flex';
+            
+            // Ocultar indicador después del próximo guardado
+            setTimeout(() => {
+                if (indicador) {
+                    indicador.style.display = 'none';
+                }
+            }, AUTO_SAVE_INTERVAL);
+        }
 
         function guardarEnCache() {
             try {
@@ -1224,10 +1303,97 @@
                     timestamp: Date.now()
                 };
                 localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+                hasUnsavedChanges = false;
+                lastSaveTime = Date.now();
                 console.log('Progreso guardado en caché');
+                
+                // Mostrar indicador de guardado exitoso
+                mostrarIndicadorGuardadoExitoso();
             } catch (error) {
                 console.error('Error al guardar en caché:', error);
+                mostrarIndicadorErrorGuardado();
             }
+        }
+
+        function mostrarIndicadorGuardadoExitoso() {
+            // Ocultar indicador de cambios sin guardar
+            const indicadorCambios = document.getElementById('indicador-cambios');
+            if (indicadorCambios) {
+                indicadorCambios.style.display = 'none';
+            }
+            
+            // Mostrar indicador de guardado exitoso
+            let indicador = document.getElementById('indicador-guardado');
+            if (!indicador) {
+                indicador = document.createElement('div');
+                indicador.id = 'indicador-guardado';
+                indicador.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    background: #4ade80;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                `;
+                document.body.appendChild(indicador);
+            }
+            
+            indicador.innerHTML = `
+                <span>✅</span>
+                <span>Guardado automáticamente</span>
+            `;
+            indicador.style.display = 'flex';
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                if (indicador) {
+                    indicador.style.display = 'none';
+                }
+            }, 3000);
+        }
+
+        function mostrarIndicadorErrorGuardado() {
+            let indicador = document.getElementById('indicador-error');
+            if (!indicador) {
+                indicador = document.createElement('div');
+                indicador.id = 'indicador-error';
+                indicador.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    background: #ff6b6b;
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                `;
+                document.body.appendChild(indicador);
+            }
+            
+            indicador.innerHTML = `
+                <span>❌</span>
+                <span>Error al guardar</span>
+            `;
+            indicador.style.display = 'flex';
+            
+            // Ocultar después de 5 segundos
+            setTimeout(() => {
+                if (indicador) {
+                    indicador.style.display = 'none';
+                }
+            }, 5000);
         }
 
         function cargarDesdeCache() {
@@ -1414,6 +1580,9 @@
             // Inicializar eventos
             inicializarEventos();
             
+            // Iniciar sistema de auto-guardado
+            iniciarAutoGuardado();
+            
             // Actualizar estados iniciales
             actualizarEstados();
             
@@ -1443,6 +1612,13 @@
             }
             
             console.log('Sistema inicializado correctamente');
+        });
+
+        // Guardar antes de cerrar la página
+        window.addEventListener('beforeunload', function() {
+            if (hasUnsavedChanges) {
+                guardarEnCache();
+            }
         });
 
         function inicializarDenominaciones() {
@@ -1531,12 +1707,12 @@
                 estado.paso1.denominaciones[valor] = nuevaCantidad;
                 actualizarSubtotal(valor, nuevaCantidad, paso);
                 actualizarProgresoPaso1();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
             } else if (paso === 'paso2') {
                 estado.paso2.denominaciones[valor] = nuevaCantidad;
                 actualizarSubtotal(valor, nuevaCantidad, paso);
                 actualizarTotalPaso2();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
             }
         }
 
@@ -1592,6 +1768,11 @@
             
             // Actualizar estado del monto base en el estado global
             estado.paso1.montoBase = montoBase;
+            
+            // Marcar cambios para auto-guardado
+            if (!window.restaurandoCache) {
+                marcarCambiosSinGuardar();
+            }
         }
 
         function actualizarTotalPaso2() {
@@ -1607,6 +1788,11 @@
             // Actualizar resumen final si el paso 2 está completado
             if (estado.paso2.completado) {
                 actualizarResumenFinal();
+            }
+            
+            // Marcar cambios para auto-guardado
+            if (!window.restaurandoCache) {
+                marcarCambiosSinGuardar();
             }
         }
 
@@ -1677,7 +1863,7 @@
             }
             
             actualizarEstados();
-            guardarEnCache();
+            marcarCambiosSinGuardar();
         }
 
         function actualizarEstados() {
@@ -1738,7 +1924,7 @@
                 estado.paso3.gastos[tipo] = [];
             }
             estado.paso3.gastos[tipo].push({ id: itemId, descripcion: '', monto: 0 });
-            guardarEnCache();
+            marcarCambiosSinGuardar();
         }
 
         function addTransferenciaItem(tipo) {
@@ -1770,7 +1956,7 @@
                 estado.paso3.transferencias[tipo] = [];
             }
             estado.paso3.transferencias[tipo].push({ id: itemId, descripcion: '', monto: 0 });
-            guardarEnCache();
+            marcarCambiosSinGuardar();
         }
 
         function addCreditoItem(tipo) {
@@ -1802,7 +1988,7 @@
                 estado.paso3.creditos[tipo] = [];
             }
             estado.paso3.creditos[tipo].push({ id: itemId, descripcion: '', monto: 0 });
-            guardarEnCache();
+            marcarCambiosSinGuardar();
         }
 
         function addManualItem() {
@@ -1840,7 +2026,7 @@
                 estado.paso3.manuales = [];
             }
             estado.paso3.manuales.push({ id: itemId, descripcion: '', tipo: '+', monto: 0 });
-            guardarEnCache();
+            marcarCambiosSinGuardar();
             
             // Aplicar estilos iniciales
             setTimeout(() => {
@@ -1861,7 +2047,7 @@
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
                 actualizarResumenFinal();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
             }
         }
 
@@ -1871,7 +2057,7 @@
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
                 actualizarResumenFinal();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
             }
         }
 
@@ -1881,7 +2067,7 @@
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
                 actualizarResumenFinal();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
             }
         }
 
@@ -1891,7 +2077,7 @@
             if (item) {
                 item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
                 actualizarResumenFinal();
-                guardarEnCache();
+                marcarCambiosSinGuardar();
                 
                 // Limpiar entradas vacías después de actualizar
                 limpiarEntradasVacias();
@@ -2004,8 +2190,8 @@
                 }
             });
             
-            // Guardar el estado limpio en caché
-            guardarEnCache();
+            // Marcar cambios para auto-guardado
+            marcarCambiosSinGuardar();
         }
 
         function removerItem(button, categoria, tipo) {
@@ -2027,7 +2213,7 @@
                 itemRow.remove();
             }
             actualizarResumenFinal();
-            guardarEnCache();
+            marcarCambiosSinGuardar();
             
             // Limpiar entradas vacías del caché
             limpiarEntradasVacias();
@@ -2278,6 +2464,9 @@
 
         function limpiarCacheCompleto() {
             if (confirm('⚠️ ¿Está seguro de que desea limpiar todo el caché?\n\nEsto eliminará todos los datos guardados y reiniciará el sistema desde cero.\n\nEsta acción no se puede deshacer.')) {
+                // Detener auto-guardado temporalmente
+                detenerAutoGuardado();
+                
                 // Limpiar caché
                 limpiarCache();
                 
@@ -2296,6 +2485,9 @@
                 actualizarEstados();
                 actualizarProgresoPaso1();
                 actualizarResumenFinal();
+                
+                // Reiniciar auto-guardado
+                iniciarAutoGuardado();
                 
                 // Mostrar mensaje de confirmación
                 alert('✅ Caché limpiado exitosamente\n\nEl sistema ha sido reiniciado desde cero.');
