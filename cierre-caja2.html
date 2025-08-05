@@ -439,6 +439,116 @@
             background: #22c55e;
         }
 
+        .btn-export:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-export:disabled:hover {
+            background: #6c757d;
+            transform: none;
+        }
+
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-modal.active {
+            display: flex;
+        }
+
+        .admin-modal-content {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .admin-modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .admin-modal-header h3 {
+            color: #ff6b6b;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .admin-modal-header p {
+            color: #a0a0a0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .admin-input-group {
+            margin-bottom: 20px;
+        }
+
+        .admin-input-group label {
+            display: block;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .admin-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .admin-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #333;
+        }
+
+        .admin-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .admin-modal-buttons .btn {
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .warning-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #ff5252;
+        }
+
+        .warning-message .percentage {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
         .summary-card {
             background: #2a2a2a;
             border-radius: 8px;
@@ -550,6 +660,40 @@
 
         .creditos input[type="text"] {
             color: #fbbf24 !important;
+        }
+
+        .manual input[type="text"] {
+            color: #667eea !important;
+        }
+
+        .manual select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .manual select:focus {
+            outline: none;
+            background: rgba(42, 42, 42, 0.3);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+        }
+
+        .manual select option {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .tipo-positivo {
+            color: #4ade80 !important;
+        }
+
+        .tipo-negativo {
+            color: #ff6b6b !important;
         }
 
         /* Estilo especial para el input del valor Z */
@@ -936,6 +1080,27 @@
                         </div>
                     </div>
 
+                    <!-- Entrada Manual -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h3 class="category-title">✏️ Entrada Manual</h3>
+                            <button class="btn btn-secondary" onclick="addManualItem()">+ Entrada</button>
+                        </div>
+                        <div class="table-container">
+                            <table class="manual">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Tipo</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="entradas-manuales"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Resumen Final -->
                     <div class="summary-card">
                         <div class="summary-row">
@@ -968,10 +1133,36 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-export" onclick="exportarReporte()">
+                    <div id="warning-container" style="display: none;">
+                        <div class="warning-message">
+                            ⚠️ <strong>Diferencia excesiva detectada</strong><br>
+                            La diferencia de <span class="percentage" id="warning-percentage">0%</span> excede el límite del 5%<br>
+                            Se requiere autorización de administrador para exportar
+                        </div>
+                    </div>
+
+                    <button class="btn btn-export" id="btn-exportar" onclick="verificarExportacion()">
                         📄 Exportar Reporte
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Autorización Administrativa -->
+    <div class="admin-modal" id="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3>🔐 Autorización Requerida</h3>
+                <p>La diferencia excede el límite del 5%. Se requiere autorización de administrador para continuar.</p>
+            </div>
+            <div class="admin-input-group">
+                <label for="admin-password">Contraseña de Administrador:</label>
+                <input type="password" id="admin-password" placeholder="Ingrese la contraseña" onkeypress="handleAdminKeyPress(event)">
+            </div>
+            <div class="admin-modal-buttons">
+                <button class="btn btn-secondary" onclick="cerrarModalAdmin()">Cancelar</button>
+                <button class="btn btn-primary" onclick="verificarContraseñaAdmin()">Autorizar</button>
             </div>
         </div>
     </div>
@@ -996,8 +1187,12 @@
         let estado = {
             paso1: { completado: false, montoBase: 100000, denominaciones: {} },
             paso2: { completado: false, denominaciones: {}, total: 0 },
-            paso3: { completado: false, z: 0, gastos: {}, transferencias: {}, creditos: {} }
+            paso3: { completado: false, z: 0, gastos: {}, transferencias: {}, creditos: {}, manuales: [] }
         };
+
+        // Configuración de seguridad
+        const ADMIN_PASSWORD = 'admin123*'; // Contraseña de administrador
+        const MAX_DIFFERENCE_PERCENTAGE = 5; // Porcentaje máximo permitido sin autorización
 
         // Sistema de caché
         const CACHE_KEY = 'cierre_caja_progress';
@@ -1129,6 +1324,19 @@
                         if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
                     }
                 });
+            });
+            
+            // Restaurar entradas manuales
+            (estado.paso3.manuales || []).forEach(item => {
+                addManualItem();
+                const lastRow = document.querySelector('#entradas-manuales tr:last-child');
+                if (lastRow) {
+                    const inputs = lastRow.querySelectorAll('input');
+                    const select = lastRow.querySelector('select');
+                    if (inputs[0]) inputs[0].value = item.descripcion || '';
+                    if (select) select.value = item.tipo || '+';
+                    if (inputs[1]) inputs[1].value = formatearNumero(item.monto || 0);
+                }
             });
         }
 
@@ -1519,6 +1727,44 @@
             guardarEnCache();
         }
 
+        function addManualItem() {
+            const container = document.getElementById('entradas-manuales');
+            if (!container) return;
+            
+            const itemId = Date.now();
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="text" placeholder="Descripción" 
+                           onchange="actualizarManual(${itemId}, 'descripcion', this.value)"
+                           oninput="this.placeholder = this.value ? '' : 'Descripción'">
+                </td>
+                <td>
+                    <select onchange="actualizarManual(${itemId}, 'tipo', this.value); actualizarClaseTipo(this)">
+                        <option value="+">➕ Positivo</option>
+                        <option value="-">➖ Negativo</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" placeholder="Monto" 
+                           onchange="actualizarManual(${itemId}, 'monto', this.value)"
+                           oninput="formatCurrency(this); this.placeholder = this.value ? '' : 'Monto'">
+                </td>
+                <td>
+                    <button class="btn btn-remove" data-item-id="${itemId}" onclick="removerItem(this, 'manuales', 'manual')">×</button>
+                </td>
+            `;
+            
+            container.appendChild(row);
+            
+            if (!estado.paso3.manuales) {
+                estado.paso3.manuales = [];
+            }
+            estado.paso3.manuales.push({ id: itemId, descripcion: '', tipo: '+', monto: 0 });
+            guardarEnCache();
+        }
+
         function actualizarGasto(itemId, campo, valor, tipo) {
             if (!estado.paso3.gastos[tipo]) return;
             const item = estado.paso3.gastos[tipo].find(i => i.id === itemId);
@@ -1549,6 +1795,28 @@
             }
         }
 
+        function actualizarManual(itemId, campo, valor) {
+            if (!estado.paso3.manuales) return;
+            const item = estado.paso3.manuales.find(i => i.id === itemId);
+            if (item) {
+                item[campo] = campo === 'monto' ? parseInt(valor.replace(/\D/g, '')) || 0 : valor;
+                actualizarResumenFinal();
+                guardarEnCache();
+            }
+        }
+
+        function actualizarClaseTipo(selectElement) {
+            const row = selectElement.closest('tr');
+            const montoInput = row.querySelector('input[type="text"]:last-of-type');
+            if (montoInput) {
+                if (selectElement.value === '+') {
+                    montoInput.className = 'tipo-positivo';
+                } else {
+                    montoInput.className = 'tipo-negativo';
+                }
+            }
+        }
+
         function removerItem(button, categoria, tipo) {
             const itemRow = button.closest('tr');
             const itemId = parseInt(button.getAttribute('data-item-id'));
@@ -1560,6 +1828,8 @@
                 estado.paso3.transferencias[tipo] = estado.paso3.transferencias[tipo].filter(item => item.id !== itemId);
             } else if (categoria === 'creditos' && estado.paso3.creditos[tipo]) {
                 estado.paso3.creditos[tipo] = estado.paso3.creditos[tipo].filter(item => item.id !== itemId);
+            } else if (categoria === 'manuales' && estado.paso3.manuales) {
+                estado.paso3.manuales = estado.paso3.manuales.filter(item => item.id !== itemId);
             }
             
             if (itemRow) {
@@ -1575,8 +1845,14 @@
             const totalTransferencias = Object.values(estado.paso3.transferencias || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
             const totalCreditos = Object.values(estado.paso3.creditos || {}).flat().reduce((sum, item) => sum + (item.monto || 0), 0);
             
-            // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos)
-            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos;
+            // Calcular total de entradas manuales
+            const totalManuales = (estado.paso3.manuales || []).reduce((sum, item) => {
+                const monto = item.monto || 0;
+                return sum + (item.tipo === '+' ? monto : -monto);
+            }, 0);
+            
+            // Según la imagen: Total = suma de TODOS los ítems (efectivo + gastos + transferencias + créditos + manuales)
+            const total = (estado.paso2.total || 0) + totalGastos + totalTransferencias + totalCreditos + totalManuales;
             
             // Sobra/Falta = Total - Z
             const sobraFalta = total - (estado.paso3.z || 0);
@@ -1601,6 +1877,9 @@
                 resumenSobraFalta.textContent = `$${formatearNumero(sobraFalta)}`;
                 resumenSobraFalta.className = sobraFalta >= 0 ? 'summary-value positive' : 'summary-value negative';
             }
+
+            // Verificar si se puede exportar
+            verificarPermisoExportacion();
         }
 
         function formatCurrency(input) {
@@ -1624,6 +1903,105 @@
             return numero.toLocaleString('es-CO');
         }
 
+        function verificarPermisoExportacion() {
+            const resumenTotalElement = document.getElementById('resumen-total');
+            const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
+            const btnExportar = document.getElementById('btn-exportar');
+            const warningContainer = document.getElementById('warning-container');
+            const warningPercentage = document.getElementById('warning-percentage');
+            
+            if (!resumenTotalElement || !resumenSobraFaltaElement || !btnExportar) return;
+            
+            const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
+            const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+            const z = estado.paso3.z || 0;
+            
+            // Calcular porcentaje de diferencia
+            const diferenciaAbsoluta = Math.abs(sobraFalta);
+            const porcentajeDiferencia = z > 0 ? (diferenciaAbsoluta / z) * 100 : 0;
+            
+            // Verificar si excede el límite del 5%
+            if (porcentajeDiferencia > MAX_DIFFERENCE_PERCENTAGE && z > 0) {
+                // Bloquear exportación
+                btnExportar.disabled = true;
+                warningContainer.style.display = 'block';
+                warningPercentage.textContent = `${porcentajeDiferencia.toFixed(1)}%`;
+            } else {
+                // Permitir exportación
+                btnExportar.disabled = false;
+                warningContainer.style.display = 'none';
+            }
+        }
+
+        function verificarExportacion() {
+            const resumenTotalElement = document.getElementById('resumen-total');
+            const resumenSobraFaltaElement = document.getElementById('resumen-sobrafalta');
+            
+            if (!resumenTotalElement || !resumenSobraFaltaElement) return;
+            
+            const total = parseInt(resumenTotalElement.textContent.replace(/[^\d]/g, '')) || 0;
+            const sobraFalta = parseInt(resumenSobraFaltaElement.textContent.replace(/[^\d]/g, '')) || 0;
+            const z = estado.paso3.z || 0;
+            
+            // Calcular porcentaje de diferencia
+            const diferenciaAbsoluta = Math.abs(sobraFalta);
+            const porcentajeDiferencia = z > 0 ? (diferenciaAbsoluta / z) * 100 : 0;
+            
+            // Verificar si excede el límite del 5%
+            if (porcentajeDiferencia > MAX_DIFFERENCE_PERCENTAGE && z > 0) {
+                // Mostrar modal de autorización
+                mostrarModalAdmin();
+            } else {
+                // Exportar directamente
+                exportarReporte();
+            }
+        }
+
+        function mostrarModalAdmin() {
+            const modal = document.getElementById('admin-modal');
+            const passwordInput = document.getElementById('admin-password');
+            
+            if (modal && passwordInput) {
+                modal.classList.add('active');
+                passwordInput.focus();
+                passwordInput.value = '';
+            }
+        }
+
+        function cerrarModalAdmin() {
+            const modal = document.getElementById('admin-modal');
+            const passwordInput = document.getElementById('admin-password');
+            
+            if (modal && passwordInput) {
+                modal.classList.remove('active');
+                passwordInput.value = '';
+            }
+        }
+
+        function handleAdminKeyPress(event) {
+            if (event.key === 'Enter') {
+                verificarContraseñaAdmin();
+            } else if (event.key === 'Escape') {
+                cerrarModalAdmin();
+            }
+        }
+
+        function verificarContraseñaAdmin() {
+            const passwordInput = document.getElementById('admin-password');
+            const password = passwordInput ? passwordInput.value : '';
+            
+            if (password === ADMIN_PASSWORD) {
+                cerrarModalAdmin();
+                exportarReporte();
+            } else {
+                alert('❌ Contraseña incorrecta. Intente nuevamente.');
+                if (passwordInput) {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+        }
+
         function exportarReporte() {
             try {
                 const resumenTotalElement = document.getElementById('resumen-total');
@@ -1639,6 +2017,7 @@
                     gastos: estado.paso3.gastos || {},
                     transferencias: estado.paso3.transferencias || {},
                     creditos: estado.paso3.creditos || {},
+                    manuales: estado.paso3.manuales || [],
                     z: estado.paso3.z || 0,
                     total: total,
                     sobraFalta: sobraFalta
@@ -1827,6 +2206,16 @@
                             </div>
                             
                             <div class="section">
+                                <h2>ENTRADAS MANUALES</h2>
+                                ${(reporte.manuales || []).length > 0 ? (reporte.manuales || []).map(item => `
+                                    <div class="item">
+                                        <span>${item.descripcion || 'Sin descripción'} (${item.tipo === '+' ? 'Positivo' : 'Negativo'})</span>
+                                        <span>${item.tipo === '+' ? '+' : '-'}$${formatearNumero(item.monto)}</span>
+                                    </div>
+                                `).join('') : '<div class="item">Sin entradas manuales</div>'}
+                            </div>
+                            
+                            <div class="section">
                                 <h2>RESUMEN</h2>
                                 <table class="summary-table">
                                     <tr>
@@ -1848,6 +2237,13 @@
                                     <tr>
                                         <td>Créditos</td>
                                         <td>$${formatearNumero(Object.values(reporte.creditos).flat().reduce((sum, item) => sum + (item.monto || 0), 0))}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Entradas Manuales</td>
+                                        <td>$${formatearNumero((reporte.manuales || []).reduce((sum, item) => {
+                                            const monto = item.monto || 0;
+                                            return sum + (item.tipo === '+' ? monto : -monto);
+                                        }, 0))}</td>
                                     </tr>
                                     <tr style="background: #f0f0f0;">
                                         <td><strong>TOTAL</strong></td>
