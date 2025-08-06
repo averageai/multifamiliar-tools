@@ -944,7 +944,7 @@
                         </div>
                         
                         <div class="category-header">
-                            <h3 class="category-title">☑️ Transferencia</h3>
+                            <h3 class="category-title">☑️ Tarjeta</h3>
                             <button class="btn btn-secondary" onclick="addTransferenciaItem('transferencia')">+ Transferencia</button>
                         </div>
                         <div class="table-container">
@@ -1080,7 +1080,7 @@
                     <div id="warning-container" style="display: none;">
                         <div class="warning-message">
                             ⚠️ <strong>Diferencia excesiva detectada</strong><br>
-                            La diferencia de <span class="percentage" id="warning-percentage">0%</span> excede el límite del 0.05%<br>
+                            La diferencia de <span class="percentage" id="warning-percentage">0%</span> excede el límite del 1%<br>
                             Se requiere autorización de administrador para exportar
                         </div>
                     </div>
@@ -1112,7 +1112,7 @@
         <div class="admin-modal-content">
             <div class="admin-modal-header">
                 <h3>🔐 Autorización Requerida</h3>
-                <p>La diferencia excede el límite del 0.05%. Se requiere autorización de administrador para continuar.</p>
+                <p>La diferencia excede el límite del 1%. Se requiere autorización de administrador para continuar.</p>
             </div>
             <div class="admin-input-group">
                 <label for="admin-password">Contraseña de Administrador:</label>
@@ -1186,7 +1186,7 @@
 
         // Configuración de seguridad
         const ADMIN_PASSWORD = 'admin123*';
-        const MAX_DIFFERENCE_PERCENTAGE = 0.05;
+        const MAX_DIFFERENCE_PERCENTAGE = 1;
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {

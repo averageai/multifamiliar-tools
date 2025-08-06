@@ -1075,13 +1075,13 @@
                         }
                         
                         .header h1 {
-                            font-size: 12px;
+                            font-size: 20px;
                             margin: 0 0 5px 0;
                             font-weight: bold;
                         }
                         
                         .header p {
-                            font-size: 8px;
+                            font-size: 12px;
                             margin: 0;
                         }
                         
@@ -1096,7 +1096,7 @@
                             border-bottom: 1px solid #000;
                             padding-bottom: 2px;
                             margin-bottom: 5px;
-                            font-size: 10px;
+                            font-size: 16px;
                             font-weight: bold;
                             text-align: center;
                         }
@@ -1105,7 +1105,7 @@
                             margin: 1px 0; 
                             padding: 1px 0;
                             border-bottom: none;
-                            font-size: 8px;
+                            font-size: 13px;
                             display: flex;
                             justify-content: space-between;
                         }
@@ -1125,7 +1125,7 @@
                         .footer {
                             text-align: center;
                             margin-top: 10px;
-                            font-size: 7px;
+                            font-size: 12px;
                             color: #666;
                         }
                     </style>
@@ -1141,30 +1141,14 @@
                          <h2>PRODUCTOS</h2>
                          ${faltantesData.map((item, index) => `
                              <div class="item ${item.encontrado ? 'producto-encontrado' : 'producto-no-encontrado'}">
-                                 <span>${(index + 1).toString().padStart(2)}. ${item.codigo} - ${item.nombre.substring(0, 25)}</span>
+                                 <span>${(index + 1).toString().padStart(2)}. <strong>${item.codigo} </strong>- ${item.nombre.substring(0, 25)}</span>
                              </div>
                          `).join('')}
                      </div>
-                    
-                    <div class="section">
-                        <h2>RESUMEN</h2>
-                        <div class="item">
-                            <span>Total:</span>
-                            <span>${faltantesData.length}</span>
-                        </div>
-                        <div class="item">
-                            <span>Encontrados:</span>
-                            <span>${encontrados}</span>
-                        </div>
-                        <div class="item">
-                            <span>No encontrados:</span>
-                            <span>${noEncontrados}</span>
-                        </div>
-                    </div>
-                    
+                                        
                     <div class="footer">
                         <p>--- FIN DEL REPORTE ---</p>
-                        <p>Sistema Multifamiliar</p>
+                        <p>Desarrollado por: <strong>average</strong></p>
                     </div>
                 </body>
                 </html>
