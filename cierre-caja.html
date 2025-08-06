@@ -2066,35 +2066,35 @@
                         body { 
                             font-family: 'Courier New', monospace; 
                             margin: 0; 
-                            padding: 5px;
+                            padding: 3px;
                             background: white;
                             color: black;
-                            font-size: 10px;
-                            line-height: 1.2;
+                            font-size: 20px;
+                            line-height: 1.3;
                             width: 80mm;
                             max-width: 80mm;
                         }
                         
                         .header { 
                             text-align: center; 
-                            margin-bottom: 10px; 
-                            border-bottom: 1px solid #000;
-                            padding-bottom: 5px;
+                            margin-bottom: 8px; 
+                            border-bottom: 2px solid #000;
+                            padding-bottom: 3px;
                         }
                         
                         .header h1 {
-                            font-size: 12px;
-                            margin: 0 0 5px 0;
+                            font-size: 20px;
+                            margin: 0 0 3px 0;
                             font-weight: bold;
                         }
                         
                         .header p {
-                            font-size: 8px;
+                            font-size: 15px;
                             margin: 0;
                         }
                         
                         .section { 
-                            margin-bottom: 8px; 
+                            margin-bottom: 6px; 
                             border: none;
                             padding: 0;
                         }
@@ -2103,15 +2103,15 @@
                             color: #000;
                             border-bottom: 1px solid #000;
                             padding-bottom: 2px;
-                            margin-bottom: 5px;
-                            font-size: 10px;
+                            margin-bottom: 4px;
+                            font-size: 14px;
                             font-weight: bold;
                             text-align: center;
                         }
                         
                         .section h3 {
-                            font-size: 9px;
-                            margin: 3px 0 2px 0;
+                            font-size: 12px;
+                            margin: 2px 0 2px 0;
                             font-weight: bold;
                             text-align: center;
                         }
@@ -2120,7 +2120,7 @@
                             margin: 1px 0; 
                             padding: 1px 0;
                             border-bottom: none;
-                            font-size: 8px;
+                            font-size: 14px;
                             display: flex;
                             justify-content: space-between;
                         }
@@ -2132,15 +2132,15 @@
                         table { 
                             width: 100%; 
                             border-collapse: collapse; 
-                            margin-top: 3px;
-                            font-size: 8px;
+                            margin-top: 2px;
+                            font-size: 13px;
                         }
                         
                         th, td { 
                             border: 1px solid #000; 
-                            padding: 2px 3px; 
+                            padding: 3px 4px; 
                             text-align: left; 
-                            font-size: 8px;
+                            font-size: 15px;
                         }
                         
                         th { 
@@ -2165,8 +2165,8 @@
                         
                         .footer {
                             text-align: center;
-                            margin-top: 10px;
-                            font-size: 7px;
+                            margin-top: 8px;
+                            font-size: 13px;
                             color: #666;
                         }
                     </style>
@@ -2278,12 +2278,12 @@
                                 }, 0))}</td>
                             </tr>
                             <tr style="background: #f0f0f0;">
-                                <td><strong>TOTAL</strong></td>
-                                <td><strong>$${formatearNumero(reporte.total)}</strong></td>
+                                <td>TOTAL</td>
+                                <td>$${formatearNumero(reporte.total)}</td>
                             </tr>
                             <tr>
-                                <td>Valor Z</td>
-                                <td>$${formatearNumero(reporte.z)}</td>
+                                <td><strong>Valor Z</strong></td>
+                                <td><strong>$${formatearNumero(reporte.z)}</strong></td>
                             </tr>
                             <tr style="background: #f0f0f0;">
                                 <td><strong>SOBRA/FALTA</strong></td>
@@ -2294,7 +2294,7 @@
                     
                     <div class="footer">
                         <p>--- FIN DEL REPORTE ---</p>
-                        <p>Sistema Multifamiliar</p>
+                        <p>Desarrollado por: <strong>average</strong></p>
                     </div>
                 </body>
                 </html>
@@ -2391,60 +2391,84 @@
                 <head>
                     <title>Borrador - Cierre de Caja</title>
                     <style>
+                        @media print {
+                            @page {
+                                size: 80mm auto;
+                                margin: 0;
+                            }
+                        }
+
                         body {
                             font-family: 'Courier New', monospace;
-                            font-size: 10px;
+                            font-size: 12px;
                             margin: 0;
-                            padding: 10px;
+                            padding: 8px;
                             background: white;
                             color: black;
+                            line-height: 1.3;
                         }
                         .header {
                             text-align: center;
                             border-bottom: 2px solid black;
-                            padding-bottom: 10px;
-                            margin-bottom: 15px;
+                            padding-bottom: 8px;
+                            margin-bottom: 12px;
+                        }
+                        .header h2 {
+                            font-size: 16px;
+                            margin: 0 0 5px 0;
+                            font-weight: bold;
+                        }
+                        .header p {
+                            font-size: 14px;
+                            margin: 2px 0;
                         }
                         .borrador-notice {
                             background: #ffffcc;
-                            border: 1px solid #ffcc00;
-                            padding: 5px;
-                            margin: 10px 0;
+                            border: 2px solid #ffcc00;
+                            padding: 6px;
+                            margin: 8px 0;
                             text-align: center;
                             font-weight: bold;
+                            font-size: 11px;
                         }
                         .section {
-                            margin: 10px 0;
+                            margin: 8px 0;
                         }
                         .section-title {
                             font-weight: bold;
                             border-bottom: 1px solid #ccc;
-                            margin-bottom: 5px;
+                            margin-bottom: 4px;
+                            font-size: 13px;
+                            padding-bottom: 2px;
                         }
                         table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 5px 0;
+                            margin: 4px 0;
+                            font-size: 11px;
                         }
                         th, td {
                             border: 1px solid #ccc;
-                            padding: 3px;
+                            padding: 4px 5px;
                             text-align: left;
+                            font-size: 14px;
                         }
                         th {
                             background: #f0f0f0;
                             font-weight: bold;
+                            text-align: center;
                         }
                         .summary {
-                            margin-top: 15px;
+                            margin-top: 12px;
                             border-top: 2px solid black;
-                            padding-top: 10px;
+                            padding-top: 8px;
                         }
                         .footer {
                             text-align: center;
-                            margin-top: 20px;
+                            margin-top: 15px;
                             border-top: 1px solid #ccc;
-                            padding-top: 10px;
+                            padding-top: 8px;
+                            font-size: 10px;
                         }
                     </style>
                 </head>
@@ -2644,7 +2668,7 @@
                     
                     <div class="footer">
                         <p>--- BORRADOR - NO ES REPORTE FINAL ---</p>
-                        <p>Sistema Multifamiliar</p>
+                        <p>Desarrollado por: <strong>average</strong></p>
                     </div>
                 </body>
                 </html>
