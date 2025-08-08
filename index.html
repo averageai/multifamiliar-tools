@@ -21,6 +21,97 @@
             color: #ffffff;
         }
 
+        /* Overlay de mantenimiento */
+        .maintenance-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgb(37, 37, 37);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        }
+
+        .maintenance-modal {
+            background: #1a1a1a;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid #333;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        .maintenance-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 48px;
+            color: white;
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 20px 40px rgba(255, 107, 107, 0.4);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+            }
+        }
+
+        .maintenance-title {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .maintenance-subtitle {
+            color: #a0a0a0;
+            margin-bottom: 25px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .maintenance-message {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 16px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            line-height: 1.5;
+        }
+
+        .maintenance-time {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
         /* Overlay de autenticación */
         .auth-overlay {
             position: fixed;
@@ -376,6 +467,25 @@
     </style>
 </head>
 <body>
+    <!-- Overlay de Mantenimiento -->
+    <div class="maintenance-overlay" id="maintenanceOverlay">
+        <div class="maintenance-modal">
+            <div class="maintenance-icon">🔧</div>
+            <h1 class="maintenance-title">Sistema en Mantenimiento</h1>
+            <p class="maintenance-subtitle">Estas herramientas se encuentran suspendidas por mantenimiento</p>
+            
+            <div class="maintenance-message">
+                Estamos realizando mejoras importantes en nuestro sistema para brindarte un mejor servicio. 
+                Agradecemos tu paciencia durante este proceso.
+            </div>
+            
+            <div class="maintenance-time">
+                <strong>⏰ Tiempo estimado:</strong> 2-4 horas<br>
+                <strong>📧 Contacto:</strong> weare.average.ai@gmail.com
+            </div>
+        </div>
+    </div>
+
     <!-- Overlay de Autenticación -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-modal">
@@ -539,6 +649,27 @@
     </div>
 
     <script>
+        // Configuración de mantenimiento
+        const MAINTENANCE_MODE = true; // Cambiar a true para activar el modo mantenimiento
+        
+        // Función para verificar modo mantenimiento
+        function checkMaintenanceMode() {
+            if (MAINTENANCE_MODE) {
+                document.getElementById('maintenanceOverlay').style.display = 'flex';
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'none';
+                return true;
+            } else {
+                document.getElementById('maintenanceOverlay').style.display = 'none';
+                return false;
+            }
+        }
+        
+        // Verificar modo mantenimiento al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkMaintenanceMode();
+        });
+
         // Configuración de autenticación
         class AuthConfig {
             constructor() {
@@ -628,6 +759,11 @@
         // Manejar autenticación
         document.getElementById('authForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Verificar modo mantenimiento
+            if (checkMaintenanceMode()) {
+                return;
+            }
             
             const role = document.getElementById('role').value;
             const password = document.getElementById('password').value;
@@ -739,6 +875,19 @@
 
         // Enfoque automático en el menú de rol
         document.getElementById('role').focus();
+
+        // Funciones para controlar el modo mantenimiento desde la consola
+        window.toggleMaintenance = function() {
+            MAINTENANCE_MODE = !MAINTENANCE_MODE;
+            checkMaintenanceMode();
+            console.log('🔧 Modo mantenimiento:', MAINTENANCE_MODE ? 'ACTIVADO' : 'DESACTIVADO');
+        };
+
+        window.setMaintenance = function(enabled) {
+            MAINTENANCE_MODE = enabled;
+            checkMaintenanceMode();
+            console.log('🔧 Modo mantenimiento:', MAINTENANCE_MODE ? 'ACTIVADO' : 'DESACTIVADO');
+        };
 
         // Sistema de routing SPA
         const routes = {
