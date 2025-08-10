@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Horas de Empleados</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .sede-selector {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sede-selector h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sede-btn {
+            background: #333;
+            color: #ffffff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .sede-btn:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .sede-btn.active:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .top-bar {
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .system-info {
+            font-weight: 600;
+            color: #4ade80;
+        }
+
+        .stats-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .stat-chip {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .input-section {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-section h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            color: #a0a0a0;
+            font-weight: 600;
+        }
+
+        .form-input {
+            padding: 8px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 12px;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-width: 200px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 0 0 8px 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .status-active {
+            background: #1f3d2e !important;
+            color: #4ade80;
+        }
+
+        .status-finalizado {
+            background: #1a1a1a;
+        }
+
+        .status-forzado {
+            background: #3d1f1f !important;
+            color: #ff6b6b;
+        }
+
+        .time-badge {
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .duration-badge {
+            background: #6f42c1;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .alert {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #bee5eb;
+            font-size: 12px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left-color: #dc3545;
+            font-size: 12px;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 30px;
+            color: #6c757d;
+        }
+
+        .summary-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: #a0a0a0;
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+            color: #ffffff;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .input-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-input {
+                min-width: auto;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⏰</div>
+            <div class="header-text">
+                <h1>Control de Horas de Empleados</h1>
+                <p>Registro de entrada y salida de personal - Multi-Sede</p>
+            </div>
+            <a href="index.html" class="back-btn">← Volver al MENU</a>
+        </div>
+
+        <div class="content">
+            <!-- Selector de Sede -->
+            <div class="sede-selector" id="sedeSelector">
+                <h2>🏢 Seleccionar Sede</h2>
+                <div class="sede-buttons">
+                    <button class="sede-btn" data-sede="1" onclick="seleccionarSede(1, 'Manizales')">
+                        <div class="sede-icon">🏪</div>
+                        <div>Manizales</div>
+                    </button>
+                    <button class="sede-btn" data-sede="2" onclick="seleccionarSede(2, 'Dorada')">
+                        <div class="sede-icon">🏬</div>
+                        <div>Dorada</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Conectando con la base de datos...</p>
+                <p id="loadingDetail">Inicializando sistema...</p>
+            </div>
+
+            <div class="main-content" id="mainContent">
+                <div class="top-bar">
+                    <div class="system-info">
+                        Sistema de Control de Horas - Sede: <span id="sedeInfo">-</span> - <span id="currentTime">Cargando...</span>
+                    </div>
+                    <div class="stats-chips" id="statsChips">
+                        <span class="stat-chip">0 registros</span>
+                        <span class="stat-chip">0 activos</span>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <h2>📝 Registrar Entrada/Salida</h2>
+                    <div class="input-form">
+                        <div class="form-group">
+                            <label for="documento">Documento de Identidad</label>
+                            <input type="text" id="documento" class="form-input" 
+                                   placeholder="Ingrese número de documento..." 
+                                   onkeypress="handleKeyPress(event)">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" onclick="validarEmpleado()">✅ Validar Empleado</button>
+                        </div>
+                        
+                        <!-- Sección de información del empleado (oculta inicialmente) -->
+                        <div id="empleadoInfo" style="display: none;">
+                            <div class="form-group">
+                                <label>Empleado Validado</label>
+                                <div id="empleadoNombre" class="form-input" style="background: #2c3e50; color: #fff; font-weight: bold;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado Actual</label>
+                                <div id="empleadoEstado" class="form-input" style="background: #2c3e50; color: #fff;"></div>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" onclick="registrarEntrada()" id="btnEntrada">⏰ Registrar Entrada</button>
+                                <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-info" id="summaryInfo">
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalRegistros">0</div>
+                        <div class="summary-label">Total Registros</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="empleadosActivos">0</div>
+                        <div class="summary-label">Empleados Activos</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalHoras">0</div>
+                        <div class="summary-label">Horas Totales</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number" id="promedioHoras">0</div>
+                        <div class="summary-label">Promedio Horas</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <span>Registros de Hoy</span>
+                        <div class="action-buttons">
+                            <button class="btn" onclick="exportarRegistros()">📊 Exportar Registros</button>
+                            <button class="btn btn-warning" onclick="finalizarJornada()">🏁 Finalizar Jornada</button>
+                            <button class="btn btn-danger" onclick="cambiarSede()">🔄 Cambiar Sede</button>
+                        </div>
+                    </div>
+                    <div class="table-container" id="registrosContainer">
+                        <div class="no-records">
+                            <h3>📝 Sin registros</h3>
+                            <p>Registra la entrada de un empleado para comenzar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Desarrollado por Humanos + IA en <a href="https://ai.average.lat" target="_blank">average</a></p>
+        </div>
+    </div>
+
+    <script>
+        let sedeActual = null;
+        let sedeNombre = '';
+        let registros = [];
+        let estadisticas = {
+            total_registros: 0,
+            empleados_activos: 0,
+            horas_totales: 0,
+            promedio_horas: 0
+        };
+
+        // Configuración de la API
+        const API_BASE = window.location.origin + '/api';
+
+        // Actualizar hora actual
+        function actualizarHora() {
+            const ahora = new Date();
+            const horaFormateada = ahora.toLocaleTimeString('es-CO');
+            document.getElementById('currentTime').textContent = horaFormateada;
+        }
+
+        // Actualizar cada segundo
+        setInterval(actualizarHora, 1000);
+        actualizarHora();
+
+        // Variables globales para el empleado validado
+        let empleadoValidado = null;
+        let tieneRegistroActivo = false;
+
+        // Función para validar empleado
+        async function validarEmpleado() {
+            const documento = document.getElementById('documento').value.trim();
+
+            if (!documento) {
+                mostrarAlerta('⚠️ Por favor ingresa el número de documento', 'warning');
+                return;
+            }
+
+            try {
+                // Buscar empleado por documento
+                const empleadoResponse = await fetch(`${API_BASE}/empleados/${documento}`);
+                const empleadoResult = await empleadoResponse.json();
+                
+                if (!empleadoResult.success) {
+                    mostrarAlerta('❌ Empleado no encontrado. Contacta al administrador para registrarte.', 'error');
+                    return;
+                }
+
+                empleadoValidado = empleadoResult.data;
+
+                // Verificar si tiene registro activo
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${documento}`);
+                const activoResult = await activoResponse.json();
+                
+                tieneRegistroActivo = !!activoResult.data;
+
+                // Mostrar información del empleado
+                document.getElementById('empleadoNombre').textContent = `${empleadoValidado.nombre} (${empleadoValidado.documento})`;
+                document.getElementById('empleadoEstado').textContent = tieneRegistroActivo ? '🟢 Sesión Activa' : '🔴 Sin Sesión';
+                
+                // Mostrar/ocultar botones según estado
+                document.getElementById('btnEntrada').style.display = tieneRegistroActivo ? 'none' : 'inline-block';
+                document.getElementById('btnSalida').style.display = tieneRegistroActivo ? 'inline-block' : 'none';
+                
+                // Mostrar sección de información
+                document.getElementById('empleadoInfo').style.display = 'block';
+
+                mostrarAlerta(`✅ Empleado validado: ${empleadoValidado.nombre}`, 'success');
+
+            } catch (error) {
+                console.error('Error validando empleado:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            document.getElementById('documento').value = '';
+            document.getElementById('empleadoInfo').style.display = 'none';
+            empleadoValidado = null;
+            tieneRegistroActivo = false;
+            document.getElementById('documento').focus();
+        }
+
+        // Función para seleccionar sede
+        function seleccionarSede(sedeId, nombre) {
+            console.log('🏢 Seleccionando sede:', nombre, 'ID:', sedeId);
+            sedeActual = sedeId;
+            sedeNombre = nombre;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sede="${sedeId}"]`).classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede();
+        }
+
+        function actualizarProgreso(mensaje) {
+            const detailElement = document.getElementById('loadingDetail');
+            if (detailElement) {
+                detailElement.textContent = mensaje;
+            }
+        }
+
+        async function cargarDatosSede() {
+            if (!sedeActual) return;
+
+            console.log('📂 Cargando datos de sede:', sedeNombre);
+            
+            document.getElementById('sedeSelector').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                actualizarProgreso('Conectando con la base de datos...');
+                
+                // Cargar registros del día
+                actualizarProgreso('Cargando registros del día...');
+                await cargarRegistrosHoy();
+                
+                // Cargar estadísticas
+                actualizarProgreso('Calculando estadísticas...');
+                await cargarEstadisticas();
+                
+                actualizarProgreso('Inicializando sistema...');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    
+                    document.getElementById('sedeInfo').textContent = sedeNombre;
+                    actualizarTablaRegistros();
+                    actualizarEstadisticasUI();
+                    
+                    document.getElementById('documento').focus();
+                    mostrarAlerta(`✅ ${sedeNombre} conectado - Sistema listo`, 'success');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error cargando sede:', error);
+                mostrarError(`Error conectando con ${sedeNombre}: ${error.message}`);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sedeSelector').style.display = 'block';
+            }
+        }
+
+        async function cargarRegistrosHoy() {
+            const fecha = new Date().toISOString().split('T')[0];
+            const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                registros = result.data;
+                console.log('Registros cargados:', registros.length);
+            } else {
+                throw new Error('Error cargando registros');
+            }
+        }
+
+        async function cargarEstadisticas() {
+            const fecha = new Date().toISOString().split('T')[0];
+            const response = await fetch(`${API_BASE}/estadisticas/${sedeActual}/${fecha}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                estadisticas = result.data;
+                console.log('Estadísticas cargadas:', estadisticas);
+            } else {
+                throw new Error('Error cargando estadísticas');
+            }
+        }
+
+        function actualizarEstadisticasUI() {
+            document.getElementById('totalRegistros').textContent = estadisticas.total_registros || 0;
+            document.getElementById('empleadosActivos').textContent = estadisticas.empleados_activos || 0;
+            document.getElementById('totalHoras').textContent = (estadisticas.horas_totales || 0).toFixed(1);
+            document.getElementById('promedioHoras').textContent = (estadisticas.promedio_horas || 0).toFixed(1);
+
+            document.getElementById('statsChips').innerHTML = `
+                <span class="stat-chip">${estadisticas.total_registros || 0} registros</span>
+                <span class="stat-chip">${estadisticas.empleados_activos || 0} activos</span>
+            `;
+        }
+
+        async function registrarEntrada() {
+            if (!empleadoValidado) {
+                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                return;
+            }
+
+            if (tieneRegistroActivo) {
+                mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa', 'warning');
+                return;
+            }
+
+            try {
+                // Crear registro de entrada
+                const ahora = new Date();
+                const fechaEntrada = ahora.toISOString().split('T')[0];
+                const horaEntrada = ahora.toISOString();
+
+                const registroResponse = await fetch(`${API_BASE}/registros/entrada`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        empleado_id: empleadoValidado.id,
+                        sede_id: sedeActual,
+                        fecha_entrada: fechaEntrada,
+                        hora_entrada: horaEntrada
+                    })
+                });
+
+                const registroResult = await registroResponse.json();
+                if (!registroResult.success) {
+                    throw new Error(registroResult.message || 'Error registrando entrada');
+                }
+
+                // Recargar datos
+                await cargarRegistrosHoy();
+                await cargarEstadisticas();
+                actualizarTablaRegistros();
+                actualizarEstadisticasUI();
+
+                // Actualizar estado del empleado
+                tieneRegistroActivo = true;
+                document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
+                document.getElementById('btnEntrada').style.display = 'none';
+                document.getElementById('btnSalida').style.display = 'inline-block';
+
+                mostrarAlerta(`✅ Entrada registrada para ${empleadoValidado.nombre} (${empleadoValidado.documento})`, 'success');
+
+            } catch (error) {
+                console.error('Error registrando entrada:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        async function registrarSalida() {
+            if (!empleadoValidado) {
+                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                return;
+            }
+
+            if (!tieneRegistroActivo) {
+                mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+                return;
+            }
+
+            try {
+                // Buscar registro activo
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResult = await activoResponse.json();
+                
+                if (!activoResult.data) {
+                    mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+                    return;
+                }
+
+                const registro = activoResult.data;
+                const ahora = new Date();
+                const fechaSalida = ahora.toISOString().split('T')[0];
+                const horaSalida = ahora.toISOString();
+
+                // Finalizar registro
+                const finalizarResponse = await fetch(`${API_BASE}/registros/${registro.id}/salida`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fecha_salida: fechaSalida,
+                        hora_salida: horaSalida
+                    })
+                });
+
+                const finalizarResult = await finalizarResponse.json();
+                if (!finalizarResult.success) {
+                    throw new Error(finalizarResult.message || 'Error registrando salida');
+                }
+
+                // Recargar datos
+                await cargarRegistrosHoy();
+                await cargarEstadisticas();
+                actualizarTablaRegistros();
+                actualizarEstadisticasUI();
+
+                // Limpiar formulario
+                limpiarFormulario();
+
+                const duracion = finalizarResult.data.duracion_horas || 0;
+                mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion.toFixed(2)}h`, 'success');
+
+            } catch (error) {
+                console.error('Error registrando salida:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        function actualizarTablaRegistros() {
+            const container = document.getElementById('registrosContainer');
+            
+            if (registros.length === 0) {
+                container.innerHTML = `
+                    <div class="no-records">
+                        <h3>📝 Sin registros</h3>
+                        <p>Registra la entrada de un empleado para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Documento</th>
+                            <th>Nombre</th>
+                            <th>Entrada</th>
+                            <th>Hora Entrada</th>
+                            <th>Salida</th>
+                            <th>Hora Salida</th>
+                            <th>Duración</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            registros.forEach((registro, index) => {
+                const rowClass = registro.estado === 'activo' ? 'status-active' : 
+                               registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
+                
+                const estado = registro.estado === 'activo' ? 'Activo' : 
+                             registro.estado === 'forzado' ? 'Forzado' : 'Finalizado';
+                
+                const duracion = registro.duracion_horas ? `${registro.duracion_horas.toFixed(2)}h` : '-';
+                const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO');
+                const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
+                const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-';
+                const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-';
+                
+                tableHTML += `
+                    <tr class="${rowClass}">
+                        <td>${index + 1}</td>
+                        <td><span class="time-badge">${registro.documento}</span></td>
+                        <td>${registro.nombre_empleado}</td>
+                        <td>${fechaEntrada}</td>
+                        <td>${horaEntrada}</td>
+                        <td>${fechaSalida}</td>
+                        <td>${horaSalida}</td>
+                        <td><span class="duration-badge">${duracion}</span></td>
+                        <td>${estado}</td>
+                        <td>
+                            ${registro.estado === 'activo' ? 
+                                `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${registro.id})">🚪</button>` : 
+                                `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${registro.id})">❌</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `</tbody></table>`;
+            container.innerHTML = tableHTML;
+        }
+
+        async function forzarSalida(registroId) {
+            const registro = registros.find(r => r.id === registroId);
+            if (!registro) return;
+
+            if (confirm(`¿Forzar salida para ${registro.nombre_empleado}?`)) {
+                try {
+                    const ahora = new Date();
+                    const fechaSalida = ahora.toISOString().split('T')[0];
+                    const horaSalida = ahora.toISOString();
+
+                    const response = await fetch(`${API_BASE}/registros/${registroId}/forzar`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            fecha_salida: fechaSalida,
+                            hora_salida: horaSalida
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message || 'Error forzando salida');
+                    }
+
+                    // Recargar datos
+                    await cargarRegistrosHoy();
+                    await cargarEstadisticas();
+                    actualizarTablaRegistros();
+                    actualizarEstadisticasUI();
+
+                    mostrarAlerta(`✅ Salida forzada para ${registro.nombre_empleado}`, 'success');
+                } catch (error) {
+                    console.error('Error forzando salida:', error);
+                    mostrarError(`Error: ${error.message}`);
+                }
+            }
+        }
+
+        async function eliminarRegistro(registroId) {
+            const registro = registros.find(r => r.id === registroId);
+            if (!registro) return;
+
+            if (confirm(`¿Eliminar registro de ${registro.nombre_empleado}?`)) {
+                // Nota: En una implementación real, aquí se haría una llamada DELETE a la API
+                // Por ahora solo mostramos un mensaje
+                mostrarAlerta('⚠️ Función de eliminación no implementada en esta versión', 'warning');
+            }
+        }
+
+        async function finalizarJornada() {
+            if (estadisticas.empleados_activos === 0) {
+                mostrarAlerta('⚠️ No hay empleados activos', 'warning');
+                return;
+            }
+
+            if (confirm(`¿Finalizar jornada para ${estadisticas.empleados_activos} empleado(s) activo(s)?`)) {
+                try {
+                    const ahora = new Date();
+                    const fechaSalida = ahora.toISOString().split('T')[0];
+                    const horaSalida = ahora.toISOString();
+
+                    const response = await fetch(`${API_BASE}/registros/finalizar-jornada`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sede_id: sedeActual,
+                            fecha_salida: fechaSalida,
+                            hora_salida: horaSalida
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        throw new Error(result.message || 'Error finalizando jornada');
+                    }
+
+                    // Recargar datos
+                    await cargarRegistrosHoy();
+                    await cargarEstadisticas();
+                    actualizarTablaRegistros();
+                    actualizarEstadisticasUI();
+
+                    mostrarAlerta(`✅ Jornada finalizada para ${result.data.registros_actualizados} empleado(s)`, 'success');
+                } catch (error) {
+                    console.error('Error finalizando jornada:', error);
+                    mostrarError(`Error: ${error.message}`);
+                }
+            }
+        }
+
+        function cambiarSede() {
+            if (confirm('¿Estás seguro de que quieres cambiar de sede?')) {
+                sedeActual = null;
+                sedeNombre = '';
+                registros = [];
+                estadisticas = {
+                    total_registros: 0,
+                    empleados_activos: 0,
+                    horas_totales: 0,
+                    promedio_horas: 0
+                };
+                
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('sedeSelector').style.display = 'block';
+                
+                document.querySelectorAll('.sede-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                document.getElementById('sedeInfo').textContent = '-';
+                
+                mostrarAlerta('🔄 Selecciona una nueva sede', 'success');
+            }
+        }
+
+        function exportarRegistros() {
+            if (registros.length === 0) {
+                mostrarAlerta('⚠️ No hay registros para exportar', 'warning');
+                return;
+            }
+
+            // Crear contenido para impresora POS 80mm
+            let contenidoPOS = '';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += '         CONTROL DE HORAS - REGISTROS          \n';
+            contenidoPOS += '================================================\n';
+            contenidoPOS += `Sede: ${sedeNombre}\n`;
+            contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
+            contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+            contenidoPOS += `Total registros: ${registros.length}\n`;
+            contenidoPOS += `Empleados activos: ${estadisticas.empleados_activos}\n`;
+            contenidoPOS += '================================================\n';
+            
+            registros.forEach((registro, index) => {
+                contenidoPOS += `${(index + 1).toString().padStart(2)}. ${registro.documento}\n`;
+                contenidoPOS += `    ${registro.nombre_empleado}\n`;
+                contenidoPOS += `    Entrada: ${new Date(registro.hora_entrada).toLocaleDateString('es-CO')} ${new Date(registro.hora_entrada).toLocaleTimeString('es-CO')}\n`;
+                if (registro.estado !== 'activo') {
+                    contenidoPOS += `    Salida:  ${registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-'} ${registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-'}\n`;
+                    contenidoPOS += `    Duración: ${registro.duracion_horas ? registro.duracion_horas.toFixed(2) + 'h' : '-'}\n`;
+                } else {
+                    contenidoPOS += `    Salida:  EN CURSO\n`;
+                    contenidoPOS += `    Duración: EN CURSO\n`;
+                }
+                contenidoPOS += '    ----------------------------------------\n';
+            });
+            
+            contenidoPOS += '================================================\n';
+            contenidoPOS += `RESUMEN: Total: ${registros.length} | Activos: ${estadisticas.empleados_activos}\n`;
+            contenidoPOS += `Horas totales: ${estadisticas.horas_totales.toFixed(1)}h\n`;
+            contenidoPOS += '================================================\n';
+
+            // Crear archivo de texto
+            const blob = new Blob([contenidoPOS], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fecha = new Date().toISOString().slice(0,10);
+            a.download = `control_horas_${sedeNombre.toLowerCase()}_${fecha}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            mostrarAlerta('✅ Registros exportados como archivo de texto', 'success');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const documento = document.getElementById('documento').value.trim();
+                
+                if (documento) {
+                    validarEmpleado();
+                } else {
+                    document.getElementById('documento').focus();
+                }
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo}`;
+            alertDiv.innerHTML = mensaje;
+            
+            const content = document.querySelector('.content');
+            const firstChild = content.firstElementChild;
+            content.insertBefore(alertDiv, firstChild.nextSibling);
+            
+            // Auto-remover después de 4 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 4000);
+        }
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${mensaje}`;
+            document.querySelector('.content').appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 8000);
+        }
+    </script>
+</body>
+</html>

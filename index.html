@@ -612,6 +612,14 @@
                 <p>Sistema multi-sede con conexión directa a bases de datos. Selector automático de sede (Manizales/Dorada).</p>
                 <span class="tool-badge">Multi-Sede</span>
             </a>
+
+            <!-- Control de Horas de Empleados -->
+            <a href="#" class="tool-card administrativo" id="tool-control-horas" onclick="navigateTo('/control-horas'); return false;">
+                <div class="tool-icon">⏰</div>
+                <h3>Control de Horas</h3>
+                <p>Registro de entrada y salida de empleados. Control de jornadas laborales con cálculo automático de horas trabajadas.</p>
+                <span class="tool-badge">Local</span>
+            </a>
             
             <!-- Sistema de Precios -->
             <a href="#" class="tool-card operativo" id="tool-precios" onclick="navigateTo('/spa'); return false;">
@@ -678,13 +686,13 @@
                         password: '123',
                         name: 'Administrador',
                         role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'faltantes']
+                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'faltantes', 'control-horas']
                     },
                     'operativo': {
                         password: '', // Sin contraseña
                         name: 'Operativo',
                         role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja']
+                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'control-horas']
                     },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -837,7 +845,8 @@
                 'tool-codigos-disponibles': 'codigos-disponibles',
                 'tool-cotizaciones': 'cotizaciones',
                 'tool-cierre-caja': 'cierre-caja',
-                'tool-faltantes': 'faltantes'
+                'tool-faltantes': 'faltantes',
+                'tool-control-horas': 'control-horas'
             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -903,7 +912,8 @@
             '/codigos-disponibles': 'codigos-disponibles.html',
             '/cotizaciones': 'cotizaciones.html',
             '/cierre-caja': 'cierre-caja.html',
-            '/faltantes': 'faltantes.html'
+            '/faltantes': 'faltantes.html',
+            '/control-horas': 'control-horas.html'
         };
 
         // Función de navegación
