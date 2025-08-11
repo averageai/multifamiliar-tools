@@ -5,7 +5,7 @@ if (process.env.DATABASE_URL) {
     // Usar DATABASE_URL si está disponible (Vercel)
     dbConfig = {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: false, // Deshabilitar SSL para evitar errores de conexión
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
@@ -18,7 +18,7 @@ if (process.env.DATABASE_URL) {
         database: process.env.DB_NAME || 'faltantes',
         user: process.env.DB_USER || 'average',
         password: process.env.DB_PASSWORD || 'nonaverage',
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: false, // Deshabilitar SSL para evitar errores de conexión
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,

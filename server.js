@@ -61,6 +61,18 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
+// Debug endpoint para verificar archivos
+app.get('/api/debug/files', (req, res) => {
+    const fs = require('fs');
+    const files = fs.readdirSync(__dirname).filter(file => file.endsWith('.html'));
+    res.json({
+        success: true,
+        files: files,
+        currentDir: __dirname,
+        indexExists: fs.existsSync(path.join(__dirname, 'index.html'))
+    });
+});
+
 // Obtener sedes
 app.get('/api/sedes', async (req, res) => {
     try {
@@ -272,6 +284,19 @@ app.get('/', (req, res) => {
 
 app.get('/control-horas', (req, res) => {
     res.sendFile(path.join(__dirname, 'control-horas.html'));
+});
+
+// Ruta para servir otros archivos HTML estáticos
+app.get('/:file.html', (req, res) => {
+    const fileName = req.params.file + '.html';
+    const filePath = path.join(__dirname, fileName);
+    
+    // Verificar si el archivo existe
+    if (require('fs').existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('Archivo no encontrado');
+    }
 });
 
 // Manejo de errores global
