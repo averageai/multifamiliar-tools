@@ -233,6 +233,21 @@ app.get('/api/registros/activo/:documento', async (req, res) => {
     }
 });
 
+// Obtener último registro del día de un empleado
+app.get('/api/registros/ultimo/:documento', async (req, res) => {
+    try {
+        const { documento } = req.params;
+        const result = await pool.query(queries.getUltimoRegistroHoy, [documento]);
+        
+        res.json({
+            success: true,
+            data: result.rows.length > 0 ? result.rows[0] : null
+        });
+    } catch (err) {
+        handleDatabaseError(err, res);
+    }
+});
+
 // Crear registro de entrada
 app.post('/api/registros/entrada', async (req, res) => {
     try {

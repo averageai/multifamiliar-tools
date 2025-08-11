@@ -130,6 +130,17 @@ const queries = {
         JOIN empleados e ON rh.empleado_id = e.id
         WHERE e.documento = $1 
         AND rh.estado = 'activo'
+        AND rh.fecha_entrada = CURRENT_DATE
+        ORDER BY rh.hora_entrada DESC
+        LIMIT 1
+    `,
+    
+    getUltimoRegistroHoy: `
+        SELECT rh.*, e.documento, e.nombre as nombre_empleado
+        FROM registros_horas rh
+        JOIN empleados e ON rh.empleado_id = e.id
+        WHERE e.documento = $1 
+        AND rh.fecha_entrada = CURRENT_DATE
         ORDER BY rh.hora_entrada DESC
         LIMIT 1
     `,

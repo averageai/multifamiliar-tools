@@ -274,6 +274,14 @@
             background: #c82333;
         }
 
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         .section {
             margin-bottom: 20px;
         }
@@ -553,10 +561,12 @@
                                 <label>Estado Actual</label>
                                 <div id="empleadoEstado" class="form-input" style="background: #2c3e50; color: #fff;"></div>
                             </div>
-                            <div class="form-group">
-                                <button class="btn btn-primary" onclick="registrarEntrada()" id="btnEntrada">⏰ Registrar Entrada</button>
-                                <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
-                            </div>
+                                                         <div class="form-group">
+                                 <button class="btn btn-primary" onclick="registrarEntrada()" id="btnEntrada">⏰ Registrar Entrada</button>
+                                 <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
+                                 <button class="btn btn-info" onclick="refrescarEstadoEmpleado()" style="margin-left: 10px;">🔄 Refrescar Estado</button>
+                                 <button class="btn btn-secondary" onclick="verHistorialEmpleado()" style="margin-left: 10px;">📋 Ver Historial</button>
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -654,18 +664,30 @@
 
                 empleadoValidado = empleadoResult.data;
 
-                // Verificar si tiene registro activo
+                // Verificar si tiene registro activo HOY
                 const activoResponse = await fetch(`${API_BASE}/registros/activo/${documento}`);
                 const activoResult = await activoResponse.json();
                 
-                tieneRegistroActivo = !!activoResult.data;
+                tieneRegistroActivo = activoResult.data && activoResult.data.estado === 'activo';
+
+                // Obtener información del último registro del día
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${documento}`);
+                const ultimoResult = await ultimoResponse.json();
+                
+                let estadoTexto = '🔴 Sin Sesión';
+                if (tieneRegistroActivo) {
+                    estadoTexto = '🟢 Sesión Activa';
+                } else if (ultimoResult.data) {
+                    // Si no tiene sesión activa pero tiene registros hoy, mostrar el último estado
+                    estadoTexto = ultimoResult.data.estado === 'finalizado' ? '✅ Última sesión finalizada' : '⚠️ Sesión anterior forzada';
+                }
 
                 // Mostrar información del empleado
                 document.getElementById('empleadoNombre').textContent = `${empleadoValidado.nombre} (${empleadoValidado.documento})`;
-                document.getElementById('empleadoEstado').textContent = tieneRegistroActivo ? '🟢 Sesión Activa' : '🔴 Sin Sesión';
+                document.getElementById('empleadoEstado').textContent = estadoTexto;
                 
                 // Mostrar/ocultar botones según estado
-                document.getElementById('btnEntrada').style.display = tieneRegistroActivo ? 'none' : 'inline-block';
+                document.getElementById('btnEntrada').style.display = 'inline-block'; // Siempre permitir entrada
                 document.getElementById('btnSalida').style.display = tieneRegistroActivo ? 'inline-block' : 'none';
                 
                 // Mostrar sección de información
@@ -676,6 +698,35 @@
             } catch (error) {
                 console.error('Error validando empleado:', error);
                 mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        // Función para refrescar el estado del empleado
+        async function refrescarEstadoEmpleado() {
+            if (!empleadoValidado) return;
+            
+            try {
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResult = await activoResponse.json();
+                
+                tieneRegistroActivo = activoResult.data && activoResult.data.estado === 'activo';
+
+                // Obtener información del último registro del día
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
+                const ultimoResult = await ultimoResponse.json();
+                
+                let estadoTexto = '🔴 Sin Sesión';
+                if (tieneRegistroActivo) {
+                    estadoTexto = '🟢 Sesión Activa';
+                } else if (ultimoResult.data) {
+                    estadoTexto = ultimoResult.data.estado === 'finalizado' ? '✅ Última sesión finalizada' : '⚠️ Sesión anterior forzada';
+                }
+                
+                document.getElementById('empleadoEstado').textContent = estadoTexto;
+                document.getElementById('btnEntrada').style.display = 'inline-block'; // Siempre permitir entrada
+                document.getElementById('btnSalida').style.display = tieneRegistroActivo ? 'inline-block' : 'none';
+            } catch (error) {
+                console.error('Error refrescando estado:', error);
             }
         }
 
@@ -780,8 +831,8 @@
         function actualizarEstadisticasUI() {
             document.getElementById('totalRegistros').textContent = estadisticas.total_registros || 0;
             document.getElementById('empleadosActivos').textContent = estadisticas.empleados_activos || 0;
-            document.getElementById('totalHoras').textContent = (estadisticas.horas_totales || 0).toFixed(1);
-            document.getElementById('promedioHoras').textContent = (estadisticas.promedio_horas || 0).toFixed(1);
+                    document.getElementById('totalHoras').textContent = (parseFloat(estadisticas.horas_totales) || 0).toFixed(1);
+        document.getElementById('promedioHoras').textContent = (parseFloat(estadisticas.promedio_horas) || 0).toFixed(1);
 
             document.getElementById('statsChips').innerHTML = `
                 <span class="stat-chip">${estadisticas.total_registros || 0} registros</span>
@@ -795,10 +846,19 @@
                 return;
             }
 
-            if (tieneRegistroActivo) {
-                mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa', 'warning');
-                return;
-            }
+                    // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
+        const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+        const verificarActivoResult = await verificarActivoResponse.json();
+        
+        if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
+            mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Registra la salida antes de crear una nueva entrada.', 'warning');
+            // Actualizar el estado local
+            tieneRegistroActivo = true;
+            document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
+            document.getElementById('btnEntrada').style.display = 'inline-block'; // Mantener visible para múltiples sesiones
+            document.getElementById('btnSalida').style.display = 'inline-block';
+            return;
+        }
 
             try {
                 // Crear registro de entrada
@@ -830,11 +890,8 @@
                 actualizarTablaRegistros();
                 actualizarEstadisticasUI();
 
-                // Actualizar estado del empleado
-                tieneRegistroActivo = true;
-                document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
-                document.getElementById('btnEntrada').style.display = 'none';
-                document.getElementById('btnSalida').style.display = 'inline-block';
+                        // Actualizar estado del empleado
+        await refrescarEstadoEmpleado();
 
                 mostrarAlerta(`✅ Entrada registrada para ${empleadoValidado.nombre} (${empleadoValidado.documento})`, 'success');
 
@@ -850,10 +907,19 @@
                 return;
             }
 
-            if (!tieneRegistroActivo) {
-                mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
-                return;
-            }
+                    // Verificar nuevamente si tiene registro activo antes de finalizar
+        const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+        const verificarActivoResult = await verificarActivoResponse.json();
+        
+        if (!verificarActivoResult.data || verificarActivoResult.data.estado !== 'activo') {
+            mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+            // Actualizar el estado local
+            tieneRegistroActivo = false;
+            document.getElementById('empleadoEstado').textContent = '🔴 Sin Sesión';
+            document.getElementById('btnEntrada').style.display = 'inline-block';
+            document.getElementById('btnSalida').style.display = 'none';
+            return;
+        }
 
             try {
                 // Buscar registro activo
@@ -941,8 +1007,8 @@
                 const rowClass = registro.estado === 'activo' ? 'status-active' : 
                                registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
                 
-                const estado = registro.estado === 'activo' ? 'Activo' : 
-                             registro.estado === 'forzado' ? 'Forzado' : 'Finalizado';
+                                 const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                              registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
                 const duracion = registro.duracion_horas ? `${registro.duracion_horas.toFixed(2)}h` : '-';
                 const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO');
@@ -1128,7 +1194,7 @@
             
             contenidoPOS += '================================================\n';
             contenidoPOS += `RESUMEN: Total: ${registros.length} | Activos: ${estadisticas.empleados_activos}\n`;
-            contenidoPOS += `Horas totales: ${estadisticas.horas_totales.toFixed(1)}h\n`;
+            contenidoPOS += `Horas totales: ${(parseFloat(estadisticas.horas_totales) || 0).toFixed(1)}h\n`;
             contenidoPOS += '================================================\n';
 
             // Crear archivo de texto
@@ -1173,6 +1239,55 @@
                     alertDiv.remove();
                 }
             }, 4000);
+        }
+
+        async function verHistorialEmpleado() {
+            if (!empleadoValidado) {
+                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                return;
+            }
+
+            try {
+                const fecha = new Date().toISOString().split('T')[0];
+                const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error('Error cargando historial');
+                }
+
+                // Filtrar registros del empleado actual
+                const registrosEmpleado = result.data.filter(r => r.documento === empleadoValidado.documento);
+                
+                if (registrosEmpleado.length === 0) {
+                    mostrarAlerta('📝 No hay registros para este empleado hoy', 'info');
+                    return;
+                }
+
+                let historialTexto = `📋 Historial de ${empleadoValidado.nombre} - ${fecha}\n\n`;
+                
+                registrosEmpleado.forEach((registro, index) => {
+                    const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
+                    const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
+                    const duracion = registro.duracion_horas ? `${registro.duracion_horas.toFixed(2)}h` : '-';
+                    const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                                 registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                    
+                    historialTexto += `${index + 1}. Sesión ${index + 1}\n`;
+                    historialTexto += `   Entrada: ${entrada}\n`;
+                    historialTexto += `   Salida: ${salida}\n`;
+                    historialTexto += `   Duración: ${duracion}\n`;
+                    historialTexto += `   Estado: ${estado}\n`;
+                    historialTexto += `   ------------------------\n`;
+                });
+
+                // Mostrar en un alert temporal (en producción se podría usar un modal)
+                alert(historialTexto);
+                
+            } catch (error) {
+                console.error('Error mostrando historial:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
         }
 
         function mostrarError(mensaje) {
