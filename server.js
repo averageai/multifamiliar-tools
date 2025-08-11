@@ -73,6 +73,37 @@ app.get('/api/debug/files', (req, res) => {
     });
 });
 
+// Debug endpoint para verificar rutas
+app.get('/api/debug/routes', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Servidor funcionando',
+        timestamp: new Date().toISOString(),
+        routes: [
+            '/',
+            '/spa',
+            '/spam',
+            '/control',
+            '/validador',
+            '/validadorv2',
+            '/validadorc',
+            '/controlv2',
+            '/spav2',
+            '/duplicados',
+            '/codigos-disponibles',
+            '/cotizaciones',
+            '/cierre-caja',
+            '/faltantes',
+            '/control-horas',
+            '/api/health',
+            '/api/debug/files',
+            '/api/debug/routes'
+        ],
+        currentPath: req.path,
+        userAgent: req.get('User-Agent')
+    });
+});
+
 // Obtener sedes
 app.get('/api/sedes', async (req, res) => {
     try {
@@ -279,11 +310,40 @@ app.post('/api/registros/finalizar-jornada', async (req, res) => {
 
 // Ruta para servir archivos HTML
 app.get('/', (req, res) => {
+    console.log('📄 Sirviendo index.html desde:', path.join(__dirname, 'index.html'));
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/control-horas', (req, res) => {
-    res.sendFile(path.join(__dirname, 'control-horas.html'));
+// Rutas específicas para cada aplicación
+const appRoutes = {
+    '/spa': 'spa.html',
+    '/spam': 'spam.html',
+    '/control': 'control.html',
+    '/validador': 'validador.html',
+    '/validadorv2': 'validadorv2.html',
+    '/validadorc': 'validadorc.html',
+    '/controlv2': 'controlv2.html',
+    '/spav2': 'spav2.html',
+    '/duplicados': 'duplicados.html',
+    '/codigos-disponibles': 'codigos-disponibles.html',
+    '/cotizaciones': 'cotizaciones.html',
+    '/cierre-caja': 'cierre-caja.html',
+    '/faltantes': 'faltantes.html',
+    '/control-horas': 'control-horas.html'
+};
+
+// Configurar rutas para cada aplicación
+Object.entries(appRoutes).forEach(([route, file]) => {
+    app.get(route, (req, res) => {
+        console.log(`📄 Sirviendo ${file} desde ruta ${route}`);
+        const filePath = path.join(__dirname, file);
+        if (require('fs').existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            console.log(`❌ Archivo no encontrado: ${file}`);
+            res.status(404).send('Aplicación no encontrada');
+        }
+    });
 });
 
 // Ruta para servir otros archivos HTML estáticos
@@ -291,11 +351,36 @@ app.get('/:file.html', (req, res) => {
     const fileName = req.params.file + '.html';
     const filePath = path.join(__dirname, fileName);
     
+    console.log('📄 Intentando servir:', fileName, 'desde:', filePath);
+    
     // Verificar si el archivo existe
     if (require('fs').existsSync(filePath)) {
+        console.log('✅ Archivo encontrado, sirviendo:', fileName);
         res.sendFile(filePath);
     } else {
+        console.log('❌ Archivo no encontrado:', fileName);
         res.status(404).send('Archivo no encontrado');
+    }
+});
+
+// Ruta catch-all para manejar cualquier otra ruta
+app.get('*', (req, res) => {
+    console.log('🔍 Ruta no encontrada:', req.path);
+    
+    // Si la ruta termina en .html, intentar servir el archivo
+    if (req.path.endsWith('.html')) {
+        const filePath = path.join(__dirname, req.path);
+        if (require('fs').existsSync(filePath)) {
+            console.log('✅ Archivo encontrado en catch-all:', req.path);
+            res.sendFile(filePath);
+        } else {
+            console.log('❌ Archivo no encontrado en catch-all:', req.path);
+            res.status(404).send('Archivo no encontrado');
+        }
+    } else {
+        // Para rutas sin .html, intentar servir index.html
+        console.log('🔄 Redirigiendo a index.html para ruta:', req.path);
+        res.sendFile(path.join(__dirname, 'index.html'));
     }
 });
 

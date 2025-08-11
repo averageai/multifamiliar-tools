@@ -12,16 +12,64 @@
       "dest": "/server.js"
     },
     {
+      "src": "/spa",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/spam",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/control",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/validador",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/validadorv2",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/validadorc",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/controlv2",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/spav2",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/duplicados",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/codigos-disponibles",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/cotizaciones",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/cierre-caja",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/faltantes",
+      "dest": "/server.js"
+    },
+    {
       "src": "/control-horas",
-      "dest": "/control-horas.html"
+      "dest": "/server.js"
     },
     {
       "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*\\.html)",
-      "dest": "/$1"
+      "dest": "/server.js"
     },
     {
       "src": "/(.*)",
