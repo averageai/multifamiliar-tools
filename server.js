@@ -570,9 +570,18 @@ app.get('*', (req, res) => {
             res.status(404).send('Archivo no encontrado');
         }
     } else {
-        // Para rutas sin .html, intentar servir index.html
-        console.log('🔄 Redirigiendo a index.html para ruta:', req.path);
-        res.sendFile(path.join(__dirname, 'index.html'));
+        // Para rutas sin .html, intentar servir el archivo HTML correspondiente
+        const possibleFile = req.path + '.html';
+        const filePath = path.join(__dirname, possibleFile);
+        
+        if (require('fs').existsSync(filePath)) {
+            console.log('✅ Archivo encontrado en catch-all:', possibleFile);
+            res.sendFile(filePath);
+        } else {
+            // Si no existe, redirigir a index.html
+            console.log('🔄 Redirigiendo a index.html para ruta:', req.path);
+            res.sendFile(path.join(__dirname, 'index.html'));
+        }
     }
 });
 
