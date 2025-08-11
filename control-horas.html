@@ -726,7 +726,7 @@
         <div class="header">
             <div class="logo">⏰</div>
             <div class="header-text">
-                <h1>Control de Horas de Empleados</h1>
+                <h1>Control de Horas de Colaboradores</h1>
                 <p>Registro de entrada y salida de personal - Multi-Sede</p>
             </div>
             <a href="index.html" class="back-btn">← Volver al MENU</a>
@@ -1167,7 +1167,7 @@
 
         async function registrarEntrada() {
             if (!empleadoValidado) {
-                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                mostrarAlerta('⚠️ Por favor valida un usuario primero', 'warning');
                 return;
             }
 
@@ -1191,7 +1191,7 @@
                 
                 if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
                     console.log('❌ Sesión activa detectada, bloqueando nueva entrada');
-                    mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Debes cerrar la sesión actual antes de abrir una nueva.', 'warning');
+                    mostrarAlerta('⚠️ Este usuario ya tiene una sesión activa. Debes cerrar la sesión actual antes de abrir una nueva.', 'warning');
                     // Actualizar el estado local
                     tieneRegistroActivo = true;
                     document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
@@ -1251,7 +1251,7 @@
                 actualizarEstadisticasUI();
 
                 // Actualizar estado del empleado
-                console.log('🔄 Actualizando estado del empleado...');
+                console.log('🔄 Actualizando estado del usuario...');
                 await refrescarEstadoEmpleado();
 
                 mostrarAlerta(`✅ Entrada registrada para ${empleadoValidado.nombre} (${empleadoValidado.documento})`, 'success');
@@ -1268,7 +1268,7 @@
 
         async function registrarSalida() {
             if (!empleadoValidado) {
-                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                mostrarAlerta('⚠️ Por favor valida un usuario primero', 'warning');
                 return;
             }
 
@@ -1309,7 +1309,7 @@
                 
                 if (!activoResult.data) {
                     console.log('❌ No se pudo obtener el registro activo');
-                    mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+                    mostrarAlerta('⚠️ Este usuario no tiene una sesión activa', 'warning');
                     return;
                 }
 
@@ -1378,7 +1378,7 @@
                 container.innerHTML = `
                     <div class="no-records">
                         <h3>📝 Sin registros</h3>
-                        <p>Registra la entrada de un empleado para comenzar</p>
+                        <p>Registra la entrada de un usuario para comenzar</p>
                     </div>
                 `;
                 return;
@@ -1494,7 +1494,7 @@
 
         async function finalizarJornada() {
             if (estadisticas.empleados_activos === 0) {
-                mostrarAlerta('⚠️ No hay empleados activos', 'warning');
+                mostrarAlerta('⚠️ No hay usuarios activos', 'warning');
                 return;
             }
 
@@ -1600,8 +1600,8 @@
             contenidoPOS += `Sede: ${sedeNombre}\n`;
             contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
             contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
-            contenidoPOS += `Total empleados: ${Object.keys(empleadosHoras).length}\n`;
-            contenidoPOS += `Empleados activos: ${estadisticas.empleados_activos}\n`;
+            contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
+            contenidoPOS += `Usuarios activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += '================================================\n';
             
             // Mostrar resumen por empleado
@@ -1616,7 +1616,7 @@
             });
             
             contenidoPOS += '================================================\n';
-            contenidoPOS += `RESUMEN: Empleados: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticas.empleados_activos}\n`;
+            contenidoPOS += `RESUMEN: Colaboradores: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += `Horas totales: ${(parseFloat(estadisticas.horas_totales) || 0).toFixed(1)}h\n`;
             contenidoPOS += '================================================\n';
 
@@ -1666,7 +1666,7 @@
 
         async function verHistorialEmpleado() {
             if (!empleadoValidado) {
-                mostrarAlerta('⚠️ Por favor valida un empleado primero', 'warning');
+                mostrarAlerta('⚠️ Por favor valida un usuario primero', 'warning');
                 return;
             }
 
@@ -1690,7 +1690,7 @@
                 const registrosEmpleado = result.data.filter(r => r.documento === empleadoValidado.documento);
                 
                 if (registrosEmpleado.length === 0) {
-                    mostrarAlerta('📝 No hay registros para este empleado hoy', 'info');
+                    mostrarAlerta('📝 No hay registros para este usuario hoy', 'info');
                     return;
                 }
 
@@ -1862,8 +1862,8 @@
                 contenidoPOS += `Sede: ${sedeNombre}\n`;
                 contenidoPOS += `Fecha: ${fechaEspecifica}\n`;
                 contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
-                contenidoPOS += `Total empleados: ${Object.keys(empleadosHoras).length}\n`;
-                contenidoPOS += `Empleados activos: ${estadisticasFecha.empleados_activos || 0}\n`;
+                contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
+                contenidoPOS += `Usuarios activos: ${estadisticasFecha.empleados_activos || 0}\n`;
                 contenidoPOS += '================================================\n';
                 
                 // Mostrar resumen por empleado
@@ -1878,7 +1878,7 @@
                 });
                 
                 contenidoPOS += '================================================\n';
-                contenidoPOS += `RESUMEN: Empleados: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticasFecha.empleados_activos || 0}\n`;
+                contenidoPOS += `RESUMEN: Colaboradores: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticasFecha.empleados_activos || 0}\n`;
                 contenidoPOS += `Horas totales: ${(parseFloat(estadisticasFecha.horas_totales) || 0).toFixed(1)}h\n`;
                 contenidoPOS += '================================================\n';
 
