@@ -207,9 +207,10 @@ app.post('/api/empleados', async (req, res) => {
 app.get('/api/registros/activo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
-        console.log('🔍 Verificando registro activo para documento:', documento);
+        const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+        console.log('🔍 Verificando registro activo para documento:', documento, 'fecha:', fecha);
         
-        const result = await pool.query(queries.getRegistroActivo, [documento]);
+        const result = await pool.query(queries.getRegistroActivo, [documento, fecha]);
         console.log('🔍 Registros activos encontrados:', result.rows.length);
         
         if (result.rows.length > 0) {
@@ -232,9 +233,10 @@ app.get('/api/registros/activo/:documento', async (req, res) => {
 app.get('/api/registros/ultimo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
-        console.log('🔍 Obteniendo último registro del día para documento:', documento);
+        const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+        console.log('🔍 Obteniendo último registro del día para documento:', documento, 'fecha:', fecha);
         
-        const result = await pool.query(queries.getUltimoRegistroHoy, [documento]);
+        const result = await pool.query(queries.getUltimoRegistroHoy, [documento, fecha]);
         console.log('🔍 Últimos registros encontrados:', result.rows.length);
         
         if (result.rows.length > 0) {
@@ -286,9 +288,9 @@ app.post('/api/registros/entrada', async (req, res) => {
         }
         
         const documento = empleado.rows[0].documento;
-        console.log('🔍 Verificando sesión activa para documento:', documento);
+        console.log('🔍 Verificando sesión activa para documento:', documento, 'fecha:', fecha_entrada);
         
-        const registroActivo = await pool.query(queries.getRegistroActivo, [documento]);
+        const registroActivo = await pool.query(queries.getRegistroActivo, [documento, fecha_entrada]);
         console.log('🔍 Registros activos encontrados:', registroActivo.rows.length);
         
         if (registroActivo.rows.length > 0) {
