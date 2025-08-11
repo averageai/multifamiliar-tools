@@ -191,6 +191,69 @@ const queries = {
         WHERE sede_id = $3 
         AND estado = 'activo'
         RETURNING *
+    `,
+    
+    // Nuevas consultas para funcionalidades adicionales
+    getRegistrosPorFecha: `
+        SELECT 
+            rh.id,
+            rh.empleado_id,
+            e.documento,
+            e.nombre as nombre_empleado,
+            s.nombre as nombre_sede,
+            rh.fecha_entrada,
+            rh.hora_entrada,
+            rh.fecha_salida,
+            rh.hora_salida,
+            rh.duracion_horas,
+            rh.estado,
+            rh.observaciones
+        FROM registros_horas rh
+        JOIN empleados e ON rh.empleado_id = e.id
+        JOIN sedes s ON rh.sede_id = s.id
+        WHERE rh.sede_id = $1 
+        AND rh.fecha_entrada = $2
+        ORDER BY rh.hora_entrada DESC
+    `,
+    
+    getEstadisticasPorFecha: `
+        SELECT 
+            COUNT(*) as total_registros,
+            COUNT(CASE WHEN estado = 'activo' THEN 1 END) as empleados_activos,
+            COALESCE(SUM(duracion_horas), 0) as horas_totales,
+            CASE 
+                WHEN COUNT(*) > 0 THEN COALESCE(SUM(duracion_horas), 0) / COUNT(*)
+                ELSE 0 
+            END as promedio_horas
+        FROM registros_horas 
+        WHERE sede_id = $1 
+        AND fecha_entrada = $2
+    `,
+    
+    cerrarSesionesAutomaticas: `
+        UPDATE registros_horas 
+        SET fecha_salida = $1, hora_salida = $2, estado = 'automatico'
+        WHERE sede_id = $3 
+        AND estado = 'activo'
+        AND hora_entrada < $2
+        RETURNING *
+    `,
+    
+    getSesionesActivas: `
+        SELECT 
+            rh.id,
+            rh.empleado_id,
+            e.documento,
+            e.nombre as nombre_empleado,
+            s.nombre as nombre_sede,
+            rh.fecha_entrada,
+            rh.hora_entrada
+        FROM registros_horas rh
+        JOIN empleados e ON rh.empleado_id = e.id
+        JOIN sedes s ON rh.sede_id = s.id
+        WHERE rh.sede_id = $1 
+        AND rh.estado = 'activo'
+        ORDER BY rh.hora_entrada ASC
     `
 };
 

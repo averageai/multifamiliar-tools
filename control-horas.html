@@ -648,6 +648,77 @@
                 flex-direction: column;
             }
         }
+
+        /* Estilos para sesiones activas */
+        .sesiones-info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sesiones-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .sesiones-lista {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .sesion-activa-item {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #28a745;
+        }
+
+        .sesion-activa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sesion-activa-numero {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .sesion-activa-estado {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .sesion-activa-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .sesion-activa-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -750,8 +821,10 @@
                     <div class="section-header">
                         <span>Registros de Hoy</span>
                         <div class="action-buttons">
-                            <button class="btn" onclick="exportarRegistros()">📊 Exportar Registros</button>
+                            <button class="btn" onclick="exportarRegistros()">📊 Exportar Hoy</button>
+                            <button class="btn btn-info" onclick="exportarFechaEspecifica()">📅 Exportar Fecha</button>
                             <button class="btn btn-warning" onclick="finalizarJornada()">🏁 Finalizar Jornada</button>
+                            <button class="btn btn-success" onclick="mostrarSesionesActivas()">👥 Sesiones Activas</button>
                             <button class="btn btn-danger" onclick="cambiarSede()">🔄 Cambiar Sede</button>
                         </div>
                     </div>
@@ -1702,6 +1775,306 @@
             setTimeout(() => {
                 errorDiv.remove();
             }, 8000);
+        }
+
+        // Nuevas funcionalidades adicionales
+
+        // Función para exportar registros de una fecha específica
+        async function exportarFechaEspecifica() {
+            if (!sedeActual) {
+                mostrarAlerta('⚠️ Primero selecciona una sede', 'warning');
+                return;
+            }
+
+            // Solicitar password para acceder a la exportación
+            const password = prompt('🔐 Ingresa la contraseña para exportar registros:');
+            if (password !== 'admin123') {
+                mostrarAlerta('❌ Contraseña incorrecta', 'error');
+                return;
+            }
+
+            // Solicitar fecha específica
+            const fechaEspecifica = prompt('📅 Ingresa la fecha (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!fechaEspecifica) {
+                mostrarAlerta('⚠️ Debes ingresar una fecha válida', 'warning');
+                return;
+            }
+
+            // Validar formato de fecha
+            const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!fechaRegex.test(fechaEspecifica)) {
+                mostrarAlerta('❌ Formato de fecha inválido. Usa YYYY-MM-DD', 'error');
+                return;
+            }
+
+            try {
+                console.log('📅 Exportando registros para fecha:', fechaEspecifica);
+
+                // Obtener registros de la fecha específica
+                const registrosResponse = await fetch(`${API_BASE}/registros/fecha/${sedeActual}/${fechaEspecifica}`);
+                const registrosResult = await registrosResponse.json();
+
+                if (!registrosResult.success) {
+                    throw new Error('Error obteniendo registros de la fecha específica');
+                }
+
+                const registrosFecha = registrosResult.data;
+
+                if (registrosFecha.length === 0) {
+                    mostrarAlerta('📝 No hay registros para la fecha seleccionada', 'info');
+                    return;
+                }
+
+                // Obtener estadísticas de la fecha específica
+                const estadisticasResponse = await fetch(`${API_BASE}/registros/estadisticas/${sedeActual}/${fechaEspecifica}`);
+                const estadisticasResult = await estadisticasResponse.json();
+
+                if (!estadisticasResult.success) {
+                    throw new Error('Error obteniendo estadísticas de la fecha específica');
+                }
+
+                const estadisticasFecha = estadisticasResult.data;
+
+                // Agrupar registros por empleado y sumar horas totales
+                const empleadosHoras = {};
+                registrosFecha.forEach(registro => {
+                    const key = `${registro.documento}_${registro.nombre_empleado}`;
+                    if (!empleadosHoras[key]) {
+                        empleadosHoras[key] = {
+                            documento: registro.documento,
+                            nombre: registro.nombre_empleado,
+                            horasTotales: 0,
+                            sesiones: 0
+                        };
+                    }
+                    
+                    if (registro.estado !== 'activo' && registro.duracion_horas) {
+                        empleadosHoras[key].horasTotales += parseFloat(registro.duracion_horas) || 0;
+                        empleadosHoras[key].sesiones++;
+                    }
+                });
+
+                // Crear contenido para impresora POS 80mm
+                let contenidoPOS = '';
+                contenidoPOS += '================================================\n';
+                contenidoPOS += '    CONTROL DE HORAS - RESUMEN POR FECHA        \n';
+                contenidoPOS += '================================================\n';
+                contenidoPOS += `Sede: ${sedeNombre}\n`;
+                contenidoPOS += `Fecha: ${fechaEspecifica}\n`;
+                contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+                contenidoPOS += `Total empleados: ${Object.keys(empleadosHoras).length}\n`;
+                contenidoPOS += `Empleados activos: ${estadisticasFecha.empleados_activos || 0}\n`;
+                contenidoPOS += '================================================\n';
+                
+                // Mostrar resumen por empleado
+                Object.values(empleadosHoras).forEach((empleado, index) => {
+                    contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
+                    contenidoPOS += `    ${empleado.nombre}\n`;
+                    contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
+                    const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
+                                            empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                    contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
+                    contenidoPOS += '    ----------------------------------------\n';
+                });
+                
+                contenidoPOS += '================================================\n';
+                contenidoPOS += `RESUMEN: Empleados: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticasFecha.empleados_activos || 0}\n`;
+                contenidoPOS += `Horas totales: ${(parseFloat(estadisticasFecha.horas_totales) || 0).toFixed(1)}h\n`;
+                contenidoPOS += '================================================\n';
+
+                // Crear archivo de texto
+                const blob = new Blob([contenidoPOS], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `control_horas_${sedeNombre.toLowerCase()}_${fechaEspecifica}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                mostrarAlerta(`✅ Registros exportados para ${fechaEspecifica}`, 'success');
+
+            } catch (error) {
+                console.error('Error exportando registros de fecha específica:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        // Función para cerrar sesiones automáticamente a las 10pm
+        async function cerrarSesionesAutomaticas() {
+            if (!sedeActual) {
+                mostrarAlerta('⚠️ Primero selecciona una sede', 'warning');
+                return;
+            }
+
+            // Solicitar password para acceder a la función
+            const password = prompt('🔐 Ingresa la contraseña para cerrar sesiones automáticas:');
+            if (password !== 'admin123') {
+                mostrarAlerta('❌ Contraseña incorrecta', 'error');
+                return;
+            }
+
+            // Confirmar acción
+            const confirmacion = confirm('🕙 ¿Estás seguro de que quieres cerrar todas las sesiones activas automáticamente?');
+            if (!confirmacion) {
+                return;
+            }
+
+            try {
+                console.log('🕙 Cerrando sesiones automáticas para sede:', sedeActual);
+
+                const response = await fetch(`${API_BASE}/registros/cerrar-sesiones-automaticas`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sede_id: sedeActual
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('Error cerrando sesiones automáticas');
+                }
+
+                const { registros_cerrados, fecha, hora } = result.data;
+
+                if (registros_cerrados > 0) {
+                    mostrarAlerta(`✅ ${registros_cerrados} sesiones cerradas automáticamente a las ${hora}`, 'success');
+                    
+                    // Recargar registros para mostrar el estado actualizado
+                    await cargarRegistros();
+                } else {
+                    mostrarAlerta('📝 No hay sesiones activas para cerrar', 'info');
+                }
+
+            } catch (error) {
+                console.error('Error cerrando sesiones automáticas:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        // Función para verificar y cerrar sesiones automáticamente a las 10pm
+        function verificarCierreAutomatico() {
+            const ahora = new Date();
+            const hora = ahora.getHours();
+            const minutos = ahora.getMinutes();
+            
+            // Verificar si es exactamente las 10:00 PM (22:00)
+            if (hora === 22 && minutos === 0) {
+                console.log('🕙 Ejecutando cierre automático de sesiones a las 10:00 PM');
+                cerrarSesionesAutomaticas();
+            }
+        }
+
+        // Configurar verificación automática cada minuto
+        setInterval(verificarCierreAutomatico, 60000); // Verificar cada minuto
+
+        // Función para mostrar sesiones activas
+        async function mostrarSesionesActivas() {
+            if (!sedeActual) {
+                mostrarAlerta('⚠️ Primero selecciona una sede', 'warning');
+                return;
+            }
+
+            try {
+                console.log('👥 Obteniendo sesiones activas para sede:', sedeActual);
+
+                const response = await fetch(`${API_BASE}/registros/sesiones-activas/${sedeActual}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error('Error obteniendo sesiones activas');
+                }
+
+                const sesionesActivas = result.data;
+
+                if (sesionesActivas.length === 0) {
+                    mostrarAlerta('📝 No hay sesiones activas en este momento', 'info');
+                    return;
+                }
+
+                // Crear modal para mostrar sesiones activas
+                const modalHTML = `
+                    <div id="sesionesActivasModal" class="modal-overlay">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>👥 Sesiones Activas - ${sedeNombre}</h3>
+                                <button class="modal-close" onclick="cerrarModalSesiones()">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="sesiones-info">
+                                    <p><strong>Total sesiones activas:</strong> ${sesionesActivas.length}</p>
+                                    <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                                </div>
+                                <div class="sesiones-lista">
+                                    ${sesionesActivas.map((sesion, index) => {
+                                        const entrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
+                                        const duracion = calcularDuracion(sesion.hora_entrada, new Date());
+                                        
+                                        return `
+                                            <div class="sesion-activa-item">
+                                                <div class="sesion-activa-header">
+                                                    <span class="sesion-activa-numero">${index + 1}</span>
+                                                    <span class="sesion-activa-estado">🟢 Activa</span>
+                                                </div>
+                                                <div class="sesion-activa-details">
+                                                    <div class="sesion-activa-info">
+                                                        <span class="info-label">Empleado:</span>
+                                                        <span class="info-value">${sesion.nombre_empleado}</span>
+                                                    </div>
+                                                    <div class="sesion-activa-info">
+                                                        <span class="info-label">Documento:</span>
+                                                        <span class="info-value">${sesion.documento}</span>
+                                                    </div>
+                                                    <div class="sesion-activa-info">
+                                                        <span class="info-label">Entrada:</span>
+                                                        <span class="info-value">${entrada}</span>
+                                                    </div>
+                                                    <div class="sesion-activa-info">
+                                                        <span class="info-label">Duración:</span>
+                                                        <span class="info-value">${duracion}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-warning" onclick="cerrarSesionesAutomaticas()">🕙 Cerrar Todas</button>
+                                <button class="btn btn-secondary" onclick="cerrarModalSesiones()">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Agregar modal al DOM
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                
+            } catch (error) {
+                console.error('Error mostrando sesiones activas:', error);
+                mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        function cerrarModalSesiones() {
+            const modal = document.getElementById('sesionesActivasModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Función auxiliar para calcular duración
+        function calcularDuracion(horaEntrada, horaActual) {
+            const entrada = new Date(horaEntrada);
+            const diferencia = horaActual - entrada;
+            const horas = Math.floor(diferencia / (1000 * 60 * 60));
+            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            return `${horas}h ${minutos}m`;
         }
 
 

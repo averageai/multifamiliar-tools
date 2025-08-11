@@ -408,6 +408,87 @@ app.post('/api/registros/finalizar-jornada', async (req, res) => {
     }
 });
 
+// Nuevos endpoints para funcionalidades adicionales
+
+// Obtener registros de una fecha específica
+app.get('/api/registros/fecha/:sede_id/:fecha', async (req, res) => {
+    try {
+        const { sede_id, fecha } = req.params;
+        console.log('📅 Obteniendo registros para sede:', sede_id, 'fecha:', fecha);
+        
+        const result = await pool.query(queries.getRegistrosPorFecha, [sede_id, fecha]);
+        
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (err) {
+        handleDatabaseError(err, res);
+    }
+});
+
+// Obtener estadísticas de una fecha específica
+app.get('/api/registros/estadisticas/:sede_id/:fecha', async (req, res) => {
+    try {
+        const { sede_id, fecha } = req.params;
+        console.log('📊 Obteniendo estadísticas para sede:', sede_id, 'fecha:', fecha);
+        
+        const result = await pool.query(queries.getEstadisticasPorFecha, [sede_id, fecha]);
+        
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (err) {
+        handleDatabaseError(err, res);
+    }
+});
+
+// Cerrar sesiones automáticamente a las 10pm
+app.post('/api/registros/cerrar-sesiones-automaticas', async (req, res) => {
+    try {
+        const { sede_id } = req.body;
+        
+        // Obtener fecha y hora actual en timezone de América
+        const now = new Date();
+        const fechaActual = now.toISOString().split('T')[0];
+        const horaActual = now.toTimeString().split(' ')[0];
+        
+        console.log('🕙 Cerrando sesiones automáticas para sede:', sede_id, 'fecha:', fechaActual, 'hora:', horaActual);
+        
+        const result = await pool.query(queries.cerrarSesionesAutomaticas, [fechaActual, horaActual, sede_id]);
+        
+        res.json({
+            success: true,
+            data: {
+                registros_cerrados: result.rows.length,
+                registros: result.rows,
+                fecha: fechaActual,
+                hora: horaActual
+            }
+        });
+    } catch (err) {
+        handleDatabaseError(err, res);
+    }
+});
+
+// Obtener sesiones activas de una sede
+app.get('/api/registros/sesiones-activas/:sede_id', async (req, res) => {
+    try {
+        const { sede_id } = req.params;
+        console.log('👥 Obteniendo sesiones activas para sede:', sede_id);
+        
+        const result = await pool.query(queries.getSesionesActivas, [sede_id]);
+        
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (err) {
+        handleDatabaseError(err, res);
+    }
+});
+
 // Ruta para servir archivos HTML
 app.get('/', (req, res) => {
     console.log('📄 Sirviendo index.html desde:', path.join(__dirname, 'index.html'));
