@@ -1319,8 +1319,10 @@
                 console.log('🔄 Actualizando estado del empleado...');
                 await refrescarEstadoEmpleado();
 
-                const duracion = finalizarResult.data.duracion_horas || 0;
-                mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion.toFixed(2)}h`, 'success');
+                const duracionHoras = finalizarResult.data.duracion_horas || 0;
+                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion}`, 'success');
                 limpiarFormularioExitoso(); // Llamar a la nueva función
 
             } catch (error) {
@@ -1371,7 +1373,9 @@
                                  const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                               registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
-                const duracion = registro.duracion_horas ? `${parseFloat(registro.duracion_horas).toFixed(2)}h` : '-';
+                const duracionHoras = parseFloat(registro.duracion_horas) || 0;
+                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                 const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO');
                 const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                 const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-';
@@ -1545,7 +1549,10 @@
                 contenidoPOS += `    Entrada: ${new Date(registro.hora_entrada).toLocaleDateString('es-CO')} ${new Date(registro.hora_entrada).toLocaleTimeString('es-CO')}\n`;
                 if (registro.estado !== 'activo') {
                     contenidoPOS += `    Salida:  ${registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-'} ${registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-'}\n`;
-                    contenidoPOS += `    Duración: ${registro.duracion_horas ? parseFloat(registro.duracion_horas).toFixed(2) + 'h' : '-'}\n`;
+                    const duracionHoras = parseFloat(registro.duracion_horas) || 0;
+                    const duracion = duracionHoras >= 7.5 ? 'Completado' : 
+                                    duracionHoras > 0 ? parseFloat(registro.duracion_horas).toFixed(2) + 'h' : '-';
+                    contenidoPOS += `    Duración: ${duracion}\n`;
                 } else {
                     contenidoPOS += `    Salida:  EN CURSO\n`;
                     contenidoPOS += `    Duración: EN CURSO\n`;
@@ -1608,6 +1615,13 @@
                 return;
             }
 
+            // Solicitar password para acceder al historial
+            const password = prompt('🔐 Ingresa la contraseña para ver el historial:');
+            if (password !== 'admin123') {
+                mostrarAlerta('❌ Contraseña incorrecta', 'error');
+                return;
+            }
+
             try {
                 const fecha = new Date().toISOString().split('T')[0];
                 const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
@@ -1643,7 +1657,9 @@
                                     ${registrosEmpleado.map((registro, index) => {
                                         const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                                         const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
-                                        const duracion = registro.duracion_horas ? `${parseFloat(registro.duracion_horas).toFixed(2)}h` : '-';
+                                        const duracionHoras = parseFloat(registro.duracion_horas) || 0;
+                                        const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                                        duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                                         const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                                                      registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                                         
