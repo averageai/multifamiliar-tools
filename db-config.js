@@ -1,3 +1,51 @@
+/**
+ * 🗄️ CONFIGURACIÓN DE BASE DE DATOS - MULTIFAMILIAR TOOLS
+ * ======================================================
+ * 
+ * ⚠️  ARCHIVO CRÍTICO DEL SISTEMA - NO MODIFICAR SIN AUTORIZACIÓN
+ * 
+ * Este archivo maneja:
+ * - Configuración de conexión PostgreSQL
+ * - Queries SQL para control de horas
+ * - Configuración de sedes
+ * - Variables de entorno para Vercel
+ * 
+ * 🔧 CONFIGURACIÓN VITAL:
+ * - Host: Configurar en variables de entorno
+ * - Database: Configurar en variables de entorno
+ * - User: Configurar en variables de entorno
+ * - SSL: Deshabilitado (compatibilidad)
+ * - Pool: 20 conexiones máximas
+ * 
+ * 🌍 VARIABLES DE ENTORNO (Vercel):
+ * - DATABASE_URL: Conexión completa (prioridad)
+ * - DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD: Individuales
+ * - NODE_ENV: production/development
+ * 
+ * 📋 TABLAS PRINCIPALES:
+ * - sedes: Configuración de sedes (Manizales, Dorada)
+ * - empleados: Empleados registrados
+ * - registros_horas: Registros de entrada/salida
+ * 
+ * 🔒 QUERIES PROTEGIDAS:
+ * - getSedes: Obtener sedes activas
+ * - getEmpleadoByDocumento: Buscar empleado
+ * - getRegistrosHoy: Registros del día
+ * - createRegistro: Crear entrada
+ * - finalizarRegistro: Finalizar salida
+ * 
+ * ⚡ PARA AGREGAR NUEVAS FUNCIONALIDADES:
+ * 1. Agregar queries en el objeto 'queries'
+ * 2. NO modificar la configuración base de conexión
+ * 3. Usar parámetros preparados ($1, $2, etc.)
+ * 
+ * 🛡️ PROTECCIÓN DEL SISTEMA:
+ * - Conexión SSL deshabilitada para compatibilidad
+ * - Pool de conexiones con timeout
+ * - Manejo de errores centralizado
+ * - Configuración dinámica por entorno
+ */
+
 // Configuración de base de datos PostgreSQL
 let dbConfig;
 
@@ -13,11 +61,11 @@ if (process.env.DATABASE_URL) {
 } else {
     // Configuración individual
     dbConfig = {
-        host: process.env.DB_HOST || 'panel.hub.average.lat',
-        port: parseInt(process.env.DB_PORT) || 7118,
-        database: process.env.DB_NAME || 'faltantes',
-        user: process.env.DB_USER || 'average',
-        password: process.env.DB_PASSWORD || 'nonaverage',
+        host: process.env.DB_HOST || '[CONFIGURAR_HOST]',
+        port: parseInt(process.env.DB_PORT) || 5432,
+        database: process.env.DB_NAME || '[CONFIGURAR_DATABASE]',
+        user: process.env.DB_USER || '[CONFIGURAR_USER]',
+        password: process.env.DB_PASSWORD || '[CONFIGURAR_PASSWORD]',
         ssl: false, // Deshabilitar SSL para evitar errores de conexión
         max: 20,
         idleTimeoutMillis: 30000,

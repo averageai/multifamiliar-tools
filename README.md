@@ -1,155 +1,233 @@
-# Hub de Herramientas Multifamiliar
+# 🛡️ SISTEMA MULTIFAMILIAR TOOLS - DOCUMENTACIÓN COMPLETA
 
-Sistema integrado de herramientas administrativas y operativas con control de acceso.
+## ⚠️ ARCHIVOS CRÍTICOS DEL SISTEMA - NO MODIFICAR SIN AUTORIZACIÓN
 
-## 🚀 Características
+### 🚨 ARCHIVOS PROTEGIDOS
 
-- **Control de Acceso**: Sistema de login con diferentes niveles de usuario
-- **Dashboard Moderno**: Interfaz intuitiva y responsiva
-- **Herramientas Integradas**: Acceso centralizado a todas las herramientas
-- **Diseño Responsivo**: Funciona en dispositivos móviles y de escritorio
+#### 1. `server.js` - SERVIDOR PRINCIPAL
+- **Función**: Servidor Express que maneja todas las rutas y APIs
+- **Protección**: Comentarios de advertencia al inicio
+- **Modificación**: Solo agregar rutas en `appRoutes`, NO modificar estructura base
+- **Riesgo**: Romper todo el sistema si se modifica incorrectamente
 
-## 👥 Usuarios y Permisos
+#### 2. `db-config.js` - CONFIGURACIÓN DE BASE DE DATOS
+- **Función**: Conexión PostgreSQL y queries SQL
+- **Protección**: Comentarios de advertencia al inicio
+- **Modificación**: Solo agregar queries en objeto `queries`
+- **Riesgo**: Perder conexión a base de datos
 
-### Administrador
-- **Usuario**: `admin`
-- **Contraseña**: `admin123`
-- **Acceso**: Todas las herramientas
+#### 3. `vercel.json` - CONFIGURACIÓN DE DEPLOYMENT
+- **Función**: Configuración de Vercel para deployment
+- **Protección**: Documentación en este README
+- **Modificación**: Solo agregar rutas específicas
+- **Riesgo**: Romper deployment en producción
 
-### Operativo
-- **Usuario**: `operativo`
-- **Contraseña**: `operativo123`
-- **Acceso**: Solo Sistema de Precios
+#### 4. `index.html` - HUB PRINCIPAL
+- **Función**: Página principal con autenticación y navegación
+- **Protección**: Sistema de permisos y autenticación
+- **Modificación**: Solo agregar nuevas herramientas en `routes`
+- **Riesgo**: Romper autenticación y navegación
 
-### Usuario
-- **Usuario**: `usuario`
-- **Contraseña**: `usuario123`
-- **Acceso**: Solo Control de Inventarios
+### 🔒 SISTEMA DE PROTECCIÓN
 
-## 🛠️ Herramientas Disponibles
-
-### 1. Control de Inventarios (Administrativo)
-- **Archivo**: `Control de Inventarios (Administrativo).html`
-- **Función**: Sistema de redistribución de inventario entre bodegas
-- **Características**:
-  - Optimización automática de stock
-  - Generación de reportes de traslados
-  - Detección de productos sin stock
-  - Exportación a Excel
-
-### 2. Sistema de Precios (Operativo)
-- **Archivo**: `Sistema de Precios Afectados (Operativo).html`
-- **Función**: Consulta de precios y márgenes
-- **Características**:
-  - Control de precios de referencia
-  - Identificación de productos nuevos
-  - Generación de listas para impresora POS
-  - Exportación de reportes
-
-## 📁 Estructura del Proyecto
-
-```
-multifamiliar-tools/
-├── index.html                                    # Hub principal con login
-├── config.js                                     # Configuración con variables de entorno
-├── Control de Inventarios (Administrativo).html  # Herramienta de inventarios
-├── Sistema de Precios Afectados (Operativo).html # Herramienta de precios
-├── vercel.json                                   # Configuración de Vercel
-├── package.json                                  # Configuración del proyecto
-└── README.md                                     # Este archivo
+#### Autenticación y Permisos
+```javascript
+// Configuración en index.html
+const authConfig = {
+    'admin': { permissions: ['spav2', 'control-horas', ...] },
+    'operativo': { permissions: ['spav2', 'control-horas', ...] },
+    'usuario': { permissions: ['validador-v2-conectado'] }
+};
 ```
 
-## 🚀 Cómo Usar
+#### Rutas Protegidas
+- Todas las rutas van a `server.js` para control centralizado
+- Sistema de logging para debugging
+- Manejo de errores global
 
-1. **Abrir el Hub**: Abre `index.html` en tu navegador
-2. **Iniciar Sesión**: Usa las credenciales correspondientes a tu rol
-3. **Acceder a Herramientas**: Haz clic en la herramienta que necesites
-4. **Cerrar Sesión**: Usa el botón "Cerrar Sesión" cuando termines
+#### Base de Datos
+- Conexión SSL deshabilitada para compatibilidad
+- Pool de conexiones con timeout
+- Queries preparadas para seguridad
 
-## 🚀 Despliegue en Vercel
+### ⚡ PARA AGREGAR NUEVAS APLICACIONES
 
-### **Opción 1: Despliegue Automático (Recomendado)**
-
-1. **Subir a GitHub:**
-   ```bash
-   git init
-   git add .
-   git commit -m "Hub de Herramientas Multifamiliar"
-   git push origin main
-   ```
-
-2. **Conectar con Vercel:**
-   - Ir a [vercel.com](https://vercel.com)
-   - Importar proyecto desde GitHub
-   - Configurar variables de entorno (opcional)
-
-### **Opción 2: Despliegue Manual**
-
-1. **Instalar Vercel CLI:**
-   ```bash
-   npm i -g vercel
-   ```
-
-2. **Desplegar:**
-   ```bash
-   vercel --prod
-   ```
-
-### **Variables de Entorno (Opcional)**
-
-En Vercel Dashboard → Settings → Environment Variables:
-
-```env
-NODE_ENV=production
-JWT_SECRET=tu-secreto-super-seguro
-ADMIN_PASSWORD=tu-contraseña-admin
-OPERATIVO_PASSWORD=tu-contraseña-operativo
-USUARIO_PASSWORD=tu-contraseña-usuario
+#### Paso 1: Crear el archivo HTML
+```html
+<!-- nueva-app.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nueva Aplicación</title>
+</head>
+<body>
+    <!-- Contenido de la aplicación -->
+</body>
+</html>
 ```
 
-## 📱 Compatibilidad
+#### Paso 2: Agregar ruta en `server.js`
+```javascript
+// En appRoutes (línea ~84)
+const appRoutes = {
+    // ... rutas existentes
+    '/nueva-app': 'nueva-app.html'  // ← AGREGAR AQUÍ
+};
+```
 
-- ✅ Chrome (recomendado)
-- ✅ Firefox
-- ✅ Safari
-- ✅ Edge
-- ✅ Dispositivos móviles
+#### Paso 3: Agregar ruta en `vercel.json`
+```json
+{
+  "routes": [
+    // ... rutas existentes
+    {
+      "src": "/nueva-app",
+      "dest": "/server.js"
+    }
+  ]
+}
+```
 
-## 🔒 Seguridad
+#### Paso 4: Agregar en `index.html` (opcional)
+```javascript
+// En routes (línea ~900)
+const routes = {
+    // ... rutas existentes
+    '/nueva-app': 'nueva-app.html'  // ← AGREGAR AQUÍ
+};
+```
 
-**Nota**: Este es un sistema de demostración. En un entorno de producción:
-- Las credenciales deberían estar en un servidor
-- Usar HTTPS para conexiones seguras
-- Implementar autenticación de dos factores
-- Usar bases de datos para almacenar usuarios
+### 🚫 LO QUE NO SE DEBE MODIFICAR
 
-## 📞 Soporte
+#### Estructura Base del Servidor
+- Middleware de Express
+- Configuración de CORS
+- Manejo de errores global
+- Pool de conexiones PostgreSQL
 
-Para soporte técnico o preguntas:
-- Revisa la documentación de cada herramienta
-- Verifica que los archivos estén completos
-- Asegúrate de usar un navegador actualizado
+#### Configuración de Base de Datos
+- Parámetros de conexión
+- Configuración SSL
+- Estructura de pool
 
-## 🎯 Funcionalidades Principales
+#### Sistema de Autenticación
+- Lógica de verificación de credenciales
+- Sistema de permisos
+- Manejo de sesiones
 
-### Hub Principal
-- ✅ Login seguro con validación
-- ✅ Dashboard responsivo
-- ✅ Control de sesión persistente
-- ✅ Navegación intuitiva
+### 🔍 DEBUGGING Y MONITOREO
 
-### Control de Inventarios
-- ✅ Carga de archivos Excel
-- ✅ Análisis automático de bodegas
-- ✅ Generación de traslados optimizados
-- ✅ Reportes detallados
+#### Endpoints de Debug
+- `/api/health` - Estado del servidor y base de datos
+- `/api/debug/files` - Archivos HTML disponibles
+- `/api/debug/routes` - Rutas registradas
 
-### Sistema de Precios
-- ✅ Búsqueda de productos
-- ✅ Control de márgenes
-- ✅ Generación de listas POS
-- ✅ Exportación de reportes
+#### Logs del Sistema
+- Logging detallado en consola
+- Errores de base de datos
+- Rutas accedidas
 
----
+### 🚀 CONFIGURACIÓN DE DEPLOYMENT - VERCEL
 
-**Desarrollado por Humanos + IA en average** 
+#### Configuración Vital
+- **Build**: `@vercel/node` para `server.js`
+- **Entorno**: `production`
+- **Todas las rutas van a `server.js`**
+
+#### Variables de Entorno Requeridas
+- `DATABASE_URL` o configuración individual de DB
+- `NODE_ENV`: production
+- `ADMIN_PASSWORD`: Contraseña del administrador
+- `OPERATIVO_PASSWORD`: Contraseña del operativo
+- `USUARIO_PASSWORD`: Contraseña del usuario
+
+#### Estructura del Archivo vercel.json
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    // Rutas específicas de aplicaciones
+    // Ruta catch-all al final
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
+```
+
+### 🔐 CONFIGURACIÓN DE CREDENCIALES
+
+#### Variables de Entorno de Autenticación
+- `ADMIN_PASSWORD`: Contraseña para el usuario administrador
+- `OPERATIVO_PASSWORD`: Contraseña para el usuario operativo
+- `USUARIO_PASSWORD`: Contraseña para el usuario básico
+
+#### Configuración en Vercel
+1. Ir a Vercel Dashboard → Settings → Environment Variables
+2. Agregar cada variable con su valor correspondiente
+3. Reiniciar el deployment después de agregar variables
+
+#### Estructura de Usuarios
+```javascript
+// Configuración en config.js
+const credentials = {
+    'admin': { permissions: ['inventarios', 'precios', 'control-horas'] },
+    'operativo': { permissions: ['precios', 'control-horas'] },
+    'usuario': { permissions: ['inventarios'] }
+};
+```
+
+### 🗄️ CONFIGURACIÓN DE BASE DE DATOS
+
+#### Variables de Entorno (Vercel)
+- `DATABASE_URL`: Conexión completa (prioridad)
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: Individuales
+- `NODE_ENV`: production/development
+- `ADMIN_PASSWORD`: Contraseña del administrador
+- `OPERATIVO_PASSWORD`: Contraseña del operativo
+- `USUARIO_PASSWORD`: Contraseña del usuario
+
+#### Tablas Principales
+- `sedes`: Configuración de sedes (Manizales, Dorada)
+- `empleados`: Empleados registrados
+- `registros_horas`: Registros de entrada/salida
+
+#### Queries Protegidas
+- `getSedes`: Obtener sedes activas
+- `getEmpleadoByDocumento`: Buscar empleado
+- `getRegistrosHoy`: Registros del día
+- `createRegistro`: Crear entrada
+- `finalizarRegistro`: Finalizar salida
+
+### 🎯 APLICACIONES ACTUALES
+
+| Aplicación | URL | Descripción |
+|------------|-----|-------------|
+| Hub Principal | `/` | Página principal con autenticación |
+| Control de Horas | `/control-horas` | Registro de entrada/salida |
+| SPA V2 | `/spav2` | Sistema de precios afectados |
+| Validador V2 | `/validadorv2` | Validación de productos |
+| Control | `/control` | Control de inventarios |
+| Códigos | `/codigos-disponibles` | Gestión de códigos |
+| Cotizaciones | `/cotizaciones` | Sistema de cotizaciones |
+| Cierre Caja | `/cierre-caja` | Control de cierre |
+| Faltantes | `/faltantes` | Control de faltantes |
+| Duplicados | `/duplicados` | Detección de duplicados |
+
+### 📞 CONTACTO Y SOPORTE
+
+Para modificaciones críticas del sistema:
+1. **NO modificar archivos protegidos sin autorización**
+2. **Seguir el proceso de agregar nuevas aplicaciones**
+3. **Probar en desarrollo antes de producción**
+4. **Contactar al administrador del sistema**
+
+### 🛡️ ESTADO DEL SISTEMA: PROTEGIDO ✅
+
+El sistema está completamente documentado y protegido para futuras modificaciones. 

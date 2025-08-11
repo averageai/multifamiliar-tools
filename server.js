@@ -1,3 +1,43 @@
+/**
+ * 🚀 SERVIDOR PRINCIPAL - MULTIFAMILIAR TOOLS
+ * ===========================================
+ * 
+ * ⚠️  ARCHIVO CRÍTICO DEL SISTEMA - NO MODIFICAR SIN AUTORIZACIÓN
+ * 
+ * Este servidor maneja:
+ * - Todas las rutas de aplicaciones HTML
+ * - API REST para control de horas
+ * - Conexión a base de datos PostgreSQL
+ * - Servicio de archivos estáticos
+ * 
+ * 🔧 CONFIGURACIÓN VITAL:
+ * - Puerto: process.env.PORT || 3000
+ * - Base de datos: PostgreSQL (configurada en db-config.js)
+ * - CORS: Habilitado para todas las rutas
+ * - SSL: Deshabilitado para compatibilidad
+ * 
+ * 📋 APLICACIONES REGISTRADAS:
+ * - /spa, /spam, /control, /validador, /validadorv2, /validadorc
+ * - /controlv2, /spav2, /duplicados, /codigos-disponibles
+ * - /cotizaciones, /cierre-caja, /faltantes, /control-horas
+ * 
+ * 🔒 ENDPOINTS PROTEGIDOS:
+ * - /api/health - Estado del servidor
+ * - /api/debug/* - Debugging (solo desarrollo)
+ * - /api/sedes, /api/empleados/* - Control de horas
+ * 
+ * ⚡ PARA AGREGAR NUEVAS APLICACIONES:
+ * 1. Agregar la ruta en appRoutes (línea ~84)
+ * 2. Agregar la ruta en vercel.json
+ * 3. NO modificar la estructura base del servidor
+ * 
+ * 🛡️ PROTECCIÓN DEL SISTEMA:
+ * - Middleware de errores global
+ * - Logging detallado para debugging
+ * - Manejo graceful de cierre
+ * - Pool de conexiones PostgreSQL
+ */
+
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');

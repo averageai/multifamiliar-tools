@@ -1,3 +1,35 @@
+/**
+ * ⚠️ ARCHIVO DE CONFIGURACIÓN - MULTIFAMILIAR TOOLS
+ * ================================================
+ * 
+ * ⚠️  ARCHIVO CRÍTICO DEL SISTEMA - NO MODIFICAR SIN AUTORIZACIÓN
+ * 
+ * Este archivo maneja:
+ * - Configuración de credenciales de usuario
+ * - Variables de entorno para Vercel
+ * - Sistema de autenticación y permisos
+ * 
+ * 🔧 CONFIGURACIÓN VITAL:
+ * - Credenciales: Configurar en variables de entorno de Vercel
+ * - Entorno: production/development
+ * - Permisos: Sistema de roles y acceso
+ * 
+ * 🔒 VARIABLES DE ENTORNO REQUERIDAS:
+ * - ADMIN_PASSWORD: Contraseña del administrador
+ * - OPERATIVO_PASSWORD: Contraseña del operativo
+ * - USUARIO_PASSWORD: Contraseña del usuario
+ * 
+ * ⚡ PARA MODIFICAR:
+ * 1. NO cambiar la estructura de la clase Config
+ * 2. Solo agregar nuevas credenciales en el objeto credentials
+ * 3. Usar variables de entorno para contraseñas
+ * 
+ * 🛡️ PROTECCIÓN DEL SISTEMA:
+ * - Credenciales no expuestas en código
+ * - Sistema de tokens de sesión
+ * - Verificación de permisos
+ */
+
 // config.js - Configuración con variables de entorno
 class Config {
     constructor() {
@@ -7,19 +39,19 @@ class Config {
         // Credenciales configuradas para Vercel
         this.credentials = {
             'admin': {
-                password: 'Multifamiliar*1', // Configurado en Vercel
+                password: process.env.ADMIN_PASSWORD || '[CONFIGURAR_ADMIN_PASSWORD]',
                 name: 'Administrador',
                 role: 'admin',
                 permissions: ['inventarios', 'precios']
             },
             'operativo': {
-                password: 'Multifamiliar*1', // Configurado en Vercel
+                password: process.env.OPERATIVO_PASSWORD || '[CONFIGURAR_OPERATIVO_PASSWORD]',
                 name: 'Operativo',
                 role: 'operativo',
                 permissions: ['precios']
             },
             'usuario': {
-                password: 'Ventas123', // Configurado en Vercel
+                password: process.env.USUARIO_PASSWORD || '[CONFIGURAR_USUARIO_PASSWORD]',
                 name: 'Usuario',
                 role: 'usuario',
                 permissions: ['inventarios']
