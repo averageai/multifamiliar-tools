@@ -130,7 +130,7 @@ const queries = {
         JOIN empleados e ON rh.empleado_id = e.id
         WHERE e.documento = $1 
         AND rh.estado = 'activo'
-        AND rh.fecha_entrada = CURRENT_DATE
+        AND rh.fecha_entrada = $2
         ORDER BY rh.hora_entrada DESC
         LIMIT 1
     `,
@@ -140,7 +140,7 @@ const queries = {
         FROM registros_horas rh
         JOIN empleados e ON rh.empleado_id = e.id
         WHERE e.documento = $1 
-        AND rh.fecha_entrada = CURRENT_DATE
+        AND rh.fecha_entrada = $2
         ORDER BY rh.hora_entrada DESC
         LIMIT 1
     `,
@@ -152,7 +152,7 @@ const queries = {
             SELECT 1 FROM registros_horas 
             WHERE empleado_id = $1 
             AND estado = 'activo' 
-            AND fecha_entrada = CURRENT_DATE
+            AND fecha_entrada = $3
         )
         RETURNING *
     `,

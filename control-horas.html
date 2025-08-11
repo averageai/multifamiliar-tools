@@ -849,23 +849,24 @@
             console.log('🔄 Verificando estado completo del empleado:', empleadoValidado.documento);
             
             try {
+                const fecha = new Date().toISOString().split('T')[0];
+                
                 // 1. Verificar registro activo
                 console.log('🔍 1. Verificando registro activo...');
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const activoResult = await activoResponse.json();
                 
                 console.log('🔍 Resultado verificación activo:', activoResult);
                 
                 // 2. Obtener último registro del día
                 console.log('🔍 2. Obteniendo último registro del día...');
-                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const ultimoResult = await ultimoResponse.json();
                 
                 console.log('🔍 Resultado último registro:', ultimoResult);
                 
                 // 3. Obtener todos los registros de hoy para verificar consistencia
                 console.log('🔍 3. Verificando consistencia con registros del día...');
-                const fecha = new Date().toISOString().split('T')[0];
                 const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
                 const todosResult = await todosResponse.json();
                 
@@ -1063,11 +1064,11 @@
             console.log('🔄 Iniciando auto-sincronización de estado...');
             
             try {
-                // Verificar estado actual
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
-                const activoResult = await activoResponse.json();
-                
                 const fecha = new Date().toISOString().split('T')[0];
+                
+                // Verificar estado actual
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
+                const activoResult = await activoResponse.json();
                 const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
                 const todosResult = await todosResponse.json();
                 const registrosEmpleado = todosResult.data.filter(r => r.documento === empleadoValidado.documento);
@@ -1142,9 +1143,11 @@
             console.log('🔍 Iniciando registro de entrada para:', empleadoValidado.documento);
 
             try {
+                const fecha = new Date().toISOString().split('T')[0];
+                
                 // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
                 console.log('🔍 Verificando sesión activa...');
-                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const verificarActivoResult = await verificarActivoResponse.json();
                 
                 console.log('🔍 Resultado verificación activa:', verificarActivoResult);
@@ -1241,9 +1244,11 @@
             console.log('🔍 Iniciando registro de salida para:', empleadoValidado.documento);
 
             try {
+                const fecha = new Date().toISOString().split('T')[0];
+                
                 // Verificar nuevamente si tiene registro activo antes de finalizar
                 console.log('🔍 Verificando sesión activa...');
-                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const verificarActivoResult = await verificarActivoResponse.json();
                 
                 console.log('🔍 Resultado verificación activa:', verificarActivoResult);
@@ -1262,7 +1267,7 @@
                 console.log('✅ Sesión activa encontrada, procediendo con salida...');
 
                 // Buscar registro activo
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const activoResult = await activoResponse.json();
                 
                 if (!activoResult.data) {
@@ -1712,21 +1717,22 @@
             console.log('📋 Empleado:', empleadoValidado);
 
             try {
+                const fecha = new Date().toISOString().split('T')[0];
+                
                 // 1. Verificar registro activo
                 console.log('🔍 1. Verificando registro activo...');
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const activoResult = await activoResponse.json();
                 console.log('🔍 Registro activo:', activoResult);
 
                 // 2. Verificar último registro
                 console.log('🔍 2. Verificando último registro...');
-                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}?fecha=${fecha}`);
                 const ultimoResult = await ultimoResponse.json();
                 console.log('🔍 Último registro:', ultimoResult);
 
                 // 3. Verificar todos los registros de hoy
                 console.log('🔍 3. Verificando todos los registros de hoy...');
-                const fecha = new Date().toISOString().split('T')[0];
                 const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
                 const todosResult = await todosResponse.json();
                 const registrosEmpleado = todosResult.data.filter(r => r.documento === empleadoValidado.documento);
