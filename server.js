@@ -203,21 +203,6 @@ app.post('/api/empleados', async (req, res) => {
     }
 });
 
-// Obtener registros del día por sede
-app.get('/api/registros/:sede_id/:fecha', async (req, res) => {
-    try {
-        const { sede_id, fecha } = req.params;
-        const result = await pool.query(queries.getRegistrosHoy, [sede_id, fecha]);
-        
-        res.json({
-            success: true,
-            data: result.rows
-        });
-    } catch (err) {
-        handleDatabaseError(err, res);
-    }
-});
-
 // Obtener registro activo de un empleado
 app.get('/api/registros/activo/:documento', async (req, res) => {
     try {
@@ -264,6 +249,21 @@ app.get('/api/registros/ultimo/:documento', async (req, res) => {
         });
     } catch (err) {
         console.error('❌ Error obteniendo último registro:', err);
+        handleDatabaseError(err, res);
+    }
+});
+
+// Obtener registros del día por sede
+app.get('/api/registros/:sede_id/:fecha', async (req, res) => {
+    try {
+        const { sede_id, fecha } = req.params;
+        const result = await pool.query(queries.getRegistrosHoy, [sede_id, fecha]);
+        
+        res.json({
+            success: true,
+            data: result.rows
+        });
+    } catch (err) {
         handleDatabaseError(err, res);
     }
 });
