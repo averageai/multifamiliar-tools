@@ -76,7 +76,11 @@ const handleDatabaseError = (err, res) => {
     });
 };
 
-// Rutas API
+// ========================================
+// 🔌 RUTAS API - CONTROL DE HORAS
+// ========================================
+// ⚠️  IMPORTANTE: Estas rutas deben ir ANTES de las rutas de archivos HTML
+// para evitar que el catch-all route intercepte las peticiones a /api/*
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -489,6 +493,12 @@ app.get('/api/registros/sesiones-activas/:sede_id', async (req, res) => {
     }
 });
 
+// ========================================
+// 🗂️  RUTAS PARA ARCHIVOS HTML
+// ========================================
+// ⚠️  IMPORTANTE: Estas rutas deben ir DESPUÉS de todas las rutas API
+// para evitar que intercepten las peticiones a /api/*
+
 // Ruta para servir archivos HTML
 app.get('/', (req, res) => {
     console.log('📄 Sirviendo index.html desde:', path.join(__dirname, 'index.html'));
@@ -545,6 +555,7 @@ app.get('/:file.html', (req, res) => {
 });
 
 // Ruta catch-all para manejar cualquier otra ruta
+// ⚠️  IMPORTANTE: Esta ruta debe ser la ÚLTIMA para no interceptar rutas API
 app.get('*', (req, res) => {
     console.log('🔍 Ruta no encontrada:', req.path);
     
