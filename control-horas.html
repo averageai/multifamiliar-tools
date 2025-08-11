@@ -282,6 +282,162 @@
             background: #5a6268;
         }
 
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .historial-info {
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .historial-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        .historial-sesiones {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sesion-item {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .sesion-item:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .sesion-item.sesion-activa {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e3a1e 100%);
+        }
+
+        .sesion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .sesion-numero {
+            font-weight: 600;
+            color: #3498db;
+            font-size: 14px;
+        }
+
+        .sesion-estado {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #444;
+        }
+
+        .sesion-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sesion-time {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-label {
+            font-size: 12px;
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+
+        .time-value {
+            font-size: 12px;
+            color: #ecf0f1;
+            font-weight: 600;
+        }
+
         .section {
             margin-bottom: 20px;
         }
@@ -646,7 +802,7 @@
         // Función para validar empleado
         async function validarEmpleado() {
             const documento = document.getElementById('documento').value.trim();
-
+            
             if (!documento) {
                 mostrarAlerta('⚠️ Por favor ingresa el número de documento', 'warning');
                 return;
@@ -665,21 +821,39 @@
                 empleadoValidado = empleadoResult.data;
 
                 // Verificar si tiene registro activo HOY
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${documento}`);
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
                 const activoResult = await activoResponse.json();
                 
                 tieneRegistroActivo = activoResult.data && activoResult.data.estado === 'activo';
 
                 // Obtener información del último registro del día
-                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${documento}`);
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
                 const ultimoResult = await ultimoResponse.json();
                 
                 let estadoTexto = '🔴 Sin Sesión';
+                let puedeEntrar = true;
+                let puedeSalir = false;
+                
                 if (tieneRegistroActivo) {
                     estadoTexto = '🟢 Sesión Activa';
+                    puedeEntrar = false; // NO permitir nueva entrada si ya hay sesión activa
+                    puedeSalir = true;
                 } else if (ultimoResult.data) {
                     // Si no tiene sesión activa pero tiene registros hoy, mostrar el último estado
-                    estadoTexto = ultimoResult.data.estado === 'finalizado' ? '✅ Última sesión finalizada' : '⚠️ Sesión anterior forzada';
+                    if (ultimoResult.data.estado === 'finalizado') {
+                        estadoTexto = '✅ Última sesión finalizada';
+                        puedeEntrar = true;
+                        puedeSalir = false;
+                    } else {
+                        estadoTexto = '⚠️ Sesión anterior forzada';
+                        puedeEntrar = true;
+                        puedeSalir = false;
+                    }
+                } else {
+                    // Sin registros hoy
+                    estadoTexto = '🔴 Sin Sesión';
+                    puedeEntrar = true;
+                    puedeSalir = false;
                 }
 
                 // Mostrar información del empleado
@@ -687,8 +861,8 @@
                 document.getElementById('empleadoEstado').textContent = estadoTexto;
                 
                 // Mostrar/ocultar botones según estado
-                document.getElementById('btnEntrada').style.display = 'inline-block'; // Siempre permitir entrada
-                document.getElementById('btnSalida').style.display = tieneRegistroActivo ? 'inline-block' : 'none';
+                document.getElementById('btnEntrada').style.display = puedeEntrar ? 'inline-block' : 'none';
+                document.getElementById('btnSalida').style.display = puedeSalir ? 'inline-block' : 'none';
                 
                 // Mostrar sección de información
                 document.getElementById('empleadoInfo').style.display = 'block';
@@ -716,15 +890,32 @@
                 const ultimoResult = await ultimoResponse.json();
                 
                 let estadoTexto = '🔴 Sin Sesión';
+                let puedeEntrar = true;
+                let puedeSalir = false;
+                
                 if (tieneRegistroActivo) {
                     estadoTexto = '🟢 Sesión Activa';
+                    puedeEntrar = false; // NO permitir nueva entrada si ya hay sesión activa
+                    puedeSalir = true;
                 } else if (ultimoResult.data) {
-                    estadoTexto = ultimoResult.data.estado === 'finalizado' ? '✅ Última sesión finalizada' : '⚠️ Sesión anterior forzada';
+                    if (ultimoResult.data.estado === 'finalizado') {
+                        estadoTexto = '✅ Última sesión finalizada';
+                        puedeEntrar = true;
+                        puedeSalir = false;
+                    } else {
+                        estadoTexto = '⚠️ Sesión anterior forzada';
+                        puedeEntrar = true;
+                        puedeSalir = false;
+                    }
+                } else {
+                    estadoTexto = '🔴 Sin Sesión';
+                    puedeEntrar = true;
+                    puedeSalir = false;
                 }
                 
                 document.getElementById('empleadoEstado').textContent = estadoTexto;
-                document.getElementById('btnEntrada').style.display = 'inline-block'; // Siempre permitir entrada
-                document.getElementById('btnSalida').style.display = tieneRegistroActivo ? 'inline-block' : 'none';
+                document.getElementById('btnEntrada').style.display = puedeEntrar ? 'inline-block' : 'none';
+                document.getElementById('btnSalida').style.display = puedeSalir ? 'inline-block' : 'none';
             } catch (error) {
                 console.error('Error refrescando estado:', error);
             }
@@ -846,19 +1037,19 @@
                 return;
             }
 
-                    // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
-        const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
-        const verificarActivoResult = await verificarActivoResponse.json();
-        
-        if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
-            mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Registra la salida antes de crear una nueva entrada.', 'warning');
-            // Actualizar el estado local
-            tieneRegistroActivo = true;
-            document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
-            document.getElementById('btnEntrada').style.display = 'inline-block'; // Mantener visible para múltiples sesiones
-            document.getElementById('btnSalida').style.display = 'inline-block';
-            return;
-        }
+            // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
+            const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+            const verificarActivoResult = await verificarActivoResponse.json();
+            
+            if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
+                mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Debes cerrar la sesión actual antes de abrir una nueva.', 'warning');
+                // Actualizar el estado local
+                tieneRegistroActivo = true;
+                document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
+                document.getElementById('btnEntrada').style.display = 'none'; // BLOQUEAR entrada
+                document.getElementById('btnSalida').style.display = 'inline-block';
+                return;
+            }
 
             try {
                 // Crear registro de entrada
@@ -890,8 +1081,8 @@
                 actualizarTablaRegistros();
                 actualizarEstadisticasUI();
 
-                        // Actualizar estado del empleado
-        await refrescarEstadoEmpleado();
+                // Actualizar estado del empleado
+                await refrescarEstadoEmpleado();
 
                 mostrarAlerta(`✅ Entrada registrada para ${empleadoValidado.nombre} (${empleadoValidado.documento})`, 'success');
 
@@ -907,19 +1098,19 @@
                 return;
             }
 
-                    // Verificar nuevamente si tiene registro activo antes de finalizar
-        const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
-        const verificarActivoResult = await verificarActivoResponse.json();
-        
-        if (!verificarActivoResult.data || verificarActivoResult.data.estado !== 'activo') {
-            mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
-            // Actualizar el estado local
-            tieneRegistroActivo = false;
-            document.getElementById('empleadoEstado').textContent = '🔴 Sin Sesión';
-            document.getElementById('btnEntrada').style.display = 'inline-block';
-            document.getElementById('btnSalida').style.display = 'none';
-            return;
-        }
+            // Verificar nuevamente si tiene registro activo antes de finalizar
+            const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+            const verificarActivoResult = await verificarActivoResponse.json();
+            
+            if (!verificarActivoResult.data || verificarActivoResult.data.estado !== 'activo') {
+                mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+                // Actualizar el estado local
+                tieneRegistroActivo = false;
+                document.getElementById('empleadoEstado').textContent = '🔴 Sin Sesión';
+                document.getElementById('btnEntrada').style.display = 'inline-block';
+                document.getElementById('btnSalida').style.display = 'none';
+                return;
+            }
 
             try {
                 // Buscar registro activo
@@ -959,8 +1150,8 @@
                 actualizarTablaRegistros();
                 actualizarEstadisticasUI();
 
-                // Limpiar formulario
-                limpiarFormulario();
+                // Actualizar estado del empleado
+                await refrescarEstadoEmpleado();
 
                 const duracion = finalizarResult.data.duracion_horas || 0;
                 mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion.toFixed(2)}h`, 'success');
@@ -1264,29 +1455,73 @@
                     return;
                 }
 
-                let historialTexto = `📋 Historial de ${empleadoValidado.nombre} - ${fecha}\n\n`;
-                
-                registrosEmpleado.forEach((registro, index) => {
-                    const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                    const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
-                    const duracion = registro.duracion_horas ? `${registro.duracion_horas.toFixed(2)}h` : '-';
-                    const estado = registro.estado === 'activo' ? '🟢 Activo' : 
-                                 registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
-                    
-                    historialTexto += `${index + 1}. Sesión ${index + 1}\n`;
-                    historialTexto += `   Entrada: ${entrada}\n`;
-                    historialTexto += `   Salida: ${salida}\n`;
-                    historialTexto += `   Duración: ${duracion}\n`;
-                    historialTexto += `   Estado: ${estado}\n`;
-                    historialTexto += `   ------------------------\n`;
-                });
+                // Crear modal para mostrar historial
+                const modalHTML = `
+                    <div id="historialModal" class="modal-overlay">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>📋 Historial de ${empleadoValidado.nombre}</h3>
+                                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="historial-info">
+                                    <p><strong>Documento:</strong> ${empleadoValidado.documento}</p>
+                                    <p><strong>Fecha:</strong> ${fecha}</p>
+                                    <p><strong>Total sesiones:</strong> ${registrosEmpleado.length}</p>
+                                </div>
+                                <div class="historial-sesiones">
+                                    ${registrosEmpleado.map((registro, index) => {
+                                        const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
+                                        const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
+                                        const duracion = registro.duracion_horas ? `${registro.duracion_horas.toFixed(2)}h` : '-';
+                                        const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                                                     registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                                        
+                                        return `
+                                            <div class="sesion-item ${registro.estado === 'activo' ? 'sesion-activa' : ''}">
+                                                <div class="sesion-header">
+                                                    <span class="sesion-numero">Sesión ${index + 1}</span>
+                                                    <span class="sesion-estado">${estado}</span>
+                                                </div>
+                                                <div class="sesion-details">
+                                                    <div class="sesion-time">
+                                                        <span class="time-label">Entrada:</span>
+                                                        <span class="time-value">${entrada}</span>
+                                                    </div>
+                                                    <div class="sesion-time">
+                                                        <span class="time-label">Salida:</span>
+                                                        <span class="time-value">${salida}</span>
+                                                    </div>
+                                                    <div class="sesion-time">
+                                                        <span class="time-label">Duración:</span>
+                                                        <span class="time-value">${duracion}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-                // Mostrar en un alert temporal (en producción se podría usar un modal)
-                alert(historialTexto);
+                // Agregar modal al DOM
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
                 
             } catch (error) {
                 console.error('Error mostrando historial:', error);
                 mostrarError(`Error: ${error.message}`);
+            }
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('historialModal');
+            if (modal) {
+                modal.remove();
             }
         }
 
