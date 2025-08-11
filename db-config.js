@@ -147,7 +147,13 @@ const queries = {
     
     createRegistro: `
         INSERT INTO registros_horas (empleado_id, sede_id, fecha_entrada, hora_entrada, estado)
-        VALUES ($1, $2, $3, $4, 'activo')
+        SELECT $1, $2, $3, $4, 'activo'
+        WHERE NOT EXISTS (
+            SELECT 1 FROM registros_horas 
+            WHERE empleado_id = $1 
+            AND estado = 'activo' 
+            AND fecha_entrada = CURRENT_DATE
+        )
         RETURNING *
     `,
     

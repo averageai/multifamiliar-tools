@@ -222,13 +222,23 @@ app.get('/api/registros/:sede_id/:fecha', async (req, res) => {
 app.get('/api/registros/activo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
+        console.log('🔍 Verificando registro activo para documento:', documento);
+        
         const result = await pool.query(queries.getRegistroActivo, [documento]);
+        console.log('🔍 Registros activos encontrados:', result.rows.length);
+        
+        if (result.rows.length > 0) {
+            console.log('✅ Registro activo encontrado:', result.rows[0]);
+        } else {
+            console.log('❌ No hay registro activo');
+        }
         
         res.json({
             success: true,
             data: result.rows.length > 0 ? result.rows[0] : null
         });
     } catch (err) {
+        console.error('❌ Error verificando registro activo:', err);
         handleDatabaseError(err, res);
     }
 });
@@ -237,13 +247,23 @@ app.get('/api/registros/activo/:documento', async (req, res) => {
 app.get('/api/registros/ultimo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
+        console.log('🔍 Obteniendo último registro del día para documento:', documento);
+        
         const result = await pool.query(queries.getUltimoRegistroHoy, [documento]);
+        console.log('🔍 Últimos registros encontrados:', result.rows.length);
+        
+        if (result.rows.length > 0) {
+            console.log('✅ Último registro encontrado:', result.rows[0]);
+        } else {
+            console.log('❌ No hay registros hoy');
+        }
         
         res.json({
             success: true,
             data: result.rows.length > 0 ? result.rows[0] : null
         });
     } catch (err) {
+        console.error('❌ Error obteniendo último registro:', err);
         handleDatabaseError(err, res);
     }
 });
@@ -253,30 +273,53 @@ app.post('/api/registros/entrada', async (req, res) => {
     try {
         const { empleado_id, sede_id, fecha_entrada, hora_entrada } = req.body;
         
+        console.log('📝 Creando registro de entrada:', { empleado_id, sede_id, fecha_entrada, hora_entrada });
+        
         // Verificar si ya tiene un registro activo
         const empleado = await pool.query('SELECT documento FROM empleados WHERE id = $1', [empleado_id]);
         if (empleado.rows.length === 0) {
+            console.log('❌ Empleado no encontrado:', empleado_id);
             return res.status(400).json({
                 success: false,
                 message: 'Empleado no encontrado'
             });
         }
         
-        const registroActivo = await pool.query(queries.getRegistroActivo, [empleado.rows[0].documento]);
+        const documento = empleado.rows[0].documento;
+        console.log('🔍 Verificando sesión activa para documento:', documento);
+        
+        const registroActivo = await pool.query(queries.getRegistroActivo, [documento]);
+        console.log('🔍 Registros activos encontrados:', registroActivo.rows.length);
+        
         if (registroActivo.rows.length > 0) {
+            console.log('❌ Empleado ya tiene sesión activa:', registroActivo.rows[0]);
             return res.status(400).json({
                 success: false,
                 message: 'El empleado ya tiene una sesión activa'
             });
         }
         
+        console.log('✅ No hay sesión activa, creando nuevo registro...');
         const result = await pool.query(queries.createRegistro, [empleado_id, sede_id, fecha_entrada, hora_entrada]);
+        
+        console.log('📝 Resultado de creación:', result.rows.length, 'registros creados');
+        
+        if (result.rows.length === 0) {
+            console.log('❌ No se pudo crear el registro - probablemente ya existe uno activo');
+            return res.status(400).json({
+                success: false,
+                message: 'El empleado ya tiene una sesión activa'
+            });
+        }
+        
+        console.log('✅ Registro creado exitosamente:', result.rows[0]);
         
         res.json({
             success: true,
             data: result.rows[0]
         });
     } catch (err) {
+        console.error('❌ Error creando registro:', err);
         handleDatabaseError(err, res);
     }
 });

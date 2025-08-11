@@ -722,6 +722,7 @@
                                  <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
                                  <button class="btn btn-info" onclick="refrescarEstadoEmpleado()" style="margin-left: 10px;">🔄 Refrescar Estado</button>
                                  <button class="btn btn-secondary" onclick="verHistorialEmpleado()" style="margin-left: 10px;">📋 Ver Historial</button>
+                                 <button class="btn btn-danger" onclick="verificarEstadoDB()" style="margin-left: 10px; font-size: 10px;">🐛 Debug</button>
                              </div>
                         </div>
                     </div>
@@ -798,6 +799,8 @@
         // Variables globales para el empleado validado
         let empleadoValidado = null;
         let tieneRegistroActivo = false;
+        let procesandoEntrada = false;
+        let procesandoSalida = false;
 
         // Función para validar empleado
         async function validarEmpleado() {
@@ -808,10 +811,15 @@
                 return;
             }
 
+            console.log('🔍 Iniciando validación de empleado:', documento);
+
             try {
                 // Buscar empleado por documento
+                console.log('🔍 Buscando empleado en base de datos...');
                 const empleadoResponse = await fetch(`${API_BASE}/empleados/${documento}`);
                 const empleadoResult = await empleadoResponse.json();
+                
+                console.log('🔍 Resultado búsqueda empleado:', empleadoResult);
                 
                 if (!empleadoResult.success) {
                     mostrarAlerta('❌ Empleado no encontrado. Contacta al administrador para registrarte.', 'error');
@@ -819,16 +827,24 @@
                 }
 
                 empleadoValidado = empleadoResult.data;
+                console.log('✅ Empleado encontrado:', empleadoValidado);
 
                 // Verificar si tiene registro activo HOY
+                console.log('🔍 Verificando registro activo...');
                 const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
                 const activoResult = await activoResponse.json();
                 
+                console.log('🔍 Resultado verificación activo:', activoResult);
+                
                 tieneRegistroActivo = activoResult.data && activoResult.data.estado === 'activo';
+                console.log('🔍 Estado tieneRegistroActivo:', tieneRegistroActivo);
 
                 // Obtener información del último registro del día
+                console.log('🔍 Obteniendo último registro del día...');
                 const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
                 const ultimoResult = await ultimoResponse.json();
+                
+                console.log('🔍 Resultado último registro:', ultimoResult);
                 
                 let estadoTexto = '🔴 Sin Sesión';
                 let puedeEntrar = true;
@@ -838,23 +854,34 @@
                     estadoTexto = '🟢 Sesión Activa';
                     puedeEntrar = false; // NO permitir nueva entrada si ya hay sesión activa
                     puedeSalir = true;
+                    console.log('🟢 Empleado tiene sesión activa - BLOQUEAR entrada, PERMITIR salida');
                 } else if (ultimoResult.data) {
                     // Si no tiene sesión activa pero tiene registros hoy, mostrar el último estado
                     if (ultimoResult.data.estado === 'finalizado') {
                         estadoTexto = '✅ Última sesión finalizada';
                         puedeEntrar = true;
                         puedeSalir = false;
+                        console.log('✅ Última sesión finalizada - PERMITIR entrada');
                     } else {
                         estadoTexto = '⚠️ Sesión anterior forzada';
                         puedeEntrar = true;
                         puedeSalir = false;
+                        console.log('⚠️ Sesión anterior forzada - PERMITIR entrada');
                     }
                 } else {
                     // Sin registros hoy
                     estadoTexto = '🔴 Sin Sesión';
                     puedeEntrar = true;
                     puedeSalir = false;
+                    console.log('🔴 Sin registros hoy - PERMITIR entrada');
                 }
+
+                console.log('📊 Estado final:', {
+                    estadoTexto,
+                    puedeEntrar,
+                    puedeSalir,
+                    tieneRegistroActivo
+                });
 
                 // Mostrar información del empleado
                 document.getElementById('empleadoNombre').textContent = `${empleadoValidado.nombre} (${empleadoValidado.documento})`;
@@ -864,30 +891,47 @@
                 document.getElementById('btnEntrada').style.display = puedeEntrar ? 'inline-block' : 'none';
                 document.getElementById('btnSalida').style.display = puedeSalir ? 'inline-block' : 'none';
                 
+                console.log('🎛️ Botones configurados:', {
+                    entrada: puedeEntrar ? 'visible' : 'oculto',
+                    salida: puedeSalir ? 'visible' : 'oculto'
+                });
+                
                 // Mostrar sección de información
                 document.getElementById('empleadoInfo').style.display = 'block';
 
                 mostrarAlerta(`✅ Empleado validado: ${empleadoValidado.nombre}`, 'success');
 
             } catch (error) {
-                console.error('Error validando empleado:', error);
+                console.error('❌ Error validando empleado:', error);
                 mostrarError(`Error: ${error.message}`);
             }
         }
 
         // Función para refrescar el estado del empleado
         async function refrescarEstadoEmpleado() {
-            if (!empleadoValidado) return;
+            if (!empleadoValidado) {
+                console.log('❌ No hay empleado validado para refrescar');
+                return;
+            }
+            
+            console.log('🔄 Refrescando estado del empleado:', empleadoValidado.documento);
             
             try {
+                console.log('🔍 Verificando registro activo...');
                 const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
                 const activoResult = await activoResponse.json();
                 
+                console.log('🔍 Resultado verificación activo:', activoResult);
+                
                 tieneRegistroActivo = activoResult.data && activoResult.data.estado === 'activo';
+                console.log('🔍 Estado tieneRegistroActivo actualizado:', tieneRegistroActivo);
 
                 // Obtener información del último registro del día
+                console.log('🔍 Obteniendo último registro del día...');
                 const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
                 const ultimoResult = await ultimoResponse.json();
+                
+                console.log('🔍 Resultado último registro:', ultimoResult);
                 
                 let estadoTexto = '🔴 Sin Sesión';
                 let puedeEntrar = true;
@@ -897,37 +941,64 @@
                     estadoTexto = '🟢 Sesión Activa';
                     puedeEntrar = false; // NO permitir nueva entrada si ya hay sesión activa
                     puedeSalir = true;
+                    console.log('🟢 Empleado tiene sesión activa - BLOQUEAR entrada, PERMITIR salida');
                 } else if (ultimoResult.data) {
                     if (ultimoResult.data.estado === 'finalizado') {
                         estadoTexto = '✅ Última sesión finalizada';
                         puedeEntrar = true;
                         puedeSalir = false;
+                        console.log('✅ Última sesión finalizada - PERMITIR entrada');
                     } else {
                         estadoTexto = '⚠️ Sesión anterior forzada';
                         puedeEntrar = true;
                         puedeSalir = false;
+                        console.log('⚠️ Sesión anterior forzada - PERMITIR entrada');
                     }
                 } else {
                     estadoTexto = '🔴 Sin Sesión';
                     puedeEntrar = true;
                     puedeSalir = false;
+                    console.log('🔴 Sin registros hoy - PERMITIR entrada');
                 }
+                
+                console.log('📊 Estado final actualizado:', {
+                    estadoTexto,
+                    puedeEntrar,
+                    puedeSalir,
+                    tieneRegistroActivo
+                });
                 
                 document.getElementById('empleadoEstado').textContent = estadoTexto;
                 document.getElementById('btnEntrada').style.display = puedeEntrar ? 'inline-block' : 'none';
                 document.getElementById('btnSalida').style.display = puedeSalir ? 'inline-block' : 'none';
+                
+                console.log('🎛️ Botones actualizados:', {
+                    entrada: puedeEntrar ? 'visible' : 'oculto',
+                    salida: puedeSalir ? 'visible' : 'oculto'
+                });
+                
             } catch (error) {
-                console.error('Error refrescando estado:', error);
+                console.error('❌ Error refrescando estado:', error);
             }
         }
 
         // Función para limpiar formulario
         function limpiarFormulario() {
+            console.log('🧹 Limpiando formulario...');
             document.getElementById('documento').value = '';
             document.getElementById('empleadoInfo').style.display = 'none';
             empleadoValidado = null;
             tieneRegistroActivo = false;
             document.getElementById('documento').focus();
+            console.log('✅ Formulario limpiado');
+        }
+
+        // Función para limpiar formulario después de operación exitosa
+        function limpiarFormularioExitoso() {
+            console.log('🧹 Limpiando formulario después de operación exitosa...');
+            setTimeout(() => {
+                limpiarFormulario();
+            }, 2000); // Esperar 2 segundos para que el usuario vea el mensaje de éxito
         }
 
         // Función para seleccionar sede
@@ -1037,25 +1108,46 @@
                 return;
             }
 
-            // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
-            const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
-            const verificarActivoResult = await verificarActivoResponse.json();
-            
-            if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
-                mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Debes cerrar la sesión actual antes de abrir una nueva.', 'warning');
-                // Actualizar el estado local
-                tieneRegistroActivo = true;
-                document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
-                document.getElementById('btnEntrada').style.display = 'none'; // BLOQUEAR entrada
-                document.getElementById('btnSalida').style.display = 'inline-block';
+            if (procesandoEntrada) {
+                console.log('⏳ Ya se está procesando una entrada...');
                 return;
             }
 
+            procesandoEntrada = true;
+            console.log('🔍 Iniciando registro de entrada para:', empleadoValidado.documento);
+
             try {
+                // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
+                console.log('🔍 Verificando sesión activa...');
+                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const verificarActivoResult = await verificarActivoResponse.json();
+                
+                console.log('🔍 Resultado verificación activa:', verificarActivoResult);
+                
+                if (verificarActivoResult.data && verificarActivoResult.data.estado === 'activo') {
+                    console.log('❌ Sesión activa detectada, bloqueando nueva entrada');
+                    mostrarAlerta('⚠️ Este empleado ya tiene una sesión activa. Debes cerrar la sesión actual antes de abrir una nueva.', 'warning');
+                    // Actualizar el estado local
+                    tieneRegistroActivo = true;
+                    document.getElementById('empleadoEstado').textContent = '🟢 Sesión Activa';
+                    document.getElementById('btnEntrada').style.display = 'none'; // BLOQUEAR entrada
+                    document.getElementById('btnSalida').style.display = 'inline-block';
+                    return;
+                }
+
+                console.log('✅ No hay sesión activa, procediendo con entrada...');
+
                 // Crear registro de entrada
                 const ahora = new Date();
                 const fechaEntrada = ahora.toISOString().split('T')[0];
                 const horaEntrada = ahora.toISOString();
+
+                console.log('📝 Creando registro con datos:', {
+                    empleado_id: empleadoValidado.id,
+                    sede_id: sedeActual,
+                    fecha_entrada: fechaEntrada,
+                    hora_entrada: horaEntrada
+                });
 
                 const registroResponse = await fetch(`${API_BASE}/registros/entrada`, {
                     method: 'POST',
@@ -1071,24 +1163,41 @@
                 });
 
                 const registroResult = await registroResponse.json();
+                console.log('📝 Resultado creación registro:', registroResult);
+                
                 if (!registroResult.success) {
+                    if (registroResult.message && registroResult.message.includes('sesión activa')) {
+                        console.log('❌ Backend detectó sesión activa');
+                        mostrarAlerta('⚠️ El sistema detectó una sesión activa. Refrescando estado...', 'warning');
+                        // Refrescar estado y bloquear entrada
+                        await refrescarEstadoEmpleado();
+                        return;
+                    }
                     throw new Error(registroResult.message || 'Error registrando entrada');
                 }
 
+                console.log('✅ Registro creado exitosamente');
+
                 // Recargar datos
+                console.log('🔄 Recargando datos...');
                 await cargarRegistrosHoy();
                 await cargarEstadisticas();
                 actualizarTablaRegistros();
                 actualizarEstadisticasUI();
 
                 // Actualizar estado del empleado
+                console.log('🔄 Actualizando estado del empleado...');
                 await refrescarEstadoEmpleado();
 
                 mostrarAlerta(`✅ Entrada registrada para ${empleadoValidado.nombre} (${empleadoValidado.documento})`, 'success');
+                limpiarFormularioExitoso(); // Llamar a la nueva función
 
             } catch (error) {
-                console.error('Error registrando entrada:', error);
+                console.error('❌ Error registrando entrada:', error);
                 mostrarError(`Error: ${error.message}`);
+            } finally {
+                procesandoEntrada = false;
+                console.log('✅ Procesamiento de entrada finalizado');
             }
         }
 
@@ -1098,26 +1207,41 @@
                 return;
             }
 
-            // Verificar nuevamente si tiene registro activo antes de finalizar
-            const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
-            const verificarActivoResult = await verificarActivoResponse.json();
-            
-            if (!verificarActivoResult.data || verificarActivoResult.data.estado !== 'activo') {
-                mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
-                // Actualizar el estado local
-                tieneRegistroActivo = false;
-                document.getElementById('empleadoEstado').textContent = '🔴 Sin Sesión';
-                document.getElementById('btnEntrada').style.display = 'inline-block';
-                document.getElementById('btnSalida').style.display = 'none';
+            if (procesandoSalida) {
+                console.log('⏳ Ya se está procesando una salida...');
                 return;
             }
 
+            procesandoSalida = true;
+            console.log('🔍 Iniciando registro de salida para:', empleadoValidado.documento);
+
             try {
+                // Verificar nuevamente si tiene registro activo antes de finalizar
+                console.log('🔍 Verificando sesión activa...');
+                const verificarActivoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const verificarActivoResult = await verificarActivoResponse.json();
+                
+                console.log('🔍 Resultado verificación activa:', verificarActivoResult);
+                
+                if (!verificarActivoResult.data || verificarActivoResult.data.estado !== 'activo') {
+                    console.log('❌ No hay sesión activa para cerrar');
+                    mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
+                    // Actualizar el estado local
+                    tieneRegistroActivo = false;
+                    document.getElementById('empleadoEstado').textContent = '🔴 Sin Sesión';
+                    document.getElementById('btnEntrada').style.display = 'inline-block';
+                    document.getElementById('btnSalida').style.display = 'none';
+                    return;
+                }
+
+                console.log('✅ Sesión activa encontrada, procediendo con salida...');
+
                 // Buscar registro activo
                 const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
                 const activoResult = await activoResponse.json();
                 
                 if (!activoResult.data) {
+                    console.log('❌ No se pudo obtener el registro activo');
                     mostrarAlerta('⚠️ Este empleado no tiene una sesión activa', 'warning');
                     return;
                 }
@@ -1126,6 +1250,12 @@
                 const ahora = new Date();
                 const fechaSalida = ahora.toISOString().split('T')[0];
                 const horaSalida = ahora.toISOString();
+
+                console.log('📝 Finalizando registro con datos:', {
+                    registro_id: registro.id,
+                    fecha_salida: fechaSalida,
+                    hora_salida: horaSalida
+                });
 
                 // Finalizar registro
                 const finalizarResponse = await fetch(`${API_BASE}/registros/${registro.id}/salida`, {
@@ -1140,25 +1270,35 @@
                 });
 
                 const finalizarResult = await finalizarResponse.json();
+                console.log('📝 Resultado finalización:', finalizarResult);
+                
                 if (!finalizarResult.success) {
                     throw new Error(finalizarResult.message || 'Error registrando salida');
                 }
 
+                console.log('✅ Salida registrada exitosamente');
+
                 // Recargar datos
+                console.log('🔄 Recargando datos...');
                 await cargarRegistrosHoy();
                 await cargarEstadisticas();
                 actualizarTablaRegistros();
                 actualizarEstadisticasUI();
 
                 // Actualizar estado del empleado
+                console.log('🔄 Actualizando estado del empleado...');
                 await refrescarEstadoEmpleado();
 
                 const duracion = finalizarResult.data.duracion_horas || 0;
                 mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion.toFixed(2)}h`, 'success');
+                limpiarFormularioExitoso(); // Llamar a la nueva función
 
             } catch (error) {
-                console.error('Error registrando salida:', error);
+                console.error('❌ Error registrando salida:', error);
                 mostrarError(`Error: ${error.message}`);
+            } finally {
+                procesandoSalida = false;
+                console.log('✅ Procesamiento de salida finalizado');
             }
         }
 
@@ -1534,6 +1674,40 @@
             setTimeout(() => {
                 errorDiv.remove();
             }, 8000);
+        }
+
+        // Función para verificar estado de la base de datos (debug)
+        async function verificarEstadoDB() {
+            if (!empleadoValidado) {
+                console.log('❌ No hay empleado validado para verificar');
+                return;
+            }
+
+            console.log('🔍 === VERIFICACIÓN COMPLETA DE ESTADO ===');
+            console.log('📋 Empleado:', empleadoValidado);
+
+            try {
+                // Verificar registro activo
+                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}`);
+                const activoResult = await activoResponse.json();
+                console.log('🔍 Registro activo:', activoResult);
+
+                // Verificar último registro
+                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}`);
+                const ultimoResult = await ultimoResponse.json();
+                console.log('🔍 Último registro:', ultimoResult);
+
+                // Verificar todos los registros de hoy
+                const fecha = new Date().toISOString().split('T')[0];
+                const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
+                const todosResult = await todosResponse.json();
+                const registrosEmpleado = todosResult.data.filter(r => r.documento === empleadoValidado.documento);
+                console.log('🔍 Todos los registros de hoy para este empleado:', registrosEmpleado);
+
+                console.log('🔍 === FIN VERIFICACIÓN ===');
+            } catch (error) {
+                console.error('❌ Error en verificación:', error);
+            }
         }
     </script>
 </body>
