@@ -704,13 +704,13 @@
                                    onkeypress="handleKeyPress(event)">
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" onclick="validarEmpleado()">✅ Validar Empleado</button>
+                            <button class="btn btn-primary" onclick="validarEmpleado()">✅ Validar Usuario</button>
                         </div>
                         
                         <!-- Sección de información del empleado (oculta inicialmente) -->
                         <div id="empleadoInfo" style="display: none;">
                             <div class="form-group">
-                                <label>Empleado Validado</label>
+                                <label>Usuario Validado</label>
                                 <div id="empleadoNombre" class="form-input" style="background: #2c3e50; color: #fff; font-weight: bold;"></div>
                             </div>
                             <div class="form-group">
@@ -722,8 +722,6 @@
                                  <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
                                  <button class="btn btn-info" onclick="refrescarEstadoEmpleado()" style="margin-left: 10px;">🔄 Refrescar Estado</button>
                                  <button class="btn btn-secondary" onclick="verHistorialEmpleado()" style="margin-left: 10px;">📋 Ver Historial</button>
-                                 <button class="btn btn-warning" onclick="autoSincronizarEstado()" style="margin-left: 10px; font-size: 10px;">⚡ Auto-Sync</button>
-                                 <button class="btn btn-danger" onclick="verificarEstadoDB()" style="margin-left: 10px; font-size: 10px;">🐛 Debug</button>
                              </div>
                         </div>
                     </div>
@@ -736,7 +734,7 @@
                     </div>
                     <div class="summary-item">
                         <div class="summary-number" id="empleadosActivos">0</div>
-                        <div class="summary-label">Empleados Activos</div>
+                        <div class="summary-label">Usuarios Activos</div>
                     </div>
                     <div class="summary-item">
                         <div class="summary-number" id="totalHoras">0</div>
@@ -760,7 +758,7 @@
                     <div class="table-container" id="registrosContainer">
                         <div class="no-records">
                             <h3>📝 Sin registros</h3>
-                            <p>Registra la entrada de un empleado para comenzar</p>
+                            <p>Registra la entrada de un usuario para comenzar</p>
                         </div>
                     </div>
                 </div>
@@ -1054,41 +1052,7 @@
             }
         }
 
-        // Función de auto-sincronización para detectar y corregir inconsistencias
-        async function autoSincronizarEstado() {
-            if (!empleadoValidado) {
-                console.log('❌ No hay empleado validado para auto-sincronizar');
-                return;
-            }
 
-            console.log('🔄 Iniciando auto-sincronización de estado...');
-            
-            try {
-                const fecha = new Date().toISOString().split('T')[0];
-                
-                // Verificar estado actual
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
-                const activoResult = await activoResponse.json();
-                const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
-                const todosResult = await todosResponse.json();
-                const registrosEmpleado = todosResult.data.filter(r => r.documento === empleadoValidado.documento);
-                
-                const tieneActivoIndividual = activoResult.data && activoResult.data.estado === 'activo';
-                const tieneActivoEnLista = registrosEmpleado.some(r => r.estado === 'activo');
-                
-                // Si hay inconsistencia, forzar sincronización
-                if (tieneActivoIndividual !== tieneActivoEnLista) {
-                    console.log('⚠️ Inconsistencia detectada, forzando sincronización...');
-                    await verificarEstadoCompletoEmpleado();
-                    mostrarAlerta('🔄 Estado sincronizado automáticamente', 'success');
-                } else {
-                    console.log('✅ Estados consistentes, no se requiere sincronización');
-                }
-                
-            } catch (error) {
-                console.error('❌ Error en auto-sincronización:', error);
-            }
-        }
 
         async function cargarRegistrosHoy() {
             const fecha = new Date().toISOString().split('T')[0];
@@ -1358,7 +1322,6 @@
                             <th>Hora Entrada</th>
                             <th>Salida</th>
                             <th>Hora Salida</th>
-                            <th>Duración</th>
                             <th>Estado</th>
                             <th>Acción</th>
                         </tr>
@@ -1390,7 +1353,6 @@
                         <td>${horaEntrada}</td>
                         <td>${fechaSalida}</td>
                         <td>${horaSalida}</td>
-                        <td><span class="duration-badge">${duracion}</span></td>
                         <td>${estado}</td>
                         <td>
                             ${registro.estado === 'activo' ? 
@@ -1531,37 +1493,57 @@
                 return;
             }
 
+            // Solicitar password para acceder al historial
+            const password = prompt('🔐 Ingresa la contraseña para exportar registros:');
+            if (password !== 'admin123') {
+                mostrarAlerta('❌ Contraseña incorrecta', 'error');
+                return;
+            }
+
+            // Agrupar registros por empleado y sumar horas totales
+            const empleadosHoras = {};
+            registros.forEach(registro => {
+                const key = `${registro.documento}_${registro.nombre_empleado}`;
+                if (!empleadosHoras[key]) {
+                    empleadosHoras[key] = {
+                        documento: registro.documento,
+                        nombre: registro.nombre_empleado,
+                        horasTotales: 0,
+                        sesiones: 0
+                    };
+                }
+                
+                if (registro.estado !== 'activo' && registro.duracion_horas) {
+                    empleadosHoras[key].horasTotales += parseFloat(registro.duracion_horas) || 0;
+                    empleadosHoras[key].sesiones++;
+                }
+            });
+
             // Crear contenido para impresora POS 80mm
             let contenidoPOS = '';
             contenidoPOS += '================================================\n';
-            contenidoPOS += '         CONTROL DE HORAS - REGISTROS          \n';
+            contenidoPOS += '    CONTROL DE HORAS - RESUMEN DIARIO          \n';
             contenidoPOS += '================================================\n';
             contenidoPOS += `Sede: ${sedeNombre}\n`;
             contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
             contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
-            contenidoPOS += `Total registros: ${registros.length}\n`;
+            contenidoPOS += `Total empleados: ${Object.keys(empleadosHoras).length}\n`;
             contenidoPOS += `Empleados activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += '================================================\n';
             
-            registros.forEach((registro, index) => {
-                contenidoPOS += `${(index + 1).toString().padStart(2)}. ${registro.documento}\n`;
-                contenidoPOS += `    ${registro.nombre_empleado}\n`;
-                contenidoPOS += `    Entrada: ${new Date(registro.hora_entrada).toLocaleDateString('es-CO')} ${new Date(registro.hora_entrada).toLocaleTimeString('es-CO')}\n`;
-                if (registro.estado !== 'activo') {
-                    contenidoPOS += `    Salida:  ${registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-'} ${registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-'}\n`;
-                    const duracionHoras = parseFloat(registro.duracion_horas) || 0;
-                    const duracion = duracionHoras >= 7.5 ? 'Completado' : 
-                                    duracionHoras > 0 ? parseFloat(registro.duracion_horas).toFixed(2) + 'h' : '-';
-                    contenidoPOS += `    Duración: ${duracion}\n`;
-                } else {
-                    contenidoPOS += `    Salida:  EN CURSO\n`;
-                    contenidoPOS += `    Duración: EN CURSO\n`;
-                }
+            // Mostrar resumen por empleado
+            Object.values(empleadosHoras).forEach((empleado, index) => {
+                contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
+                contenidoPOS += `    ${empleado.nombre}\n`;
+                contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
+                const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
+                                        empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
                 contenidoPOS += '    ----------------------------------------\n';
             });
             
             contenidoPOS += '================================================\n';
-            contenidoPOS += `RESUMEN: Total: ${registros.length} | Activos: ${estadisticas.empleados_activos}\n`;
+            contenidoPOS += `RESUMEN: Empleados: ${Object.keys(empleadosHoras).length} | Activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += `Horas totales: ${(parseFloat(estadisticas.horas_totales) || 0).toFixed(1)}h\n`;
             contenidoPOS += '================================================\n';
 
@@ -1722,112 +1704,7 @@
             }, 8000);
         }
 
-        // Función para verificar estado de la base de datos (debug mejorado)
-        async function verificarEstadoDB() {
-            if (!empleadoValidado) {
-                console.log('❌ No hay empleado validado para verificar');
-                return;
-            }
 
-            console.log('🔍 === VERIFICACIÓN COMPLETA DE ESTADO ===');
-            console.log('📋 Empleado:', empleadoValidado);
-
-            try {
-                const fecha = new Date().toISOString().split('T')[0];
-                
-                // 1. Verificar registro activo
-                console.log('🔍 1. Verificando registro activo...');
-                const activoResponse = await fetch(`${API_BASE}/registros/activo/${empleadoValidado.documento}?fecha=${fecha}`);
-                const activoResult = await activoResponse.json();
-                console.log('🔍 Registro activo:', activoResult);
-
-                // 2. Verificar último registro
-                console.log('🔍 2. Verificando último registro...');
-                const ultimoResponse = await fetch(`${API_BASE}/registros/ultimo/${empleadoValidado.documento}?fecha=${fecha}`);
-                const ultimoResult = await ultimoResponse.json();
-                console.log('🔍 Último registro:', ultimoResult);
-
-                // 3. Verificar todos los registros de hoy
-                console.log('🔍 3. Verificando todos los registros de hoy...');
-                const todosResponse = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
-                const todosResult = await todosResponse.json();
-                const registrosEmpleado = todosResult.data.filter(r => r.documento === empleadoValidado.documento);
-                console.log('🔍 Todos los registros de hoy para este empleado:', registrosEmpleado);
-
-                // 4. Análisis de consistencia
-                console.log('🔍 4. Análisis de consistencia...');
-                const tieneActivoIndividual = activoResult.data && activoResult.data.estado === 'activo';
-                const tieneActivoEnLista = registrosEmpleado.some(r => r.estado === 'activo');
-                const registrosActivosEnLista = registrosEmpleado.filter(r => r.estado === 'activo');
-                
-                console.log('📊 Análisis de consistencia:', {
-                    tieneActivoIndividual,
-                    tieneActivoEnLista,
-                    registrosActivosEnLista: registrosActivosEnLista.length,
-                    totalRegistrosHoy: registrosEmpleado.length,
-                    estadosEnLista: registrosEmpleado.map(r => ({ id: r.id, estado: r.estado, hora: r.hora_entrada }))
-                });
-
-                // 5. Detectar inconsistencias
-                if (tieneActivoIndividual !== tieneActivoEnLista) {
-                    console.warn('⚠️ INCONSISTENCIA DETECTADA:');
-                    console.warn('   - Consulta individual dice:', tieneActivoIndividual);
-                    console.warn('   - Lista completa dice:', tieneActivoEnLista);
-                    console.warn('   - Esto puede causar problemas de sincronización');
-                }
-
-                if (registrosActivosEnLista.length > 1) {
-                    console.warn('⚠️ MÚLTIPLES REGISTROS ACTIVOS DETECTADOS:');
-                    console.warn('   - Esto es un problema grave en la base de datos');
-                    registrosActivosEnLista.forEach((r, i) => {
-                        console.warn(`   - Registro ${i+1}: ID=${r.id}, Hora=${r.hora_entrada}`);
-                    });
-                }
-
-                // 6. Estado actual del frontend
-                console.log('🔍 5. Estado actual del frontend:');
-                console.log('   - empleadoValidado:', empleadoValidado);
-                console.log('   - tieneRegistroActivo:', tieneRegistroActivo);
-                console.log('   - sedeActual:', sedeActual);
-                console.log('   - sedeNombre:', sedeNombre);
-
-                // 7. Recomendaciones
-                console.log('🔍 6. Recomendaciones:');
-                if (tieneActivoIndividual !== tieneActivoEnLista) {
-                    console.log('   - Ejecutar refrescarEstadoEmpleado() para sincronizar');
-                }
-                if (registrosActivosEnLista.length > 1) {
-                    console.log('   - Revisar base de datos para múltiples registros activos');
-                }
-                if (!tieneActivoIndividual && !tieneActivoEnLista && registrosEmpleado.length > 0) {
-                    console.log('   - Empleado tiene registros pero ninguno activo (normal)');
-                }
-
-                console.log('🔍 === FIN VERIFICACIÓN ===');
-                
-                // Mostrar resumen en alerta
-                const resumen = `
-                    📊 VERIFICACIÓN COMPLETA:
-                    
-                    🔍 Empleado: ${empleadoValidado.nombre} (${empleadoValidado.documento})
-                    📅 Fecha: ${fecha}
-                    🏢 Sede: ${sedeNombre}
-                    
-                    📋 Estado Individual: ${tieneActivoIndividual ? '🟢 Activo' : '🔴 Inactivo'}
-                    📋 Estado en Lista: ${tieneActivoEnLista ? '🟢 Activo' : '🔴 Inactivo'}
-                    📊 Total Registros Hoy: ${registrosEmpleado.length}
-                    🔄 Estado Frontend: ${tieneRegistroActivo ? '🟢 Activo' : '🔴 Inactivo'}
-                    
-                    ${tieneActivoIndividual !== tieneActivoEnLista ? '⚠️ INCONSISTENCIA DETECTADA' : '✅ Estados consistentes'}
-                `;
-                
-                mostrarAlerta(resumen, tieneActivoIndividual !== tieneActivoEnLista ? 'warning' : 'success');
-                
-            } catch (error) {
-                console.error('❌ Error en verificación:', error);
-                mostrarError(`Error en verificación: ${error.message}`);
-            }
-        }
     </script>
 </body>
 </html>
