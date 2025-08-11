@@ -21,6 +21,11 @@ app.use(express.static('.', {
 // Crear pool de conexiones PostgreSQL
 const pool = new Pool(dbConfig);
 
+// Verificar conexión a la base de datos
+pool.on('error', (err) => {
+    console.error('Error inesperado en el pool de PostgreSQL:', err);
+});
+
 // Middleware para manejar errores de base de datos
 const handleDatabaseError = (err, res) => {
     console.error('Error de base de datos:', err);
@@ -32,6 +37,29 @@ const handleDatabaseError = (err, res) => {
 };
 
 // Rutas API
+
+// Health check
+app.get('/api/health', async (req, res) => {
+    try {
+        // Verificar conexión a la base de datos
+        await pool.query('SELECT NOW()');
+        res.json({
+            success: true,
+            message: 'Servidor funcionando correctamente',
+            timestamp: new Date().toISOString(),
+            database: 'Conectado'
+        });
+    } catch (err) {
+        console.error('Error en health check:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Error de conexión a la base de datos',
+            timestamp: new Date().toISOString(),
+            database: 'Desconectado',
+            error: err.message
+        });
+    }
+});
 
 // Obtener sedes
 app.get('/api/sedes', async (req, res) => {
@@ -257,9 +285,11 @@ app.use((err, req, res, next) => {
 
 // Iniciar servidor
 app.listen(port, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
-    console.log(`📊 API disponible en http://localhost:${port}/api`);
-    console.log(`⏰ Control de horas: http://localhost:${port}/control-horas`);
+    console.log(`🚀 Servidor corriendo en puerto ${port}`);
+    console.log(`📊 API disponible en /api`);
+    console.log(`⏰ Control de horas: /control-horas`);
+    console.log(`🔍 Health check: /api/health`);
+    console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Manejo de cierre graceful
