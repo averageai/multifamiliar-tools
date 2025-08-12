@@ -533,6 +533,7 @@ const appRoutes = {
     '/codigos-disponibles': 'codigos-disponibles.html',
     '/cotizaciones': 'cotizaciones.html',
     '/cierre-caja': 'cierre-caja.html',
+    '/permisos-salida': 'permisos-salida.html',
     '/faltantes': 'faltantes.html',
     '/control-horas': 'control-horas.html'
 };

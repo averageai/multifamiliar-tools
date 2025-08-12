@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Permisos de Salida - Multifamiliar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .form-container {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-title {
+            color: #3498db;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 16px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #1a1a1a;
+            color: #ffffff;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .time-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-print {
+            background: #4ade80;
+        }
+
+        .btn-print:hover {
+            background: #22c55e;
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-clear {
+            background: #dc3545;
+        }
+
+        .btn-clear:hover {
+            background: #c82333;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-modal.active {
+            display: flex;
+        }
+
+        .admin-modal-content {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid #333;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .admin-modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .admin-modal-header h3 {
+            color: #ff6b6b;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .admin-modal-header p {
+            color: #a0a0a0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .admin-input-group {
+            margin-bottom: 20px;
+        }
+
+        .admin-input-group label {
+            display: block;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .admin-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a1a;
+            color: #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .admin-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #333;
+        }
+
+        .admin-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .admin-modal-buttons .btn {
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .instructions-section {
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .instructions-section h3 {
+            color: #4ade80;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions-content {
+            color: #a0a0a0;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .instructions-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .instructions-content li {
+            margin-bottom: 5px;
+        }
+
+        /* Estilos para alertas */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .alert.show {
+            transform: translateX(0);
+        }
+
+        .alert-success {
+            background: #4ade80;
+            border-left: 4px solid #22c55e;
+        }
+
+        .alert-warning {
+            background: #fbbf24;
+            border-left: 4px solid #f59e0b;
+            color: #1f2937;
+        }
+
+        .alert-error {
+            background: #f87171;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #60a5fa;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* Estilos para información del empleado */
+        #empleadoInfo {
+            background: #1e3a2e;
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        #empleadoInfo .form-group {
+            margin-bottom: 0;
+        }
+
+        #empleadoInfo label {
+            color: #4ade80;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        #empleadoNombre {
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .form-container {
+                background: white;
+                color: black;
+                border: 1px solid #ccc;
+            }
+            
+            .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">
+                ← Volver
+            </a>
+            <div class="logo">🚪</div>
+            <div class="header-text">
+                <h1>Sistema de Permisos de Salida</h1>
+                <p>Registro y control de permisos para operativos y administrativos</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Instrucciones del Sistema -->
+            <div class="instructions-section">
+                <h3>📖 Guía de Uso del Sistema</h3>
+                <div class="instructions-content">
+                    <p><strong>Este sistema permite registrar permisos de salida para operativos y administrativos.</strong></p>
+                    <ul>
+                        <li><strong>Datos requeridos:</strong> Documento de identidad, fecha del permiso, hora de salida y autorización</li>
+                        <li><strong>Validación:</strong> El sistema valida automáticamente los empleados por documento</li>
+                        <li><strong>Impresión:</strong> Requiere contraseña de administrador (admin123*)</li>
+                        <li><strong>Formato:</strong> Optimizado para impresoras POS 80mm</li>
+                        <li><strong>Autorizaciones:</strong> Martha Culma, Liliana Bañol o Edwin Godoy</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Formulario de Permiso -->
+            <div class="form-container">
+                <h2 class="form-title">📝 Registro de Permiso de Salida</h2>
+                
+                <form id="permisoForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="documento">Documento de Identidad *</label>
+                            <input type="text" id="documento" required placeholder="Ingrese número de documento..." onkeypress="handleKeyPress(event)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px;">✅ Validar Empleado</button>
+                        </div>
+                        
+                        <!-- Sección de información del empleado (oculta inicialmente) -->
+                        <div id="empleadoInfo" style="display: none;">
+                            <div class="form-group">
+                                <label>Empleado Validado</label>
+                                <div id="empleadoNombre" class="form-input" style="background: #2c3e50; color: #fff; font-weight: bold;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cargo">Cargo *</label>
+                            <select id="cargo" required>
+                                <option value="">Seleccionar cargo</option>
+                                <option value="Operativo">Operativo</option>
+                                <option value="Administrativo">Administrativo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fechaPermiso">Fecha del Permiso *</label>
+                            <input type="date" id="fechaPermiso" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="horaSalida">Hora de Salida *</label>
+                            <input type="time" id="horaSalida" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tipoPermiso">Tipo de Permiso *</label>
+                            <select id="tipoPermiso" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="Día Completo">Día Completo</option>
+                                <option value="Horas">Horas</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="horaEntradaGroup" style="display: none;">
+                            <label for="horaEntrada">Hora Estimada de Entrada</label>
+                            <input type="time" id="horaEntrada">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="autoriza">Quien Autoriza *</label>
+                            <select id="autoriza" required>
+                                <option value="">Seleccionar autorización</option>
+                                <option value="Martha Culma">Martha Culma</option>
+                                <option value="Liliana Bañol">Liliana Bañol</option>
+                                <option value="Edwin Godoy">Edwin Godoy</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="motivo">Motivo del Permiso *</label>
+                            <textarea id="motivo" required placeholder="Describa el motivo del permiso"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="confirmacion" required>
+                            <label for="confirmacion">Confirmo que toda la información es correcta</label>
+                        </div>
+                    </div>
+                    
+                    <div class="buttons-container">
+                        <button type="submit" class="btn btn-print">
+                            🖨️ Imprimir Permiso
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">
+                            🗑️ Limpiar
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="previsualizarPermiso()">
+                            👁️ Previsualizar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de Alertas -->
+    <div id="alertContainer"></div>
+
+    <!-- Modal de Autorización Administrativa -->
+    <div class="admin-modal" id="admin-modal">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3>🔐 Autorización Requerida</h3>
+                <p>Se requiere contraseña de administrador para imprimir el permiso.</p>
+            </div>
+            <div class="admin-input-group">
+                <label for="admin-password">Contraseña de Administrador:</label>
+                <input type="password" id="admin-password" placeholder="Ingrese la contraseña" onkeypress="handleAdminKeyPress(event)">
+            </div>
+            <div class="admin-modal-buttons">
+                <button class="btn btn-secondary" onclick="cerrarModalAdmin()">Cancelar</button>
+                <button class="btn btn-primary" onclick="verificarContraseñaAdmin()">Autorizar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * SISTEMA DE PERMISOS DE SALIDA - MULTIFAMILIAR
+         * ==============================================
+         * 
+         * DESCRIPCIÓN:
+         * Sistema para registrar y imprimir permisos de salida para operativos
+         * y administrativos con formato optimizado para impresoras POS 80mm.
+         * 
+         * CARACTERÍSTICAS PRINCIPALES:
+         * - Registro de permisos con validación completa
+         * - Impresión protegida con contraseña de administrador
+         * - Formato optimizado para impresoras térmicas (80mm)
+         * - Previsualización antes de imprimir
+         * - Interfaz intuitiva y responsiva
+         * 
+         * CONFIGURACIÓN DE SEGURIDAD:
+         * - ADMIN_PASSWORD: 'admin123*'
+         * 
+         * AUTOR: Sistema Multifamiliar
+         * VERSIÓN: 1.0
+         */
+
+        // Configuración de seguridad
+        const ADMIN_PASSWORD = 'admin123*';
+
+        // Configuración de la API
+        const API_BASE = window.location.origin + '/api';
+
+        // Variables globales para el empleado validado
+        let empleadoValidado = null;
+
+        // Estado del formulario
+        let formData = {};
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando Sistema de Permisos de Salida...');
+            
+            // Configurar fecha actual por defecto
+            const fechaPermiso = document.getElementById('fechaPermiso');
+            if (fechaPermiso) {
+                const today = new Date().toISOString().split('T')[0];
+                fechaPermiso.value = today;
+            }
+            
+            // Configurar hora actual por defecto
+            const horaSalida = document.getElementById('horaSalida');
+            if (horaSalida) {
+                const now = new Date();
+                const timeString = now.toTimeString().slice(0, 5);
+                horaSalida.value = timeString;
+            }
+            
+            // Eventos del formulario
+            inicializarEventos();
+            
+            console.log('Sistema inicializado correctamente');
+        });
+
+        function inicializarEventos() {
+            // Evento de cambio de tipo de permiso
+            const tipoPermiso = document.getElementById('tipoPermiso');
+            if (tipoPermiso) {
+                tipoPermiso.addEventListener('change', function() {
+                    const horaEntradaGroup = document.getElementById('horaEntradaGroup');
+                    if (this.value === 'Horas') {
+                        horaEntradaGroup.style.display = 'block';
+                        document.getElementById('horaEntrada').required = true;
+                    } else {
+                        horaEntradaGroup.style.display = 'none';
+                        document.getElementById('horaEntrada').required = false;
+                    }
+                });
+            }
+
+            // Evento de envío del formulario
+            const form = document.getElementById('permisoForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    mostrarModalAdmin();
+                });
+            }
+        }
+
+        // Función para validar empleado
+        async function validarEmpleado() {
+            const documento = document.getElementById('documento').value.trim();
+            
+            if (!documento) {
+                mostrarAlerta('⚠️ Por favor ingresa el número de documento', 'warning');
+                return;
+            }
+
+            console.log('🔍 Iniciando validación de empleado:', documento);
+
+            try {
+                // Buscar empleado por documento
+                console.log('🔍 Buscando empleado en base de datos...');
+                const empleadoResponse = await fetch(`${API_BASE}/empleados/${documento}`);
+                const empleadoResult = await empleadoResponse.json();
+                
+                console.log('🔍 Resultado búsqueda empleado:', empleadoResult);
+                
+                if (!empleadoResult.success) {
+                    mostrarAlerta('❌ Empleado no encontrado. Contacta al administrador para registrarte.', 'error');
+                    return;
+                }
+
+                empleadoValidado = empleadoResult.data;
+                console.log('✅ Empleado encontrado:', empleadoValidado);
+
+                // Actualizar interfaz
+                document.getElementById('empleadoNombre').textContent = `${empleadoValidado.nombre} (${empleadoValidado.documento})`;
+                
+                // Mostrar sección de información
+                document.getElementById('empleadoInfo').style.display = 'block';
+
+                mostrarAlerta(`✅ Empleado validado: ${empleadoValidado.nombre}`, 'success');
+
+            } catch (error) {
+                console.error('❌ Error validando empleado:', error);
+                mostrarAlerta(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Función para manejar teclas en el campo documento
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                validarEmpleado();
+            }
+        }
+
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo}`;
+            alert.textContent = mensaje;
+            
+            alertContainer.appendChild(alert);
+            
+            // Mostrar alerta
+            setTimeout(() => alert.classList.add('show'), 100);
+            
+            // Ocultar alerta después de 5 segundos
+            setTimeout(() => {
+                alert.classList.remove('show');
+                setTimeout(() => alertContainer.removeChild(alert), 300);
+            }, 5000);
+        }
+
+        function mostrarModalAdmin() {
+            // Validar formulario antes de mostrar modal
+            if (!validarFormulario()) {
+                return;
+            }
+            
+            document.getElementById('admin-modal').classList.add('active');
+            document.getElementById('admin-password').focus();
+        }
+
+        function cerrarModalAdmin() {
+            document.getElementById('admin-modal').classList.remove('active');
+            document.getElementById('admin-password').value = '';
+        }
+
+        function verificarContraseñaAdmin() {
+            const password = document.getElementById('admin-password').value;
+            if (password === ADMIN_PASSWORD) {
+                cerrarModalAdmin();
+                imprimirPermiso();
+            } else {
+                alert('❌ Contraseña incorrecta');
+                document.getElementById('admin-password').value = '';
+                document.getElementById('admin-password').focus();
+            }
+        }
+
+        function handleAdminKeyPress(event) {
+            if (event.key === 'Enter') {
+                verificarContraseñaAdmin();
+            } else if (event.key === 'Escape') {
+                cerrarModalAdmin();
+            }
+        }
+
+        function validarFormulario() {
+            // Validar que el empleado esté validado
+            if (!empleadoValidado) {
+                mostrarAlerta('⚠️ Por favor valida el empleado primero', 'warning');
+                return false;
+            }
+
+            const requiredFields = [
+                'documento', 'cargo', 'fechaPermiso', 'horaSalida', 
+                'tipoPermiso', 'autoriza', 'motivo'
+            ];
+            
+            let isValid = true;
+            let errorMessage = 'Por favor complete los siguientes campos:\n';
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field || !field.value.trim()) {
+                    isValid = false;
+                    errorMessage += `• ${field.previousElementSibling.textContent.replace(' *', '')}\n`;
+                }
+            });
+            
+            // Validar hora de entrada si es permiso por horas
+            const tipoPermiso = document.getElementById('tipoPermiso').value;
+            if (tipoPermiso === 'Horas') {
+                const horaEntrada = document.getElementById('horaEntrada');
+                if (!horaEntrada.value) {
+                    isValid = false;
+                    errorMessage += '• Hora Estimada de Entrada\n';
+                }
+            }
+            
+            // Validar confirmación
+            const confirmacion = document.getElementById('confirmacion');
+            if (!confirmacion.checked) {
+                isValid = false;
+                errorMessage += '• Confirmación de información\n';
+            }
+            
+            if (!isValid) {
+                mostrarAlerta(errorMessage, 'error');
+            }
+            
+            return isValid;
+        }
+
+        function recopilarDatosFormulario() {
+            const tipoPermiso = document.getElementById('tipoPermiso').value;
+            
+            return {
+                nombre: empleadoValidado ? empleadoValidado.nombre : '',
+                documento: empleadoValidado ? empleadoValidado.documento : '',
+                cargo: document.getElementById('cargo').value,
+                fechaPermiso: document.getElementById('fechaPermiso').value,
+                horaSalida: document.getElementById('horaSalida').value,
+                tipoPermiso: tipoPermiso,
+                horaEntrada: tipoPermiso === 'Horas' ? document.getElementById('horaEntrada').value : null,
+                autoriza: document.getElementById('autoriza').value,
+                motivo: document.getElementById('motivo').value.trim(),
+                fechaHoraActual: new Date().toLocaleString('es-CO')
+            };
+        }
+
+        function formatearFecha(fecha) {
+            const opciones = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            return new Date(fecha).toLocaleDateString('es-CO', opciones);
+        }
+
+        function formatearHora(hora) {
+            if (!hora) return '';
+            const [horas, minutos] = hora.split(':');
+            return `${horas}:${minutos}`;
+        }
+
+        function previsualizarPermiso() {
+            if (!validarFormulario()) {
+                return;
+            }
+            
+            const datos = recopilarDatosFormulario();
+            const ventana = window.open('', '_blank');
+            
+            if (!ventana) {
+                alert('Error: No se pudo abrir la ventana de previsualización. Verifique que el bloqueador de ventanas emergentes esté deshabilitado.');
+                return;
+            }
+            
+            ventana.document.write(generarHTMLPermiso(datos, true));
+            ventana.document.close();
+        }
+
+        function imprimirPermiso() {
+            const datos = recopilarDatosFormulario();
+            const ventana = window.open('', '_blank');
+            
+            if (!ventana) {
+                alert('Error: No se pudo abrir la ventana de impresión. Verifique que el bloqueador de ventanas emergentes esté deshabilitado.');
+                return;
+            }
+            
+            ventana.document.write(generarHTMLPermiso(datos, false));
+            ventana.document.close();
+            
+            // Esperar un momento para que se cargue el contenido
+            setTimeout(() => {
+                ventana.print();
+            }, 500);
+        }
+
+        function generarHTMLPermiso(datos, esPrevisualizacion) {
+            const fechaFormateada = formatearFecha(datos.fechaPermiso);
+            const horaSalidaFormateada = formatearHora(datos.horaSalida);
+            const horaEntradaFormateada = datos.horaEntrada ? formatearHora(datos.horaEntrada) : '';
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Permiso de Salida - ${datos.nombre}</title>
+                    <style>
+                        @media print {
+                            @page {
+                                size: 80mm auto;
+                                margin: 0;
+                            }
+                        }
+                        
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            margin: 0; 
+                            padding: 3px;
+                            background: white;
+                            color: black;
+                            font-size: 12px;
+                            line-height: 1.2;
+                            width: 80mm;
+                            max-width: 80mm;
+                        }
+                        
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 8px; 
+                            border-bottom: 2px solid #000;
+                            padding-bottom: 3px;
+                        }
+                        
+                        .header h1 {
+                            font-size: 14px;
+                            margin: 0 0 3px 0;
+                            font-weight: bold;
+                        }
+                        
+                        .header p {
+                            font-size: 10px;
+                            margin: 0;
+                        }
+                        
+                        .section { 
+                            margin-bottom: 6px; 
+                            border: none;
+                            padding: 0;
+                        }
+                        
+                        .section h2 {
+                            color: #000;
+                            border-bottom: 1px solid #000;
+                            padding-bottom: 2px;
+                            margin-bottom: 4px;
+                            font-size: 11px;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+                        
+                        .item { 
+                            margin: 1px 0; 
+                            padding: 1px 0;
+                            border-bottom: none;
+                            font-size: 10px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        
+                        .item strong {
+                            font-weight: bold;
+                        }
+                        
+                        .item-label {
+                            font-weight: bold;
+                            min-width: 60px;
+                        }
+                        
+                        .item-value {
+                            text-align: right;
+                            flex: 1;
+                        }
+                        
+                        .motivo {
+                            margin: 4px 0;
+                            padding: 3px;
+                            border: 1px solid #000;
+                            font-size: 10px;
+                            min-height: 20px;
+                        }
+                        
+                        .footer {
+                            text-align: center;
+                            margin-top: 8px;
+                            font-size: 9px;
+                            color: #666;
+                            border-top: 1px solid #000;
+                            padding-top: 3px;
+                        }
+                        
+                        .firma-line {
+                            border-top: 1px solid #000;
+                            margin-top: 15px;
+                            padding-top: 2px;
+                            text-align: center;
+                            font-size: 9px;
+                        }
+                        
+                        .hora-entrada-line {
+                            border-top: 1px solid #000;
+                            margin-top: 10px;
+                            padding-top: 2px;
+                            text-align: center;
+                            font-size: 9px;
+                        }
+                        
+                        ${esPrevisualizacion ? `
+                        .preview-warning {
+                            background: #ffeb3b;
+                            color: #000;
+                            padding: 5px;
+                            text-align: center;
+                            font-weight: bold;
+                            font-size: 10px;
+                            margin-bottom: 5px;
+                            border: 2px solid #000;
+                        }
+                        ` : ''}
+                    </style>
+                </head>
+                <body>
+                    ${esPrevisualizacion ? '<div class="preview-warning">VISTA PREVIA - NO ES EL PERMISO FINAL</div>' : ''}
+                    
+                    <div class="header">
+                        <h1>PERMISO DE SALIDA</h1>
+                        <p>MULTIFAMILIAR</p>
+                        <p>${datos.fechaHoraActual}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>DATOS DEL SOLICITANTE</h2>
+                        <div class="item">
+                            <span class="item-label">Nombre:</span>
+                            <span class="item-value">${datos.nombre}</span>
+                        </div>
+                        <div class="item">
+                            <span class="item-label">Cargo:</span>
+                            <span class="item-value">${datos.cargo}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>DETALLES DEL PERMISO</h2>
+                        <div class="item">
+                            <span class="item-label">Fecha:</span>
+                            <span class="item-value">${fechaFormateada}</span>
+                        </div>
+                        <div class="item">
+                            <span class="item-label">Hora Salida:</span>
+                            <span class="item-value">${horaSalidaFormateada}</span>
+                        </div>
+                        <div class="item">
+                            <span class="item-label">Tipo:</span>
+                            <span class="item-value">${datos.tipoPermiso}</span>
+                        </div>
+                        ${datos.tipoPermiso === 'Horas' ? `
+                        <div class="item">
+                            <span class="item-label">Hora Entrada:</span>
+                            <span class="item-value">${horaEntradaFormateada}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="section">
+                        <h2>MOTIVO</h2>
+                        <div class="motivo">
+                            ${datos.motivo}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>AUTORIZACIÓN</h2>
+                        <div class="item">
+                            <span class="item-label">Autoriza:</span>
+                            <span class="item-value">${datos.autoriza}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="firma-line">
+                        Firma del Solicitante
+                    </div>
+                    
+                    <div class="firma-line">
+                        Firma del Autorizador
+                    </div>
+                    
+                    ${datos.tipoPermiso === 'Horas' ? `
+                    <div class="hora-entrada-line">
+                        Hora Real de Entrada: _____________
+                    </div>
+                    ` : ''}
+                    
+                    <div class="footer">
+                        <p>--- FIN DEL PERMISO ---</p>
+                        <p>Desarrollado por: <strong>average</strong></p>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function limpiarFormulario() {
+            if (confirm('¿Está seguro de que desea limpiar todos los datos del formulario?')) {
+                document.getElementById('permisoForm').reset();
+                
+                // Limpiar información del empleado validado
+                empleadoValidado = null;
+                document.getElementById('empleadoInfo').style.display = 'none';
+                
+                // Restablecer fecha y hora actual
+                const fechaPermiso = document.getElementById('fechaPermiso');
+                const horaSalida = document.getElementById('horaSalida');
+                
+                if (fechaPermiso) {
+                    const today = new Date().toISOString().split('T')[0];
+                    fechaPermiso.value = today;
+                }
+                
+                if (horaSalida) {
+                    const now = new Date();
+                    const timeString = now.toTimeString().slice(0, 5);
+                    horaSalida.value = timeString;
+                }
+                
+                // Ocultar grupo de hora de entrada
+                document.getElementById('horaEntradaGroup').style.display = 'none';
+                document.getElementById('horaEntrada').required = false;
+                
+                console.log('Formulario limpiado correctamente');
+            }
+        }
+    </script>
+</body>
+</html>
