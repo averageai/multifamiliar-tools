@@ -1406,9 +1406,9 @@
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                 const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
-                const fechaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleDateString('es-CO') || new Date(registro.hora_entrada).toLocaleDateString('es-CO');
+                const fechaEntrada = registro.fecha_entrada || '-';
                 const horaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                const fechaSalida = registro.fecha_salida ? (utcToColombia(registro.fecha_salida)?.toLocaleDateString('es-CO') || new Date(registro.fecha_salida).toLocaleDateString('es-CO')) : '-';
+                const fechaSalida = registro.fecha_salida || '-';
                 const horaSalida = registro.hora_salida ? (utcToColombia(registro.hora_salida)?.toLocaleTimeString('es-CO') || new Date(registro.hora_salida).toLocaleTimeString('es-CO')) : '-';
                 
                 tableHTML += `
@@ -1996,7 +1996,7 @@
                             <div class="modal-body">
                                 <div class="sesiones-info">
                                     <p><strong>Total sesiones activas:</strong> ${sesionesActivas.length}</p>
-                                    <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                                    <p><strong>Fecha:</strong> ${getColombiaDateTime().fecha}</p>
                                 </div>
                                 <div class="sesiones-lista">
                                     ${sesionesActivas.map((sesion, index) => {
