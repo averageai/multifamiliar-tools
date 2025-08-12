@@ -76,6 +76,20 @@ const handleDatabaseError = (err, res) => {
     });
 };
 
+// Función helper para obtener fecha y hora en timezone de Colombia
+function getColombiaDateTime() {
+    const now = new Date();
+    const colombiaOffset = -5 * 60; // -5 horas en minutos
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const colombiaTime = new Date(utc + (colombiaOffset * 60000));
+    
+    return {
+        fecha: colombiaTime.toISOString().split('T')[0],
+        hora: colombiaTime.toISOString(),
+        horaLocal: colombiaTime.toLocaleTimeString('es-CO')
+    };
+}
+
 // ========================================
 // 🔌 RUTAS API - CONTROL DE HORAS
 // ========================================
@@ -211,7 +225,8 @@ app.post('/api/empleados', async (req, res) => {
 app.get('/api/registros/activo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
-        const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+        const { fecha: fechaColombia } = getColombiaDateTime();
+        const fecha = req.query.fecha || fechaColombia;
         console.log('🔍 Verificando registro activo para documento:', documento, 'fecha:', fecha);
         
         const result = await pool.query(queries.getRegistroActivo, [documento, fecha]);
@@ -237,7 +252,8 @@ app.get('/api/registros/activo/:documento', async (req, res) => {
 app.get('/api/registros/ultimo/:documento', async (req, res) => {
     try {
         const { documento } = req.params;
-        const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+        const { fecha: fechaColombia } = getColombiaDateTime();
+        const fecha = req.query.fecha || fechaColombia;
         console.log('🔍 Obteniendo último registro del día para documento:', documento, 'fecha:', fecha);
         
         const result = await pool.query(queries.getUltimoRegistroHoy, [documento, fecha]);
@@ -453,10 +469,8 @@ app.post('/api/registros/cerrar-sesiones-automaticas', async (req, res) => {
     try {
         const { sede_id } = req.body;
         
-        // Obtener fecha y hora actual en timezone de América
-        const now = new Date();
-        const fechaActual = now.toISOString().split('T')[0];
-        const horaActual = now.toTimeString().split(' ')[0];
+        // Obtener fecha y hora actual en timezone de Colombia
+        const { fecha: fechaActual, hora: horaActual } = getColombiaDateTime();
         
         console.log('🕙 Cerrando sesiones automáticas para sede:', sede_id, 'fecha:', fechaActual, 'hora:', horaActual);
         

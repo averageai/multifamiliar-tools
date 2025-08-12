@@ -57,6 +57,8 @@ if (process.env.DATABASE_URL) {
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
+        // Configurar timezone para Colombia
+        options: '-c timezone=America/Bogota'
     };
 } else {
     // Configuración individual
@@ -70,6 +72,8 @@ if (process.env.DATABASE_URL) {
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
+        // Configurar timezone para Colombia
+        options: '-c timezone=America/Bogota'
     };
 }
 

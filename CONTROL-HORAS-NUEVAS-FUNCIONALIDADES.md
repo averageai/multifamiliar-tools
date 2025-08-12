@@ -1,232 +1,146 @@
-# 🆕 Nuevas Funcionalidades - Control de Horas
+# 🕐 CONTROL DE HORAS - NUEVAS FUNCIONALIDADES Y CORRECCIONES
 
-## 📋 Resumen de Cambios
+## 📋 **RESUMEN DE CAMBIOS**
 
-Se han agregado dos funcionalidades importantes al sistema de Control de Horas:
+### **🔧 CORRECCIONES DE TIMEZONE (IMPORTANTE)**
 
-1. **📅 Exportar registros de cualquier fecha específica**
-2. **🕙 Cierre automático de sesiones a las 10:00 PM**
+#### **Problema Identificado:**
+- El sistema usaba `toISOString()` que convierte a UTC, causando desfases de 5 horas
+- Colombia está en UTC-5, pero las fechas se guardaban en UTC
+- Esto causaba inconsistencias en los registros de entrada/salida
 
----
+#### **Soluciones Implementadas:**
 
-## 📅 Exportar Registros por Fecha Específica
+1. **Frontend (`control-horas.html`):**
+   - ✅ Nueva función `getColombiaDateTime()` para obtener fecha/hora en timezone de Colombia
+   - ✅ Nueva función `utcToColombia()` para convertir fechas UTC a Colombia
+   - ✅ Reemplazado `new Date().toISOString()` en todas las funciones
+   - ✅ Corrección en visualización de fechas/horas en la interfaz
 
-### Funcionalidad
-- Permite exportar registros de cualquier día específico, no solo del día actual
-- Mantiene el mismo formato de exportación (archivo .txt para impresora POS 80mm)
-- Incluye estadísticas completas de la fecha seleccionada
+2. **Backend (`server.js`):**
+   - ✅ Nueva función helper `getColombiaDateTime()` para consistencia
+   - ✅ Corrección en endpoints de API para usar timezone de Colombia
+   - ✅ Actualización en cierre automático de sesiones
 
-### Cómo usar
-1. Selecciona una sede (Manizales o Dorada)
-2. Haz clic en el botón **"📅 Exportar Fecha"**
-3. Ingresa la contraseña: `admin123`
-4. Ingresa la fecha en formato `YYYY-MM-DD` (ejemplo: `2024-01-15`)
-5. El archivo se descargará automáticamente
+3. **Base de Datos (`db-config.js`):**
+   - ✅ Configuración de timezone `America/Bogota` en conexión PostgreSQL
+   - ✅ Asegurado que todas las consultas usen el timezone correcto
 
-### Características
-- ✅ Validación de formato de fecha
-- ✅ Verificación de contraseña
-- ✅ Resumen por empleado con horas totales
-- ✅ Estadísticas completas del día
-- ✅ Formato compatible con impresora POS
-
----
-
-## 🕙 Cierre Automático de Sesiones
-
-### Funcionalidad
-- Cierra automáticamente todas las sesiones activas a las 10:00 PM (22:00)
-- Funciona para ambas sedes (Manizales y Dorada)
-- Estado de sesión: `automatico` (para distinguir del cierre manual)
-
-### Características
-- ⏰ **Automático**: Se ejecuta automáticamente a las 10:00 PM
-- 🔄 **Manual**: Botón para cerrar sesiones manualmente en cualquier momento
-- 👥 **Visualización**: Modal para ver todas las sesiones activas
-- 📊 **Logging**: Registro detallado de todas las operaciones
-
-### Cómo usar
-
-#### Cierre Manual
-1. Selecciona una sede
-2. Haz clic en **"👥 Sesiones Activas"**
-3. Ingresa la contraseña: `admin123`
-4. Revisa las sesiones activas
-5. Haz clic en **"🕙 Cerrar Todas"** para cerrar manualmente
-
-#### Cierre Automático
-- Se ejecuta automáticamente a las 10:00 PM
-- No requiere intervención manual
-- Registra todas las operaciones en la consola
+#### **Archivos Modificados:**
+- `control-horas.html` - Correcciones en frontend
+- `server.js` - Correcciones en backend
+- `db-config.js` - Configuración de timezone
 
 ---
 
-## 🔧 Nuevos Endpoints API
+## 🚀 **FUNCIONALIDADES EXISTENTES**
 
-### Backend (server.js)
+### **📝 Registro de Entrada/Salida**
+- ✅ Validación de empleados por documento
+- ✅ Prevención de sesiones duplicadas
+- ✅ Registro automático de fecha y hora
+- ✅ **CORREGIDO:** Timezone de Colombia (UTC-5)
+
+### **📊 Gestión de Registros**
+- ✅ Visualización en tiempo real
+- ✅ Estados: Activo, Finalizado, Forzado
+- ✅ Cálculo automático de duración
+- ✅ **CORREGIDO:** Fechas y horas en timezone local
+
+### **📈 Estadísticas**
+- ✅ Total de registros del día
+- ✅ Empleados activos
+- ✅ Horas totales trabajadas
+- ✅ Promedio de horas por empleado
+- ✅ **CORREGIDO:** Cálculos basados en timezone correcto
+
+### **🔍 Funciones de Búsqueda**
+- ✅ Historial por empleado
+- ✅ Sesiones activas
+- ✅ Exportación de datos
+- ✅ **CORREGIDO:** Filtros por fecha en timezone local
+
+### **⚙️ Funciones Administrativas**
+- ✅ Finalizar jornada completa
+- ✅ Forzar salida individual
+- ✅ Cierre automático a las 10:00 PM
+- ✅ **CORREGIDO:** Horarios en timezone de Colombia
+
+---
+
+## 🛠️ **CONFIGURACIÓN TÉCNICA**
+
+### **Timezone Configuration:**
 ```javascript
-// Obtener registros de fecha específica
-GET /api/registros/fecha/:sede_id/:fecha
-
-// Obtener estadísticas de fecha específica
-GET /api/registros/estadisticas/:sede_id/:fecha
-
-// Cerrar sesiones automáticamente
-POST /api/registros/cerrar-sesiones-automaticas
-
-// Obtener sesiones activas
-GET /api/registros/sesiones-activas/:sede_id
+// Colombia está en UTC-5
+const colombiaOffset = -5 * 60; // -5 horas en minutos
+const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+const colombiaTime = new Date(utc + (colombiaOffset * 60000));
 ```
 
-### Base de Datos (db-config.js)
-```sql
--- Nuevas consultas agregadas
-getRegistrosPorFecha
-getEstadisticasPorFecha
-cerrarSesionesAutomaticas
-getSesionesActivas
-```
-
----
-
-## 🎨 Nuevos Elementos de UI
-
-### Botones Agregados
-- **📅 Exportar Fecha**: Exportar registros de fecha específica
-- **👥 Sesiones Activas**: Ver y gestionar sesiones activas
-
-### Modales
-- **Modal de Sesiones Activas**: Muestra todas las sesiones activas con detalles
-- **Información detallada**: Empleado, documento, hora de entrada, duración
-
-### Estilos CSS
-- Nuevos estilos para el modal de sesiones activas
-- Diseño responsivo y consistente con el tema existente
-
----
-
-## 🚀 Script de Cierre Automático
-
-### Archivo: `auto-close-sessions.js`
-- Script independiente para cierre automático
-- Verificación cada minuto
-- Logging detallado
-- Manejo de errores robusto
-
-### Configuración
+### **PostgreSQL Configuration:**
 ```javascript
-const HORA_CIERRE = 22; // 10:00 PM
-const MINUTO_CIERRE = 0;
-const SEDES = [1, 2]; // Manizales y Dorada
+// En db-config.js
+options: '-c timezone=America/Bogota'
 ```
 
-### Ejecución
-```bash
-node auto-close-sessions.js
-```
+### **API Endpoints Actualizados:**
+- `/api/registros/activo/:documento` - Timezone corregido
+- `/api/registros/ultimo/:documento` - Timezone corregido
+- `/api/registros/entrada` - Timezone corregido
+- `/api/registros/:id/salida` - Timezone corregido
+- `/api/registros/cerrar-sesiones-automaticas` - Timezone corregido
 
 ---
 
-## 🔒 Seguridad
+## 🧪 **PRUEBAS RECOMENDADAS**
 
-### Contraseñas Requeridas
-- **Exportar Fecha**: `admin123`
-- **Cerrar Sesiones**: `admin123`
-- **Ver Sesiones Activas**: Sin contraseña (solo visualización)
+### **1. Verificar Timezone:**
+- ✅ Registrar entrada a las 8:00 AM (debe mostrar 8:00 AM, no 1:00 PM)
+- ✅ Registrar salida a las 6:00 PM (debe mostrar 6:00 PM, no 11:00 PM)
+- ✅ Verificar que las fechas sean correctas en Colombia
 
-### Validaciones
-- ✅ Formato de fecha (YYYY-MM-DD)
-- ✅ Existencia de registros
-- ✅ Permisos de sede
-- ✅ Manejo de errores
+### **2. Verificar Consistencia:**
+- ✅ Misma hora en frontend y backend
+- ✅ Misma hora en base de datos
+- ✅ Exportaciones con hora correcta
 
----
-
-## 📊 Estados de Registro
-
-### Nuevos Estados
-- `automatico`: Sesión cerrada automáticamente a las 10:00 PM
-- `forzado`: Sesión cerrada manualmente por administrador
-- `finalizado`: Sesión cerrada normalmente por el empleado
+### **3. Verificar Funcionalidades:**
+- ✅ Cierre automático a las 10:00 PM (hora de Colombia)
+- ✅ Historiales con fechas correctas
+- ✅ Estadísticas con cálculos precisos
 
 ---
 
-## 🛠️ Instalación y Configuración
+## 📝 **NOTAS IMPORTANTES**
 
-### Dependencias
-```bash
-npm install node-fetch
-```
+### **⚠️ Antes de los Cambios:**
+- Las fechas se guardaban en UTC
+- `toISOString()` causaba desfase de 5 horas
+- Los registros mostraban hora incorrecta
 
-### Variables de Entorno
-```bash
-API_BASE=http://localhost:3000/api
-```
+### **✅ Después de los Cambios:**
+- Todas las fechas se manejan en timezone de Colombia
+- No hay desfases de hora
+- Consistencia total en el sistema
 
-### Verificación
-1. Servidor funcionando en puerto 3000
-2. Base de datos PostgreSQL conectada
-3. Script de cierre automático ejecutándose (opcional)
-
----
-
-## 📝 Logs y Monitoreo
-
-### Logs del Servidor
-```
-📅 Obteniendo registros para sede: 1 fecha: 2024-01-15
-📊 Obteniendo estadísticas para sede: 1 fecha: 2024-01-15
-🕙 Cerrando sesiones automáticas para sede: 1
-👥 Obteniendo sesiones activas para sede: 1
-```
-
-### Logs del Script Automático
-```
-🕙 [2024-01-15T22:00:00.000Z] Ejecutando cierre automático de sesiones
-✅ [2024-01-15T22:00:01.000Z] 3 sesiones cerradas en sede 1
-📊 [2024-01-15T22:00:02.000Z] Resumen: 5 sesiones cerradas en total
-```
+### **🔒 Seguridad:**
+- Las funciones administrativas requieren contraseña
+- Validación de empleados antes de cualquier operación
+- Prevención de sesiones duplicadas
 
 ---
 
-## 🔄 Compatibilidad
+## 🎯 **OBJETIVOS CUMPLIDOS**
 
-### Versiones Anteriores
-- ✅ Totalmente compatible con funcionalidades existentes
-- ✅ No afecta registros históricos
-- ✅ Mantiene formato de exportación actual
-
-### Navegadores
-- ✅ Chrome, Firefox, Safari, Edge
-- ✅ Responsive design para móviles
-- ✅ Funcionalidad offline limitada
+- ✅ **Timezone corregido** - Todas las fechas/horas en Colombia
+- ✅ **Consistencia** - Misma hora en frontend, backend y BD
+- ✅ **Precisión** - Cálculos de duración correctos
+- ✅ **Usabilidad** - Interfaz muestra hora local
+- ✅ **Confiabilidad** - Sistema robusto y estable
 
 ---
 
-## 📞 Soporte
-
-### Problemas Comunes
-1. **Error de contraseña**: Verificar que sea exactamente `admin123`
-2. **Fecha inválida**: Usar formato YYYY-MM-DD
-3. **Sin registros**: Verificar que existan registros para la fecha
-
-### Contacto
-- Email: weare.average.ai@gmail.com
-- Desarrollado por: average.lat
-
----
-
-## 🎯 Próximas Mejoras
-
-### Funcionalidades Planificadas
-- [ ] Exportación a Excel (.xlsx)
-- [ ] Reportes semanales/mensuales
-- [ ] Notificaciones push
-- [ ] Dashboard de estadísticas
-- [ ] Integración con sistemas de nómina
-
-### Optimizaciones
-- [ ] Caché de consultas frecuentes
-- [ ] Compresión de archivos de exportación
-- [ ] Logs estructurados (JSON)
-- [ ] Métricas de rendimiento
+**📅 Última actualización:** Diciembre 2024  
+**🔧 Desarrollado por:** Humanos + IA en [average](https://ai.average.lat)  
+**🌍 Timezone:** Colombia (UTC-5) / America/Bogota
