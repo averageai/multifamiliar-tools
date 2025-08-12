@@ -1353,8 +1353,7 @@
                 await refrescarEstadoEmpleado();
 
                 const duracionHoras = finalizarResult.data.duracion_horas || 0;
-                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
-                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                 mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion}`, 'success');
                 limpiarFormularioExitoso(); // Llamar a la nueva función
 
@@ -1406,8 +1405,7 @@
                               registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
-                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
-                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                 const fechaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleDateString('es-CO') || new Date(registro.hora_entrada).toLocaleDateString('es-CO');
                 const horaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                 const fechaSalida = registro.fecha_salida ? (utcToColombia(registro.fecha_salida)?.toLocaleDateString('es-CO') || new Date(registro.fecha_salida).toLocaleDateString('es-CO')) : '-';
@@ -1601,8 +1599,7 @@
                 contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
                 contenidoPOS += `    ${empleado.nombre}\n`;
                 contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
-                const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
-                                        empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                const horasFormateadas = empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
                 contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
                 contenidoPOS += '    ----------------------------------------\n';
             });
@@ -1705,8 +1702,7 @@
                                         const entrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                                         const salida = registro.hora_salida ? (utcToColombia(registro.hora_salida)?.toLocaleTimeString('es-CO') || new Date(registro.hora_salida).toLocaleTimeString('es-CO')) : 'En curso';
                                         const duracionHoras = parseFloat(registro.duracion_horas) || 0;
-                                        const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
-                                                        duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                                        const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                                         const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                                                      registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                                         
@@ -1864,8 +1860,7 @@
                     contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
                     contenidoPOS += `    ${empleado.nombre}\n`;
                     contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
-                    const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
-                                            empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                    const horasFormateadas = empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
                     contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
                     contenidoPOS += '    ----------------------------------------\n';
                 });
