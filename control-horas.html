@@ -448,6 +448,36 @@
             padding: 8px 15px;
             font-size: 14px;
             font-weight: 600;
+
+        .btn-toggle {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 10px;
+            padding: 2px 6px;
+        }
+
+        .btn-toggle:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .documento-grupo {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1e3a2e 100%);
+        }
+
+        .sesion-detalle {
+            background-color: #2a2a2a !important;
+            border-left: 3px solid #3498db;
+        }
+
+        .sesion-detalle td:first-child {
+            color: #3498db;
+            font-style: italic;
+        }
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1385,6 +1415,28 @@
                 return;
             }
 
+            // Agrupar registros por documento
+            const registrosPorDocumento = {};
+            registros.forEach(registro => {
+                if (!registrosPorDocumento[registro.documento]) {
+                    registrosPorDocumento[registro.documento] = [];
+                }
+                registrosPorDocumento[registro.documento].push(registro);
+            });
+
+            // Separar documentos con una sola sesión de los que tienen múltiples
+            const documentosUnicos = [];
+            const documentosMultiples = [];
+
+            Object.keys(registrosPorDocumento).forEach(documento => {
+                const sesiones = registrosPorDocumento[documento];
+                if (sesiones.length === 1) {
+                    documentosUnicos.push({ documento, sesiones });
+                } else {
+                    documentosMultiples.push({ documento, sesiones });
+                }
+            });
+
             let tableHTML = `
                 <table>
                     <thead>
@@ -1403,11 +1455,15 @@
                     <tbody>
             `;
 
-            registros.forEach((registro, index) => {
+            let contadorGlobal = 1;
+
+            // Primero mostrar registros únicos (sin desplegable)
+            documentosUnicos.forEach(({ documento, sesiones }) => {
+                const registro = sesiones[0];
                 const rowClass = registro.estado === 'activo' ? 'status-active' : 
                                registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
                 
-                                 const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                               registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
@@ -1419,7 +1475,7 @@
                 
                 tableHTML += `
                     <tr class="${rowClass}">
-                        <td>${index + 1}</td>
+                        <td>${contadorGlobal++}</td>
                         <td><span class="time-badge">${registro.documento}</span></td>
                         <td>${registro.nombre_empleado}</td>
                         <td>${fechaEntrada}</td>
@@ -1437,8 +1493,99 @@
                 `;
             });
 
+            // Luego mostrar documentos con múltiples sesiones (con desplegable)
+            documentosMultiples.forEach(({ documento, sesiones }) => {
+                // Obtener el último estado para mostrar en la fila principal
+                const ultimoRegistro = sesiones[0]; // Ya ordenados por fecha descendente
+                const ultimoEstado = ultimoRegistro.estado === 'activo' ? '🟢 Activo' : 
+                                   ultimoRegistro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                
+                const rowClass = ultimoRegistro.estado === 'activo' ? 'status-active' : 
+                               ultimoRegistro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
+                
+                const fechaEntrada = extraerSoloFecha(ultimoRegistro.fecha_entrada);
+                const horaEntrada = new Date(ultimoRegistro.hora_entrada).toLocaleTimeString('es-CO');
+                const fechaSalida = extraerSoloFecha(ultimoRegistro.fecha_salida);
+                const horaSalida = ultimoRegistro.hora_salida ? new Date(ultimoRegistro.hora_salida).toLocaleTimeString('es-CO') : '-';
+                
+                // Fila principal con desplegable
+                tableHTML += `
+                    <tr class="${rowClass} documento-grupo" data-documento="${documento}">
+                        <td>${contadorGlobal++}</td>
+                        <td>
+                            <span class="time-badge">${documento}</span>
+                            <button class="btn-toggle" onclick="toggleSesiones('${documento}')" style="margin-left: 5px; font-size: 10px; padding: 1px 4px;">
+                                📋 (${sesiones.length} sesiones)
+                            </button>
+                        </td>
+                        <td>${ultimoRegistro.nombre_empleado}</td>
+                        <td>${fechaEntrada}</td>
+                        <td>${horaEntrada}</td>
+                        <td>${fechaSalida}</td>
+                        <td>${horaSalida}</td>
+                        <td>${ultimoEstado}</td>
+                        <td>
+                            ${ultimoRegistro.estado === 'activo' ? 
+                                `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${ultimoRegistro.id})">🚪</button>` : 
+                                `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${ultimoRegistro.id})">❌</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+
+                // Filas desplegables para las sesiones
+                sesiones.forEach((sesion, index) => {
+                    const sesionEstado = sesion.estado === 'activo' ? '🟢 Activo' : 
+                                       sesion.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                    
+                    const sesionRowClass = sesion.estado === 'activo' ? 'status-active' : 
+                                         sesion.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
+                    
+                    const duracionHoras = parseFloat(sesion.duracion_horas) || 0;
+                    const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                    const sesionFechaEntrada = extraerSoloFecha(sesion.fecha_entrada);
+                    const sesionHoraEntrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
+                    const sesionFechaSalida = extraerSoloFecha(sesion.fecha_salida);
+                    const sesionHoraSalida = sesion.hora_salida ? new Date(sesion.hora_salida).toLocaleTimeString('es-CO') : '-';
+                    
+                    tableHTML += `
+                        <tr class="${sesionRowClass} sesion-detalle" data-documento="${documento}" style="display: none; background-color: #2a2a2a;">
+                            <td style="padding-left: 20px;">↳ Sesión ${index + 1}</td>
+                            <td><span class="time-badge">${sesion.documento}</span></td>
+                            <td>${sesion.nombre_empleado}</td>
+                            <td>${sesionFechaEntrada}</td>
+                            <td>${sesionHoraEntrada}</td>
+                            <td>${sesionFechaSalida}</td>
+                            <td>${sesionHoraSalida}</td>
+                            <td>${sesionEstado}</td>
+                            <td>
+                                ${sesion.estado === 'activo' ? 
+                                    `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${sesion.id})">🚪</button>` : 
+                                    `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${sesion.id})">❌</button>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
             tableHTML += `</tbody></table>`;
             container.innerHTML = tableHTML;
+        }
+
+        function toggleSesiones(documento) {
+            const sesiones = document.querySelectorAll(`.sesion-detalle[data-documento="${documento}"]`);
+            const boton = event.target;
+            
+            sesiones.forEach(sesion => {
+                if (sesion.style.display === 'none') {
+                    sesion.style.display = 'table-row';
+                    boton.textContent = `📋 (${sesiones.length} sesiones) ▼`;
+                } else {
+                    sesion.style.display = 'none';
+                    boton.textContent = `📋 (${sesiones.length} sesiones) ▶`;
+                }
+            });
         }
 
         async function forzarSalida(registroId) {
