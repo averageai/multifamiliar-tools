@@ -1412,9 +1412,9 @@
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                 const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
-                const fechaEntrada = registro.fecha_entrada || '-';
+                const fechaEntrada = registro.fecha_entrada.split('T')[0] || '-';
                 const horaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                const fechaSalida = registro.fecha_salida || '-';
+                const fechaSalida = registro.fecha_salida.split('T')[0] || '-';
                 const horaSalida = registro.hora_salida ? (utcToColombia(registro.hora_salida)?.toLocaleTimeString('es-CO') || new Date(registro.hora_salida).toLocaleTimeString('es-CO')) : '-';
                 
                 tableHTML += `
