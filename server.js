@@ -79,13 +79,19 @@ const handleDatabaseError = (err, res) => {
 // Función helper para obtener fecha y hora en timezone de Colombia
 function getColombiaDateTime() {
     const now = new Date();
-    const colombiaOffset = -5 * 60; // -5 horas en minutos
-    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const colombiaTime = new Date(utc + (colombiaOffset * 60000));
+    
+    // Usar toLocaleString con timezone específico de Colombia
+    const colombiaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+    
+    // Obtener la fecha en formato YYYY-MM-DD
+    const fecha = colombiaTime.toISOString().split('T')[0];
+    
+    // Obtener la hora actual en timezone de Colombia
+    const hora = colombiaTime.toISOString();
     
     return {
-        fecha: colombiaTime.toISOString().split('T')[0],
-        hora: colombiaTime.toISOString(),
+        fecha: fecha,
+        hora: hora,
         horaLocal: colombiaTime.toLocaleTimeString('es-CO')
     };
 }
@@ -155,10 +161,36 @@ app.get('/api/debug/routes', (req, res) => {
             '/control-horas',
             '/api/health',
             '/api/debug/files',
-            '/api/debug/routes'
+            '/api/debug/routes',
+            '/api/debug/datetime'
         ],
         currentPath: req.path,
         userAgent: req.get('User-Agent')
+    });
+});
+
+// Debug endpoint para verificar fechas y timezone
+app.get('/api/debug/datetime', (req, res) => {
+    const { fecha, hora, horaLocal } = getColombiaDateTime();
+    const now = new Date();
+    
+    res.json({
+        success: true,
+        serverTime: {
+            utc: now.toISOString(),
+            local: now.toLocaleString(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        },
+        colombiaTime: {
+            fecha: fecha,
+            hora: hora,
+            horaLocal: horaLocal
+        },
+        timezoneInfo: {
+            colombiaOffset: -5,
+            serverOffset: now.getTimezoneOffset(),
+            isDST: now.getTimezoneOffset() !== new Date(now.getFullYear(), 0, 1).getTimezoneOffset()
+        }
     });
 });
 
@@ -494,9 +526,11 @@ app.post('/api/registros/cerrar-sesiones-automaticas', async (req, res) => {
 app.get('/api/registros/sesiones-activas/:sede_id', async (req, res) => {
     try {
         const { sede_id } = req.params;
-        console.log('👥 Obteniendo sesiones activas para sede:', sede_id);
+        const { fecha: fechaColombia } = getColombiaDateTime();
+        const fecha = req.query.fecha || fechaColombia;
+        console.log('👥 Obteniendo sesiones activas para sede:', sede_id, 'fecha:', fecha);
         
-        const result = await pool.query(queries.getSesionesActivas, [sede_id]);
+        const result = await pool.query(queries.getSesionesActivas, [sede_id, fecha]);
         
         res.json({
             success: true,

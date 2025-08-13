@@ -257,6 +257,7 @@ const queries = {
         JOIN sedes s ON rh.sede_id = s.id
         WHERE rh.sede_id = $1 
         AND rh.estado = 'activo'
+        AND rh.fecha_entrada = $2
         ORDER BY rh.hora_entrada ASC
     `
 };

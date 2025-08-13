@@ -1971,7 +1971,8 @@
             try {
                 console.log('👥 Obteniendo sesiones activas para sede:', sedeActual);
 
-                const response = await fetch(`${API_BASE}/registros/sesiones-activas/${sedeActual}`);
+                const { fecha } = getColombiaDateTime();
+                const response = await fetch(`${API_BASE}/registros/sesiones-activas/${sedeActual}?fecha=${fecha}`);
                 const result = await response.json();
 
                 if (!result.success) {
@@ -2068,14 +2069,19 @@
         // Función para obtener fecha y hora en timezone de Colombia
         function getColombiaDateTime() {
             const ahora = new Date();
-            // Colombia está en UTC-5
-            const colombiaOffset = -5 * 60; // -5 horas en minutos
-            const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
-            const colombiaTime = new Date(utc + (colombiaOffset * 60000));
+            
+            // Usar toLocaleString con timezone específico de Colombia
+            const colombiaTime = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            
+            // Obtener la fecha en formato YYYY-MM-DD
+            const fecha = colombiaTime.toISOString().split('T')[0];
+            
+            // Obtener la hora actual en timezone de Colombia
+            const hora = colombiaTime.toISOString();
             
             return {
-                fecha: colombiaTime.toISOString().split('T')[0],
-                hora: colombiaTime.toISOString(),
+                fecha: fecha,
+                hora: hora,
                 horaLocal: colombiaTime.toLocaleTimeString('es-CO')
             };
         }
@@ -2084,9 +2090,9 @@
         function utcToColombia(utcString) {
             if (!utcString) return null;
             const utcDate = new Date(utcString);
-            const colombiaOffset = -5 * 60; // -5 horas en minutos
-            const utc = utcDate.getTime() + (utcDate.getTimezoneOffset() * 60000);
-            const colombiaTime = new Date(utc + (colombiaOffset * 60000));
+            
+            // Usar toLocaleString con timezone específico de Colombia
+            const colombiaTime = new Date(utcDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
             return colombiaTime;
         }
 
