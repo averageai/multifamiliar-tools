@@ -757,7 +757,7 @@
             <div class="main-content" id="mainContent">
                 <div class="top-bar">
                     <div class="system-info">
-                        Sistema de Control de Horas - Sede: <span id="sedeInfo">-</span> - <span id="currentTime">Cargando...</span>
+                        Sistema de Control de Horas - Sede: <span id="sedeInfo">-</span> - <span id="currentDateTime">Cargando...</span>
                     </div>
                     <div class="stats-chips" id="statsChips">
                         <span class="stat-chip">0 registros</span>
@@ -857,11 +857,17 @@
         // Configuración de la API
         const API_BASE = window.location.origin + '/api';
 
-        // Actualizar hora actual
+        // Actualizar fecha y hora actual del sistema
         function actualizarHora() {
-            const ahora = new Date();
-            const horaFormateada = ahora.toLocaleTimeString('es-CO');
-            document.getElementById('currentTime').textContent = horaFormateada;
+            const { fecha, horaLocal } = getColombiaDateTime();
+            const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-CO', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const fechaHoraCompleta = `${fechaFormateada} - ${horaLocal}`;
+            document.getElementById('currentDateTime').textContent = fechaHoraCompleta;
         }
 
         // Actualizar cada segundo
@@ -1588,8 +1594,10 @@
             contenidoPOS += '    CONTROL DE HORAS - RESUMEN DIARIO          \n';
             contenidoPOS += '================================================\n';
             contenidoPOS += `Sede: ${sedeNombre}\n`;
-            contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
-            contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+            const { fecha, horaLocal } = getColombiaDateTime();
+            const fechaFormateada = new Date(fecha).toLocaleDateString('es-CO');
+            contenidoPOS += `Fecha: ${fechaFormateada}\n`;
+            contenidoPOS += `Hora: ${horaLocal}\n`;
             contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
             contenidoPOS += `Usuarios activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += '================================================\n';
@@ -1614,7 +1622,6 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-                            const { fecha } = getColombiaDateTime();
             a.download = `control_horas_${sedeNombre.toLowerCase()}_${fecha}.txt`;
             document.body.appendChild(a);
             a.click();
@@ -1850,7 +1857,8 @@
                 contenidoPOS += '================================================\n';
                 contenidoPOS += `Sede: ${sedeNombre}\n`;
                 contenidoPOS += `Fecha: ${fechaEspecifica}\n`;
-                contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+                const { horaLocal } = getColombiaDateTime();
+                contenidoPOS += `Hora: ${horaLocal}\n`;
                 contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
                 contenidoPOS += `Usuarios activos: ${estadisticasFecha.empleados_activos || 0}\n`;
                 contenidoPOS += '================================================\n';
@@ -1947,6 +1955,7 @@
 
         // Función para verificar y cerrar sesiones automáticamente a las 10pm
         function verificarCierreAutomatico() {
+            const { horaLocal } = getColombiaDateTime();
             const ahora = new Date();
             const hora = ahora.getHours();
             const minutos = ahora.getMinutes();
@@ -2002,7 +2011,9 @@
                                 <div class="sesiones-lista">
                                     ${sesionesActivas.map((sesion, index) => {
                                         const entrada = utcToColombia(sesion.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
-                                        const duracion = calcularDuracion(sesion.hora_entrada, new Date());
+                                        const { hora } = getColombiaDateTime();
+                                        const horaActual = new Date(hora);
+                                        const duracion = calcularDuracion(sesion.hora_entrada, horaActual);
                                         
                                         return `
                                             <div class="sesion-activa-item">
@@ -2070,19 +2081,18 @@
         function getColombiaDateTime() {
             const ahora = new Date();
             
-            // Usar toLocaleString con timezone específico de Colombia
-            const colombiaTime = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            // Obtener fecha y hora en timezone de Colombia usando toLocaleString
+            const fechaColombia = ahora.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
+            const horaColombia = ahora.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
             
-            // Obtener la fecha en formato YYYY-MM-DD
-            const fecha = colombiaTime.toISOString().split('T')[0];
-            
-            // Obtener la hora actual en timezone de Colombia
-            const hora = colombiaTime.toISOString();
+            // Crear fecha y hora en formato ISO para la base de datos
+            const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
+            const hora = `${fechaColombia}T${horaColombia}.000Z`; // Formato ISO para DB
             
             return {
                 fecha: fecha,
                 hora: hora,
-                horaLocal: colombiaTime.toLocaleTimeString('es-CO')
+                horaLocal: ahora.toLocaleTimeString('es-CO', {timeZone: "America/Bogota"})
             };
         }
 

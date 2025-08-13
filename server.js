@@ -80,19 +80,18 @@ const handleDatabaseError = (err, res) => {
 function getColombiaDateTime() {
     const now = new Date();
     
-    // Usar toLocaleString con timezone específico de Colombia
-    const colombiaTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+    // Obtener fecha y hora en timezone de Colombia usando toLocaleString
+    const fechaColombia = now.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
+    const horaColombia = now.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
     
-    // Obtener la fecha en formato YYYY-MM-DD
-    const fecha = colombiaTime.toISOString().split('T')[0];
-    
-    // Obtener la hora actual en timezone de Colombia
-    const hora = colombiaTime.toISOString();
+    // Crear fecha y hora en formato ISO para la base de datos
+    const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
+    const hora = `${fechaColombia}T${horaColombia}.000Z`; // Formato ISO para DB
     
     return {
         fecha: fecha,
         hora: hora,
-        horaLocal: colombiaTime.toLocaleTimeString('es-CO')
+        horaLocal: now.toLocaleTimeString('es-CO', {timeZone: "America/Bogota"})
     };
 }
 
@@ -107,18 +106,20 @@ app.get('/api/health', async (req, res) => {
     try {
         // Verificar conexión a la base de datos
         await pool.query('SELECT NOW()');
+        const { hora } = getColombiaDateTime();
         res.json({
             success: true,
             message: 'Servidor funcionando correctamente',
-            timestamp: new Date().toISOString(),
+            timestamp: hora,
             database: 'Conectado'
         });
     } catch (err) {
         console.error('Error en health check:', err);
+        const { hora } = getColombiaDateTime();
         res.status(500).json({
             success: false,
             message: 'Error de conexión a la base de datos',
-            timestamp: new Date().toISOString(),
+            timestamp: hora,
             database: 'Desconectado',
             error: err.message
         });
@@ -139,10 +140,11 @@ app.get('/api/debug/files', (req, res) => {
 
 // Debug endpoint para verificar rutas
 app.get('/api/debug/routes', (req, res) => {
+    const { hora } = getColombiaDateTime();
     res.json({
         success: true,
         message: 'Servidor funcionando',
-        timestamp: new Date().toISOString(),
+        timestamp: hora,
         routes: [
             '/',
             '/spa',
