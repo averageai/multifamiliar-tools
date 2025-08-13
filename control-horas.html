@@ -2083,7 +2083,7 @@
             
             // Obtener fecha y hora en timezone de Colombia usando toLocaleString
             const fechaColombia = ahora.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
-            const horaColombia = ahora.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
+            const horaColombia = ahora.toLocaleTimeString("en-CA", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
             
             // Crear fecha y hora en formato ISO para la base de datos
             const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
