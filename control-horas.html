@@ -1413,9 +1413,9 @@
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                 const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                 const fechaEntrada = extraerSoloFecha(registro.fecha_entrada);
-                const horaEntrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
+                const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                 const fechaSalida = extraerSoloFecha(registro.fecha_salida);
-                const horaSalida = registro.hora_salida ? (utcToColombia(registro.hora_salida)?.toLocaleTimeString('es-CO') || new Date(registro.hora_salida).toLocaleTimeString('es-CO')) : '-';
+                const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-';
                 
                 tableHTML += `
                     <tr class="${rowClass}">
@@ -1706,8 +1706,8 @@
                                 </div>
                                 <div class="historial-sesiones">
                                     ${registrosEmpleado.map((registro, index) => {
-                                        const entrada = utcToColombia(registro.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                                        const salida = registro.hora_salida ? (utcToColombia(registro.hora_salida)?.toLocaleTimeString('es-CO') || new Date(registro.hora_salida).toLocaleTimeString('es-CO')) : 'En curso';
+                                        const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
+                                        const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
                                         const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                                         const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                                         const estado = registro.estado === 'activo' ? '🟢 Activo' : 
@@ -1957,8 +1957,10 @@
         function verificarCierreAutomatico() {
             const { horaLocal } = getColombiaDateTime();
             const ahora = new Date();
-            const hora = ahora.getHours();
-            const minutos = ahora.getMinutes();
+            // Convertir hora local a hora de Colombia
+            const horaColombia = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Bogota"}));
+            const hora = horaColombia.getHours();
+            const minutos = horaColombia.getMinutes();
             
             // Verificar si es exactamente las 10:00 PM (22:00)
             if (hora === 22 && minutos === 0) {
@@ -2010,7 +2012,7 @@
                                 </div>
                                 <div class="sesiones-lista">
                                     ${sesionesActivas.map((sesion, index) => {
-                                        const entrada = utcToColombia(sesion.hora_entrada)?.toLocaleTimeString('es-CO') || new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
+                                        const entrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
                                         const { hora } = getColombiaDateTime();
                                         const horaActual = new Date(hora);
                                         const duracion = calcularDuracion(sesion.hora_entrada, horaActual);
@@ -2083,11 +2085,11 @@
             
             // Obtener fecha y hora en timezone de Colombia usando toLocaleString
             const fechaColombia = ahora.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
-            const horaColombia = ahora.toLocaleTimeString("en-CA", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
+            const horaColombia = ahora.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
             
-            // Crear fecha y hora en formato ISO para la base de datos
+            // Crear fecha y hora en formato ISO para la base de datos (SIN .000Z para evitar UTC)
             const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
-            const hora = `${fechaColombia}T${horaColombia}.000Z`; // Formato ISO para DB
+            const hora = `${fechaColombia}T${horaColombia}`; // Formato ISO sin Z para mantener hora de Colombia
             
             return {
                 fecha: fecha,
@@ -2096,15 +2098,7 @@
             };
         }
 
-        // Función para convertir fecha/hora UTC a Colombia
-        function utcToColombia(utcString) {
-            if (!utcString) return null;
-            const utcDate = new Date(utcString);
-            
-            // Usar toLocaleString con timezone específico de Colombia
-            const colombiaTime = new Date(utcDate.toLocaleString("en-US", {timeZone: "America/Bogota"}));
-            return colombiaTime;
-        }
+
 
         // Función helper para extraer solo la fecha (YYYY-MM-DD) de un string ISO
         function extraerSoloFecha(fechaISO) {

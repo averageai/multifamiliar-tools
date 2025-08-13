@@ -84,9 +84,9 @@ function getColombiaDateTime() {
     const fechaColombia = now.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
     const horaColombia = now.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
     
-    // Crear fecha y hora en formato ISO para la base de datos
+    // Crear fecha y hora en formato ISO para la base de datos (SIN .000Z para evitar UTC)
     const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
-    const hora = `${fechaColombia}T${horaColombia}.000Z`; // Formato ISO para DB
+    const hora = `${fechaColombia}T${horaColombia}`; // Formato ISO sin Z para mantener hora de Colombia
     
     return {
         fecha: fecha,
@@ -175,6 +175,8 @@ app.get('/api/debug/routes', (req, res) => {
 app.get('/api/debug/datetime', (req, res) => {
     const { fecha, hora, horaLocal } = getColombiaDateTime();
     const now = new Date();
+    // Convertir a hora de Colombia para comparaciones
+    const nowColombia = new Date(now.toLocaleString("en-US", {timeZone: "America/Bogota"}));
     
     res.json({
         success: true,
@@ -190,8 +192,8 @@ app.get('/api/debug/datetime', (req, res) => {
         },
         timezoneInfo: {
             colombiaOffset: -5,
-            serverOffset: now.getTimezoneOffset(),
-            isDST: now.getTimezoneOffset() !== new Date(now.getFullYear(), 0, 1).getTimezoneOffset()
+            serverOffset: nowColombia.getTimezoneOffset(),
+            isDST: nowColombia.getTimezoneOffset() !== new Date(nowColombia.getFullYear(), 0, 1).getTimezoneOffset()
         }
     });
 });
