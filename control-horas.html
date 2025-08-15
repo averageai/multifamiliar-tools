@@ -448,36 +448,6 @@
             padding: 8px 15px;
             font-size: 14px;
             font-weight: 600;
-
-        .btn-toggle {
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 10px;
-            padding: 2px 6px;
-        }
-
-        .btn-toggle:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-        }
-
-        .documento-grupo {
-            background: linear-gradient(135deg, #2a2a2a 0%, #1e3a2e 100%);
-        }
-
-        .sesion-detalle {
-            background-color: #2a2a2a !important;
-            border-left: 3px solid #3498db;
-        }
-
-        .sesion-detalle td:first-child {
-            color: #3498db;
-            font-style: italic;
-        }
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -787,7 +757,7 @@
             <div class="main-content" id="mainContent">
                 <div class="top-bar">
                     <div class="system-info">
-                        Sistema de Control de Horas - Sede: <span id="sedeInfo">-</span> - <span id="currentDateTime">Cargando...</span>
+                        Sistema de Control de Horas - Sede: <span id="sedeInfo">-</span> - <span id="currentTime">Cargando...</span>
                     </div>
                     <div class="stats-chips" id="statsChips">
                         <span class="stat-chip">0 registros</span>
@@ -821,7 +791,7 @@
                                                          <div class="form-group">
                                  <button class="btn btn-primary" onclick="registrarEntrada()" id="btnEntrada">⏰ Registrar Entrada</button>
                                  <button class="btn btn-warning" onclick="registrarSalida()" id="btnSalida">🚪 Registrar Salida</button>
-                                 <button class="btn btn-info" onclick="refrescarEstadoEmpleado()" style="margin-left: 10px;">🔄 Refrescar Estado</button>
+                                 <!-- <button class="btn btn-info" onclick="refrescarEstadoEmpleado()" style="margin-left: 10px;">🔄 Refrescar Estado</button> -->
                                  <button class="btn btn-secondary" onclick="verHistorialEmpleado()" style="margin-left: 10px;">📋 Ver Historial</button>
                              </div>
                         </div>
@@ -887,17 +857,11 @@
         // Configuración de la API
         const API_BASE = window.location.origin + '/api';
 
-        // Actualizar fecha y hora actual del sistema
+        // Actualizar hora actual
         function actualizarHora() {
-            const { fecha, horaLocal } = getColombiaDateTime();
-            const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-CO', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            const fechaHoraCompleta = `${fechaFormateada} - ${horaLocal}`;
-            document.getElementById('currentDateTime').textContent = fechaHoraCompleta;
+            const ahora = new Date();
+            const horaFormateada = ahora.toLocaleTimeString('es-CO');
+            document.getElementById('currentTime').textContent = horaFormateada;
         }
 
         // Actualizar cada segundo
@@ -956,7 +920,7 @@
             console.log('🔄 Verificando estado completo del empleado:', empleadoValidado.documento);
             
             try {
-                const { fecha } = getColombiaDateTime();
+                const fecha = new Date().toISOString().split('T')[0];
                 
                 // 1. Verificar registro activo
                 console.log('🔍 1. Verificando registro activo...');
@@ -1164,7 +1128,7 @@
 
 
         async function cargarRegistrosHoy() {
-            const { fecha } = getColombiaDateTime();
+            const fecha = new Date().toISOString().split('T')[0];
             const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
             const result = await response.json();
             
@@ -1177,7 +1141,7 @@
         }
 
         async function cargarEstadisticas() {
-            const { fecha } = getColombiaDateTime();
+            const fecha = new Date().toISOString().split('T')[0];
             const response = await fetch(`${API_BASE}/estadisticas/${sedeActual}/${fecha}`);
             const result = await response.json();
             
@@ -1216,7 +1180,7 @@
             console.log('🔍 Iniciando registro de entrada para:', empleadoValidado.documento);
 
             try {
-                const { fecha } = getColombiaDateTime();
+                const fecha = new Date().toISOString().split('T')[0];
                 
                 // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
                 console.log('🔍 Verificando sesión activa...');
@@ -1239,7 +1203,9 @@
                 console.log('✅ No hay sesión activa, procediendo con entrada...');
 
                 // Crear registro de entrada
-                const { fecha: fechaEntrada, hora: horaEntrada } = getColombiaDateTime();
+                const ahora = new Date();
+                const fechaEntrada = ahora.toISOString().split('T')[0];
+                const horaEntrada = ahora.toISOString();
 
                 console.log('📝 Creando registro con datos:', {
                     empleado_id: empleadoValidado.id,
@@ -1315,7 +1281,7 @@
             console.log('🔍 Iniciando registro de salida para:', empleadoValidado.documento);
 
             try {
-                const { fecha } = getColombiaDateTime();
+                const fecha = new Date().toISOString().split('T')[0];
                 
                 // Verificar nuevamente si tiene registro activo antes de finalizar
                 console.log('🔍 Verificando sesión activa...');
@@ -1348,7 +1314,9 @@
                 }
 
                 const registro = activoResult.data;
-                const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
+                const ahora = new Date();
+                const fechaSalida = ahora.toISOString().split('T')[0];
+                const horaSalida = ahora.toISOString();
 
                 console.log('📝 Finalizando registro con datos:', {
                     registro_id: registro.id,
@@ -1389,7 +1357,8 @@
                 await refrescarEstadoEmpleado();
 
                 const duracionHoras = finalizarResult.data.duracion_horas || 0;
-                const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                 mostrarAlerta(`✅ Salida registrada para ${empleadoValidado.nombre} - Duración: ${duracion}`, 'success');
                 limpiarFormularioExitoso(); // Llamar a la nueva función
 
@@ -1415,28 +1384,6 @@
                 return;
             }
 
-            // Agrupar registros por documento
-            const registrosPorDocumento = {};
-            registros.forEach(registro => {
-                if (!registrosPorDocumento[registro.documento]) {
-                    registrosPorDocumento[registro.documento] = [];
-                }
-                registrosPorDocumento[registro.documento].push(registro);
-            });
-
-            // Separar documentos con una sola sesión de los que tienen múltiples
-            const documentosUnicos = [];
-            const documentosMultiples = [];
-
-            Object.keys(registrosPorDocumento).forEach(documento => {
-                const sesiones = registrosPorDocumento[documento];
-                if (sesiones.length === 1) {
-                    documentosUnicos.push({ documento, sesiones });
-                } else {
-                    documentosMultiples.push({ documento, sesiones });
-                }
-            });
-
             let tableHTML = `
                 <table>
                     <thead>
@@ -1455,27 +1402,24 @@
                     <tbody>
             `;
 
-            let contadorGlobal = 1;
-
-            // Primero mostrar registros únicos (sin desplegable)
-            documentosUnicos.forEach(({ documento, sesiones }) => {
-                const registro = sesiones[0];
+            registros.forEach((registro, index) => {
                 const rowClass = registro.estado === 'activo' ? 'status-active' : 
                                registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
                 
-                const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                                 const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                               registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
-                const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
-                const fechaEntrada = extraerSoloFecha(registro.fecha_entrada);
+                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO');
                 const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                const fechaSalida = extraerSoloFecha(registro.fecha_salida);
+                const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-';
                 const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-';
                 
                 tableHTML += `
                     <tr class="${rowClass}">
-                        <td>${contadorGlobal++}</td>
+                        <td>${index + 1}</td>
                         <td><span class="time-badge">${registro.documento}</span></td>
                         <td>${registro.nombre_empleado}</td>
                         <td>${fechaEntrada}</td>
@@ -1493,99 +1437,8 @@
                 `;
             });
 
-            // Luego mostrar documentos con múltiples sesiones (con desplegable)
-            documentosMultiples.forEach(({ documento, sesiones }) => {
-                // Obtener el último estado para mostrar en la fila principal
-                const ultimoRegistro = sesiones[0]; // Ya ordenados por fecha descendente
-                const ultimoEstado = ultimoRegistro.estado === 'activo' ? '🟢 Activo' : 
-                                   ultimoRegistro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
-                
-                const rowClass = ultimoRegistro.estado === 'activo' ? 'status-active' : 
-                               ultimoRegistro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
-                
-                const fechaEntrada = extraerSoloFecha(ultimoRegistro.fecha_entrada);
-                const horaEntrada = new Date(ultimoRegistro.hora_entrada).toLocaleTimeString('es-CO');
-                const fechaSalida = extraerSoloFecha(ultimoRegistro.fecha_salida);
-                const horaSalida = ultimoRegistro.hora_salida ? new Date(ultimoRegistro.hora_salida).toLocaleTimeString('es-CO') : '-';
-                
-                // Fila principal con desplegable
-                tableHTML += `
-                    <tr class="${rowClass} documento-grupo" data-documento="${documento}">
-                        <td>${contadorGlobal++}</td>
-                        <td>
-                            <span class="time-badge">${documento}</span>
-                            <button class="btn-toggle" onclick="toggleSesiones('${documento}')" style="margin-left: 5px; font-size: 10px; padding: 1px 4px;">
-                                📋 (${sesiones.length} sesiones)
-                            </button>
-                        </td>
-                        <td>${ultimoRegistro.nombre_empleado}</td>
-                        <td>${fechaEntrada}</td>
-                        <td>${horaEntrada}</td>
-                        <td>${fechaSalida}</td>
-                        <td>${horaSalida}</td>
-                        <td>${ultimoEstado}</td>
-                        <td>
-                            ${ultimoRegistro.estado === 'activo' ? 
-                                `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${ultimoRegistro.id})">🚪</button>` : 
-                                `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${ultimoRegistro.id})">❌</button>`
-                            }
-                        </td>
-                    </tr>
-                `;
-
-                // Filas desplegables para las sesiones
-                sesiones.forEach((sesion, index) => {
-                    const sesionEstado = sesion.estado === 'activo' ? '🟢 Activo' : 
-                                       sesion.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
-                    
-                    const sesionRowClass = sesion.estado === 'activo' ? 'status-active' : 
-                                         sesion.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
-                    
-                    const duracionHoras = parseFloat(sesion.duracion_horas) || 0;
-                    const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
-                    const sesionFechaEntrada = extraerSoloFecha(sesion.fecha_entrada);
-                    const sesionHoraEntrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
-                    const sesionFechaSalida = extraerSoloFecha(sesion.fecha_salida);
-                    const sesionHoraSalida = sesion.hora_salida ? new Date(sesion.hora_salida).toLocaleTimeString('es-CO') : '-';
-                    
-                    tableHTML += `
-                        <tr class="${sesionRowClass} sesion-detalle" data-documento="${documento}" style="display: none; background-color: #2a2a2a;">
-                            <td style="padding-left: 20px;">↳ Sesión ${index + 1}</td>
-                            <td><span class="time-badge">${sesion.documento}</span></td>
-                            <td>${sesion.nombre_empleado}</td>
-                            <td>${sesionFechaEntrada}</td>
-                            <td>${sesionHoraEntrada}</td>
-                            <td>${sesionFechaSalida}</td>
-                            <td>${sesionHoraSalida}</td>
-                            <td>${sesionEstado}</td>
-                            <td>
-                                ${sesion.estado === 'activo' ? 
-                                    `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${sesion.id})">🚪</button>` : 
-                                    `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${sesion.id})">❌</button>`
-                                }
-                            </td>
-                        </tr>
-                    `;
-                });
-            });
-
             tableHTML += `</tbody></table>`;
             container.innerHTML = tableHTML;
-        }
-
-        function toggleSesiones(documento) {
-            const sesiones = document.querySelectorAll(`.sesion-detalle[data-documento="${documento}"]`);
-            const boton = event.target;
-            
-            sesiones.forEach(sesion => {
-                if (sesion.style.display === 'none') {
-                    sesion.style.display = 'table-row';
-                    boton.textContent = `📋 (${sesiones.length} sesiones) ▼`;
-                } else {
-                    sesion.style.display = 'none';
-                    boton.textContent = `📋 (${sesiones.length} sesiones) ▶`;
-                }
-            });
         }
 
         async function forzarSalida(registroId) {
@@ -1594,7 +1447,9 @@
 
             if (confirm(`¿Forzar salida para ${registro.nombre_empleado}?`)) {
                 try {
-                    const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
+                    const ahora = new Date();
+                    const fechaSalida = ahora.toISOString().split('T')[0];
+                    const horaSalida = ahora.toISOString();
 
                     const response = await fetch(`${API_BASE}/registros/${registroId}/forzar`, {
                         method: 'PUT',
@@ -1643,9 +1498,18 @@
                 return;
             }
 
+            // Solicitar password para finalizar jornada
+            const password = prompt('🔐 Ingresa la contraseña para finalizar jornada:');
+            if (password !== 'admin123') {
+                mostrarAlerta('❌ Contraseña incorrecta', 'error');
+                return;
+            }
+
             if (confirm(`¿Finalizar jornada para ${estadisticas.empleados_activos} empleado(s) activo(s)?`)) {
                 try {
-                    const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
+                    const ahora = new Date();
+                    const fechaSalida = ahora.toISOString().split('T')[0];
+                    const horaSalida = ahora.toISOString();
 
                     const response = await fetch(`${API_BASE}/registros/finalizar-jornada`, {
                         method: 'POST',
@@ -1741,10 +1605,8 @@
             contenidoPOS += '    CONTROL DE HORAS - RESUMEN DIARIO          \n';
             contenidoPOS += '================================================\n';
             contenidoPOS += `Sede: ${sedeNombre}\n`;
-            const { fecha, horaLocal } = getColombiaDateTime();
-            const fechaFormateada = new Date(fecha).toLocaleDateString('es-CO');
-            contenidoPOS += `Fecha: ${fechaFormateada}\n`;
-            contenidoPOS += `Hora: ${horaLocal}\n`;
+            contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
+            contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
             contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
             contenidoPOS += `Usuarios activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += '================================================\n';
@@ -1754,7 +1616,8 @@
                 contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
                 contenidoPOS += `    ${empleado.nombre}\n`;
                 contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
-                const horasFormateadas = empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
+                                        empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
                 contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
                 contenidoPOS += '    ----------------------------------------\n';
             });
@@ -1769,6 +1632,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
+            const fecha = new Date().toISOString().slice(0,10);
             a.download = `control_horas_${sedeNombre.toLowerCase()}_${fecha}.txt`;
             document.body.appendChild(a);
             a.click();
@@ -1821,7 +1685,7 @@
             }
 
             try {
-                const { fecha } = getColombiaDateTime();
+                const fecha = new Date().toISOString().split('T')[0];
                 const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
                 const result = await response.json();
                 
@@ -1856,7 +1720,8 @@
                                         const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
                                         const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
                                         const duracionHoras = parseFloat(registro.duracion_horas) || 0;
-                                        const duracion = duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                                        const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                                        duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
                                         const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                                                      registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                                         
@@ -1936,8 +1801,7 @@
             }
 
             // Solicitar fecha específica
-                            const { fecha } = getColombiaDateTime();
-                const fechaEspecifica = prompt('📅 Ingresa la fecha (YYYY-MM-DD):', fecha);
+            const fechaEspecifica = prompt('📅 Ingresa la fecha (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
             if (!fechaEspecifica) {
                 mostrarAlerta('⚠️ Debes ingresar una fecha válida', 'warning');
                 return;
@@ -2004,8 +1868,7 @@
                 contenidoPOS += '================================================\n';
                 contenidoPOS += `Sede: ${sedeNombre}\n`;
                 contenidoPOS += `Fecha: ${fechaEspecifica}\n`;
-                const { horaLocal } = getColombiaDateTime();
-                contenidoPOS += `Hora: ${horaLocal}\n`;
+                contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
                 contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
                 contenidoPOS += `Usuarios activos: ${estadisticasFecha.empleados_activos || 0}\n`;
                 contenidoPOS += '================================================\n';
@@ -2015,7 +1878,8 @@
                     contenidoPOS += `${(index + 1).toString().padStart(2)}. ${empleado.documento}\n`;
                     contenidoPOS += `    ${empleado.nombre}\n`;
                     contenidoPOS += `    Sesiones: ${empleado.sesiones}\n`;
-                    const horasFormateadas = empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
+                    const horasFormateadas = empleado.horasTotales >= 7.5 ? '✅ Completado' : 
+                                            empleado.horasTotales > 0 ? `${empleado.horasTotales.toFixed(2)}h` : '0h';
                     contenidoPOS += `    Horas totales: ${horasFormateadas}\n`;
                     contenidoPOS += '    ----------------------------------------\n';
                 });
@@ -2102,12 +1966,9 @@
 
         // Función para verificar y cerrar sesiones automáticamente a las 10pm
         function verificarCierreAutomatico() {
-            const { horaLocal } = getColombiaDateTime();
             const ahora = new Date();
-            // Convertir hora local a hora de Colombia
-            const horaColombia = new Date(ahora.toLocaleString("en-US", {timeZone: "America/Bogota"}));
-            const hora = horaColombia.getHours();
-            const minutos = horaColombia.getMinutes();
+            const hora = ahora.getHours();
+            const minutos = ahora.getMinutes();
             
             // Verificar si es exactamente las 10:00 PM (22:00)
             if (hora === 22 && minutos === 0) {
@@ -2129,8 +1990,7 @@
             try {
                 console.log('👥 Obteniendo sesiones activas para sede:', sedeActual);
 
-                const { fecha } = getColombiaDateTime();
-                const response = await fetch(`${API_BASE}/registros/sesiones-activas/${sedeActual}?fecha=${fecha}`);
+                const response = await fetch(`${API_BASE}/registros/sesiones-activas/${sedeActual}`);
                 const result = await response.json();
 
                 if (!result.success) {
@@ -2155,14 +2015,12 @@
                             <div class="modal-body">
                                 <div class="sesiones-info">
                                     <p><strong>Total sesiones activas:</strong> ${sesionesActivas.length}</p>
-                                    <p><strong>Fecha:</strong> ${getColombiaDateTime().fecha}</p>
+                                    <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
                                 </div>
                                 <div class="sesiones-lista">
                                     ${sesionesActivas.map((sesion, index) => {
                                         const entrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
-                                        const { hora } = getColombiaDateTime();
-                                        const horaActual = new Date(hora);
-                                        const duracion = calcularDuracion(sesion.hora_entrada, horaActual);
+                                        const duracion = calcularDuracion(sesion.hora_entrada, new Date());
                                         
                                         return `
                                             <div class="sesion-activa-item">
@@ -2226,32 +2084,6 @@
             return `${horas}h ${minutos}m`;
         }
 
-        // Función para obtener fecha y hora en timezone de Colombia
-        function getColombiaDateTime() {
-            const ahora = new Date();
-            
-            // Obtener fecha y hora en timezone de Colombia usando toLocaleString
-            const fechaColombia = ahora.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
-            const horaColombia = ahora.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
-            
-            // Crear fecha y hora en formato ISO para la base de datos (SIN .000Z para evitar UTC)
-            const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
-            const hora = `${fechaColombia}T${horaColombia}`; // Formato ISO sin Z para mantener hora de Colombia
-            
-            return {
-                fecha: fecha,
-                hora: hora,
-                horaLocal: ahora.toLocaleTimeString('es-CO', {timeZone: "America/Bogota"})
-            };
-        }
-
-
-
-        // Función helper para extraer solo la fecha (YYYY-MM-DD) de un string ISO
-        function extraerSoloFecha(fechaISO) {
-            if (!fechaISO) return '-';
-            return fechaISO.split('T')[0];
-        }
 
     </script>
 </body>
