@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Horas de Empleados</title>
+    <title>Control de Horas de Colaboradores</title>
     <style>
         * {
             margin: 0;
@@ -719,6 +719,40 @@
             color: #ffffff;
             font-weight: 500;
         }
+
+        /* Estilos para grupos con múltiples sesiones */
+        .multiples-sesiones {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+            border-left: 4px solid #e74c3c !important;
+        }
+
+        .multiples-sesiones:hover {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%) !important;
+        }
+
+        .sesiones-count {
+            background: #e74c3c;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        /* Separador visual entre grupos */
+        .multiples-sesiones:first-of-type {
+            border-top: 2px solid #e74c3c;
+        }
+
+        /* Estilos para grupos con una sola sesión */
+        tr:not(.multiples-sesiones) {
+            border-left: 4px solid #27ae60;
+        }
+
+        tr:not(.multiples-sesiones):hover {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
+        }
     </style>
 </head>
 <body>
@@ -1403,6 +1437,67 @@
                 return;
             }
 
+            // Agrupar registros por documento
+            const gruposPorDocumento = {};
+            
+            registros.forEach(registro => {
+                const documento = registro.documento;
+                if (!gruposPorDocumento[documento]) {
+                    gruposPorDocumento[documento] = [];
+                }
+                gruposPorDocumento[documento].push(registro);
+            });
+
+            // Ordenar registros dentro de cada grupo por hora de entrada (más reciente primero)
+            Object.keys(gruposPorDocumento).forEach(documento => {
+                gruposPorDocumento[documento].sort((a, b) => {
+                    return new Date(b.hora_entrada) - new Date(a.hora_entrada);
+                });
+            });
+
+            // Separar grupos con una sesión y grupos con múltiples sesiones
+            const gruposUnaSesion = [];
+            const gruposMultiplesSesiones = [];
+
+            Object.keys(gruposPorDocumento).forEach(documento => {
+                const grupo = gruposPorDocumento[documento];
+                if (grupo.length === 1) {
+                    gruposUnaSesion.push({ documento, registros: grupo });
+                } else {
+                    gruposMultiplesSesiones.push({ documento, registros: grupo });
+                }
+            });
+
+            // Ordenar grupos por la hora más reciente de cada grupo
+            const ordenarGruposPorHoraReciente = (grupos) => {
+                return grupos.sort((a, b) => {
+                    const horaMasRecienteA = new Date(a.registros[0].hora_entrada);
+                    const horaMasRecienteB = new Date(b.registros[0].hora_entrada);
+                    return horaMasRecienteB - horaMasRecienteA;
+                });
+            };
+
+            const gruposUnaSesionOrdenados = ordenarGruposPorHoraReciente(gruposUnaSesion);
+            const gruposMultiplesSesionesOrdenados = ordenarGruposPorHoraReciente(gruposMultiplesSesiones);
+
+            // Combinar todos los registros en el orden deseado
+            const registrosOrdenados = [];
+            let contador = 1;
+
+            // Primero agregar grupos con una sesión
+            gruposUnaSesionOrdenados.forEach(grupo => {
+                grupo.registros.forEach(registro => {
+                    registrosOrdenados.push({ ...registro, numeroOrden: contador++ });
+                });
+            });
+
+            // Luego agregar grupos con múltiples sesiones
+            gruposMultiplesSesionesOrdenados.forEach(grupo => {
+                grupo.registros.forEach(registro => {
+                    registrosOrdenados.push({ ...registro, numeroOrden: contador++ });
+                });
+            });
+
             let tableHTML = `
                 <table>
                     <thead>
@@ -1421,11 +1516,11 @@
                     <tbody>
             `;
 
-            registros.forEach((registro, index) => {
+            registrosOrdenados.forEach((registro) => {
                 const rowClass = registro.estado === 'activo' ? 'status-active' : 
                                registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
                 
-                                 const estado = registro.estado === 'activo' ? '🟢 Activo' : 
+                const estado = registro.estado === 'activo' ? '🟢 Activo' : 
                               registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
                 
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
@@ -1436,10 +1531,14 @@
                 const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO', {timeZone: "America/Bogota"}) : '-';
                 const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : '-';
                 
+                // Agregar clase especial para grupos con múltiples sesiones
+                const sesionesPorDocumento = gruposPorDocumento[registro.documento].length;
+                const claseMultiplesSesiones = sesionesPorDocumento > 1 ? 'multiples-sesiones' : '';
+                
                 tableHTML += `
-                    <tr class="${rowClass}">
-                        <td>${index + 1}</td>
-                        <td><span class="time-badge">${registro.documento}</span></td>
+                    <tr class="${rowClass} ${claseMultiplesSesiones}">
+                        <td>${registro.numeroOrden}</td>
+                        <td><span class="time-badge">${registro.documento}</span>${sesionesPorDocumento > 1 ? ` <span class="sesiones-count">(${sesionesPorDocumento})</span>` : ''}</td>
                         <td>${registro.nombre_empleado}</td>
                         <td>${fechaEntrada}</td>
                         <td>${horaEntrada}</td>
