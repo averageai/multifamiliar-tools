@@ -844,6 +844,30 @@
     </div>
 
     <script>
+        // ========================================
+        // 🌍 FUNCIÓN HELPER PARA FECHA/HORA COLOMBIA
+        // ========================================
+        function getColombiaDateTime() {
+            const now = new Date();
+            
+            // Obtener fecha y hora en timezone de Colombia usando toLocaleString
+            const fechaColombia = now.toLocaleDateString("en-CA", {timeZone: "America/Bogota"}); // formato YYYY-MM-DD
+            const horaColombia = now.toLocaleTimeString("en-US", {timeZone: "America/Bogota", hour12: false}); // formato HH:MM:SS
+            
+            // Crear fecha y hora en formato ISO para la base de datos (SIN .000Z para evitar UTC)
+            const fecha = fechaColombia; // Ya está en formato YYYY-MM-DD
+            const hora = `${fechaColombia}T${horaColombia}`; // Formato ISO sin Z para mantener hora de Colombia
+            
+            return {
+                fecha: fecha,
+                hora: hora,
+                horaLocal: now.toLocaleTimeString('es-CO', {timeZone: "America/Bogota"})
+            };
+        }
+
+        // ========================================
+        // 🔧 CONFIGURACIÓN Y VARIABLES GLOBALES
+        // ========================================
         let sedeActual = null;
         let sedeNombre = '';
         let registros = [];
@@ -859,8 +883,7 @@
 
         // Actualizar hora actual
         function actualizarHora() {
-            const ahora = new Date();
-            const horaFormateada = ahora.toLocaleTimeString('es-CO');
+            const horaFormateada = getColombiaDateTime().horaLocal;
             document.getElementById('currentTime').textContent = horaFormateada;
         }
 
@@ -920,7 +943,7 @@
             console.log('🔄 Verificando estado completo del empleado:', empleadoValidado.documento);
             
             try {
-                const fecha = new Date().toISOString().split('T')[0];
+                const { fecha } = getColombiaDateTime();
                 
                 // 1. Verificar registro activo
                 console.log('🔍 1. Verificando registro activo...');
@@ -1128,7 +1151,7 @@
 
 
         async function cargarRegistrosHoy() {
-            const fecha = new Date().toISOString().split('T')[0];
+            const { fecha } = getColombiaDateTime();
             const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
             const result = await response.json();
             
@@ -1141,7 +1164,7 @@
         }
 
         async function cargarEstadisticas() {
-            const fecha = new Date().toISOString().split('T')[0];
+            const { fecha } = getColombiaDateTime();
             const response = await fetch(`${API_BASE}/estadisticas/${sedeActual}/${fecha}`);
             const result = await response.json();
             
@@ -1180,7 +1203,7 @@
             console.log('🔍 Iniciando registro de entrada para:', empleadoValidado.documento);
 
             try {
-                const fecha = new Date().toISOString().split('T')[0];
+                const { fecha } = getColombiaDateTime();
                 
                 // Verificar nuevamente si tiene registro activo antes de crear uno nuevo
                 console.log('🔍 Verificando sesión activa...');
@@ -1203,9 +1226,7 @@
                 console.log('✅ No hay sesión activa, procediendo con entrada...');
 
                 // Crear registro de entrada
-                const ahora = new Date();
-                const fechaEntrada = ahora.toISOString().split('T')[0];
-                const horaEntrada = ahora.toISOString();
+                const { fecha: fechaEntrada, hora: horaEntrada } = getColombiaDateTime();
 
                 console.log('📝 Creando registro con datos:', {
                     empleado_id: empleadoValidado.id,
@@ -1281,7 +1302,7 @@
             console.log('🔍 Iniciando registro de salida para:', empleadoValidado.documento);
 
             try {
-                const fecha = new Date().toISOString().split('T')[0];
+                const { fecha } = getColombiaDateTime();
                 
                 // Verificar nuevamente si tiene registro activo antes de finalizar
                 console.log('🔍 Verificando sesión activa...');
@@ -1314,9 +1335,7 @@
                 }
 
                 const registro = activoResult.data;
-                const ahora = new Date();
-                const fechaSalida = ahora.toISOString().split('T')[0];
-                const horaSalida = ahora.toISOString();
+                const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
 
                 console.log('📝 Finalizando registro con datos:', {
                     registro_id: registro.id,
@@ -1412,10 +1431,10 @@
                 const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                 const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
                                 duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
-                const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO');
-                const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO') : '-';
-                const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : '-';
+                const fechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO', {timeZone: "America/Bogota"});
+                const horaEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"});
+                const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO', {timeZone: "America/Bogota"}) : '-';
+                const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : '-';
                 
                 tableHTML += `
                     <tr class="${rowClass}">
@@ -1447,9 +1466,7 @@
 
             if (confirm(`¿Forzar salida para ${registro.nombre_empleado}?`)) {
                 try {
-                    const ahora = new Date();
-                    const fechaSalida = ahora.toISOString().split('T')[0];
-                    const horaSalida = ahora.toISOString();
+                    const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
 
                     const response = await fetch(`${API_BASE}/registros/${registroId}/forzar`, {
                         method: 'PUT',
@@ -1507,9 +1524,7 @@
 
             if (confirm(`¿Finalizar jornada para ${estadisticas.empleados_activos} empleado(s) activo(s)?`)) {
                 try {
-                    const ahora = new Date();
-                    const fechaSalida = ahora.toISOString().split('T')[0];
-                    const horaSalida = ahora.toISOString();
+                    const { fecha: fechaSalida, hora: horaSalida } = getColombiaDateTime();
 
                     const response = await fetch(`${API_BASE}/registros/finalizar-jornada`, {
                         method: 'POST',
@@ -1605,8 +1620,9 @@
             contenidoPOS += '    CONTROL DE HORAS - RESUMEN DIARIO          \n';
             contenidoPOS += '================================================\n';
             contenidoPOS += `Sede: ${sedeNombre}\n`;
-            contenidoPOS += `Fecha: ${new Date().toLocaleDateString()}\n`;
-            contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+            const { fecha: fechaExport, horaLocal } = getColombiaDateTime();
+            contenidoPOS += `Fecha: ${fechaExport}\n`;
+            contenidoPOS += `Hora: ${horaLocal}\n`;
             contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
             contenidoPOS += `Usuarios activos: ${estadisticas.empleados_activos}\n`;
             contenidoPOS += '================================================\n';
@@ -1632,8 +1648,8 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fecha = new Date().toISOString().slice(0,10);
-            a.download = `control_horas_${sedeNombre.toLowerCase()}_${fecha}.txt`;
+            const { fecha: fechaArchivo } = getColombiaDateTime();
+            a.download = `control_horas_${sedeNombre.toLowerCase()}_${fechaArchivo}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1685,7 +1701,7 @@
             }
 
             try {
-                const fecha = new Date().toISOString().split('T')[0];
+                const { fecha } = getColombiaDateTime();
                 const response = await fetch(`${API_BASE}/registros/${sedeActual}/${fecha}`);
                 const result = await response.json();
                 
@@ -1717,8 +1733,8 @@
                                 </div>
                                 <div class="historial-sesiones">
                                     ${registrosEmpleado.map((registro, index) => {
-                                        const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO');
-                                        const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO') : 'En curso';
+                                        const entrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"});
+                                        const salida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : 'En curso';
                                         const duracionHoras = parseFloat(registro.duracion_horas) || 0;
                                         const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
                                                         duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
@@ -1801,7 +1817,8 @@
             }
 
             // Solicitar fecha específica
-            const fechaEspecifica = prompt('📅 Ingresa la fecha (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            const { fecha } = getColombiaDateTime();
+            const fechaEspecifica = prompt('📅 Ingresa la fecha (YYYY-MM-DD):', fecha);
             if (!fechaEspecifica) {
                 mostrarAlerta('⚠️ Debes ingresar una fecha válida', 'warning');
                 return;
@@ -1868,7 +1885,7 @@
                 contenidoPOS += '================================================\n';
                 contenidoPOS += `Sede: ${sedeNombre}\n`;
                 contenidoPOS += `Fecha: ${fechaEspecifica}\n`;
-                contenidoPOS += `Hora: ${new Date().toLocaleTimeString()}\n`;
+                contenidoPOS += `Hora: ${getColombiaDateTime().horaLocal}\n`;
                 contenidoPOS += `Total colaboradores: ${Object.keys(empleadosHoras).length}\n`;
                 contenidoPOS += `Usuarios activos: ${estadisticasFecha.empleados_activos || 0}\n`;
                 contenidoPOS += '================================================\n';
@@ -1966,9 +1983,8 @@
 
         // Función para verificar y cerrar sesiones automáticamente a las 10pm
         function verificarCierreAutomatico() {
-            const ahora = new Date();
-            const hora = ahora.getHours();
-            const minutos = ahora.getMinutes();
+            const { horaLocal } = getColombiaDateTime();
+            const [hora, minutos] = horaLocal.split(':').map(Number);
             
             // Verificar si es exactamente las 10:00 PM (22:00)
             if (hora === 22 && minutos === 0) {
@@ -2015,12 +2031,12 @@
                             <div class="modal-body">
                                 <div class="sesiones-info">
                                     <p><strong>Total sesiones activas:</strong> ${sesionesActivas.length}</p>
-                                    <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                                    <p><strong>Fecha:</strong> ${getColombiaDateTime().fecha}</p>
                                 </div>
                                 <div class="sesiones-lista">
                                     ${sesionesActivas.map((sesion, index) => {
-                                        const entrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO');
-                                        const duracion = calcularDuracion(sesion.hora_entrada, new Date());
+                                        const entrada = new Date(sesion.hora_entrada).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"});
+                                        const duracion = calcularDuracion(sesion.hora_entrada, new Date(getColombiaDateTime().hora));
                                         
                                         return `
                                             <div class="sesion-activa-item">
