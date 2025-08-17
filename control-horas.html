@@ -753,6 +753,36 @@
         tr:not(.multiples-sesiones):hover {
             background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
         }
+
+        /* Estilos para grupos expandibles */
+        .toggle-icon {
+            margin-left: 8px;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .multiples-sesiones:hover .toggle-icon {
+            transform: scale(1.2);
+        }
+
+        .sub-sesion {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%) !important;
+            border-left: 4px solid #95a5a6 !important;
+        }
+
+        .sub-sesion:hover {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+        }
+
+        .sub-sesion td {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        /* Animación para expandir/contraer */
+        .sub-sesion {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1480,24 +1510,6 @@
             const gruposUnaSesionOrdenados = ordenarGruposPorHoraReciente(gruposUnaSesion);
             const gruposMultiplesSesionesOrdenados = ordenarGruposPorHoraReciente(gruposMultiplesSesiones);
 
-            // Combinar todos los registros en el orden deseado
-            const registrosOrdenados = [];
-            let contador = 1;
-
-            // Primero agregar grupos con una sesión
-            gruposUnaSesionOrdenados.forEach(grupo => {
-                grupo.registros.forEach(registro => {
-                    registrosOrdenados.push({ ...registro, numeroOrden: contador++ });
-                });
-            });
-
-            // Luego agregar grupos con múltiples sesiones
-            gruposMultiplesSesionesOrdenados.forEach(grupo => {
-                grupo.registros.forEach(registro => {
-                    registrosOrdenados.push({ ...registro, numeroOrden: contador++ });
-                });
-            });
-
             let tableHTML = `
                 <table>
                     <thead>
@@ -1516,7 +1528,11 @@
                     <tbody>
             `;
 
-            registrosOrdenados.forEach((registro) => {
+            let contador = 1;
+
+            // Primero agregar grupos con una sesión
+            gruposUnaSesionOrdenados.forEach(grupo => {
+                const registro = grupo.registros[0];
                 const rowClass = registro.estado === 'activo' ? 'status-active' : 
                                registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
                 
@@ -1531,14 +1547,10 @@
                 const fechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO', {timeZone: "America/Bogota"}) : '-';
                 const horaSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : '-';
                 
-                // Agregar clase especial para grupos con múltiples sesiones
-                const sesionesPorDocumento = gruposPorDocumento[registro.documento].length;
-                const claseMultiplesSesiones = sesionesPorDocumento > 1 ? 'multiples-sesiones' : '';
-                
                 tableHTML += `
-                    <tr class="${rowClass} ${claseMultiplesSesiones}">
-                        <td>${registro.numeroOrden}</td>
-                        <td><span class="time-badge">${registro.documento}</span>${sesionesPorDocumento > 1 ? ` <span class="sesiones-count">(${sesionesPorDocumento})</span>` : ''}</td>
+                    <tr class="${rowClass}">
+                        <td>${contador++}</td>
+                        <td><span class="time-badge">${registro.documento}</span></td>
                         <td>${registro.nombre_empleado}</td>
                         <td>${fechaEntrada}</td>
                         <td>${horaEntrada}</td>
@@ -1555,8 +1567,111 @@
                 `;
             });
 
+            // Luego agregar grupos con múltiples sesiones (colapsables)
+            gruposMultiplesSesionesOrdenados.forEach(grupo => {
+                const primerRegistro = grupo.registros[0];
+                const sesionesPorDocumento = grupo.registros.length;
+                const grupoId = `grupo-${primerRegistro.documento}`;
+                
+                // Fila principal del grupo (siempre visible)
+                const rowClass = primerRegistro.estado === 'activo' ? 'status-active' : 
+                               primerRegistro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
+                
+                const estado = primerRegistro.estado === 'activo' ? '🟢 Activo' : 
+                              primerRegistro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                
+                const duracionHoras = parseFloat(primerRegistro.duracion_horas) || 0;
+                const duracion = duracionHoras >= 7.5 ? '✅ Completado' : 
+                                duracionHoras > 0 ? `${duracionHoras.toFixed(2)}h` : '-';
+                const fechaEntrada = new Date(primerRegistro.hora_entrada).toLocaleDateString('es-CO', {timeZone: "America/Bogota"});
+                const horaEntrada = new Date(primerRegistro.hora_entrada).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"});
+                const fechaSalida = primerRegistro.fecha_salida ? new Date(primerRegistro.fecha_salida).toLocaleDateString('es-CO', {timeZone: "America/Bogota"}) : '-';
+                const horaSalida = primerRegistro.hora_salida ? new Date(primerRegistro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : '-';
+                
+                tableHTML += `
+                    <tr class="${rowClass} multiples-sesiones" onclick="toggleGrupo('${grupoId}')" style="cursor: pointer;">
+                        <td>${contador++}</td>
+                        <td>
+                            <span class="time-badge">${primerRegistro.documento}</span>
+                            <span class="sesiones-count">(${sesionesPorDocumento})</span>
+                            <span class="toggle-icon" id="toggle-${grupoId}">▶️</span>
+                        </td>
+                        <td>${primerRegistro.nombre_empleado}</td>
+                        <td>${fechaEntrada}</td>
+                        <td>${horaEntrada}</td>
+                        <td>${fechaSalida}</td>
+                        <td>${horaSalida}</td>
+                        <td>${estado}</td>
+                        <td>
+                            ${primerRegistro.estado === 'activo' ? 
+                                `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); forzarSalida(${primerRegistro.id})">🚪</button>` : 
+                                `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); eliminarRegistro(${primerRegistro.id})">❌</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+
+                // Filas detalladas del grupo (inicialmente ocultas)
+                grupo.registros.forEach((registro, index) => {
+                    if (index === 0) return; // Saltar el primer registro ya que está en la fila principal
+                    
+                    const subRowClass = registro.estado === 'activo' ? 'status-active' : 
+                                      registro.estado === 'forzado' ? 'status-forzado' : 'status-finalizado';
+                    
+                    const subEstado = registro.estado === 'activo' ? '🟢 Activo' : 
+                                    registro.estado === 'forzado' ? '⚠️ Forzado' : '✅ Finalizado';
+                    
+                    const subDuracionHoras = parseFloat(registro.duracion_horas) || 0;
+                    const subDuracion = subDuracionHoras >= 7.5 ? '✅ Completado' : 
+                                       subDuracionHoras > 0 ? `${subDuracionHoras.toFixed(2)}h` : '-';
+                    const subFechaEntrada = new Date(registro.hora_entrada).toLocaleDateString('es-CO', {timeZone: "America/Bogota"});
+                    const subHoraEntrada = new Date(registro.hora_entrada).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"});
+                    const subFechaSalida = registro.fecha_salida ? new Date(registro.fecha_salida).toLocaleDateString('es-CO', {timeZone: "America/Bogota"}) : '-';
+                    const subHoraSalida = registro.hora_salida ? new Date(registro.hora_salida).toLocaleTimeString('es-CO', {timeZone: "America/Bogota"}) : '-';
+                    
+                    tableHTML += `
+                        <tr class="${subRowClass} sub-sesion" id="${grupoId}-${index}" style="display: none;">
+                            <td style="padding-left: 30px;">↳ ${index + 1}</td>
+                            <td style="padding-left: 30px;"><span class="time-badge">${registro.documento}</span></td>
+                            <td style="padding-left: 30px;">${registro.nombre_empleado}</td>
+                            <td>${subFechaEntrada}</td>
+                            <td>${subHoraEntrada}</td>
+                            <td>${subFechaSalida}</td>
+                            <td>${subHoraSalida}</td>
+                            <td>${subEstado}</td>
+                            <td>
+                                ${registro.estado === 'activo' ? 
+                                    `<button class="btn btn-warning" style="font-size: 10px; padding: 2px 6px;" onclick="forzarSalida(${registro.id})">🚪</button>` : 
+                                    `<button class="btn btn-danger" style="font-size: 10px; padding: 2px 6px;" onclick="eliminarRegistro(${registro.id})">❌</button>`
+                                }
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
             tableHTML += `</tbody></table>`;
             container.innerHTML = tableHTML;
+        }
+
+        // Función para expandir/contraer grupos
+        function toggleGrupo(grupoId) {
+            const toggleIcon = document.getElementById(`toggle-${grupoId}`);
+            const subSesiones = document.querySelectorAll(`[id^="${grupoId}-"]`);
+            
+            if (subSesiones[0].style.display === 'none') {
+                // Expandir grupo
+                subSesiones.forEach(sesion => {
+                    sesion.style.display = 'table-row';
+                });
+                toggleIcon.textContent = '🔽';
+            } else {
+                // Contraer grupo
+                subSesiones.forEach(sesion => {
+                    sesion.style.display = 'none';
+                });
+                toggleIcon.textContent = '▶️';
+            }
         }
 
         async function forzarSalida(registroId) {
