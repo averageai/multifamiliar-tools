@@ -773,6 +773,7 @@
                         <span>📋 Productos en Cotización</span>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn" onclick="generarCotizacion()">📄 Generar Cotización</button>
+                            <button class="btn btn-primary" onclick="imprimirPOS()">🖨️ Imprimir POS</button>
                             <button class="btn btn-warning" onclick="limpiarCotizacion()">🗑️ Limpiar Todo</button>
                         </div>
                     </div>
@@ -2128,6 +2129,264 @@
             if (event.target === modal) {
                 cerrarModalPuntoVenta();
             }
+        }
+
+        // Función para imprimir cotización en formato POS
+        function imprimirPOS() {
+            // Validar datos del cliente
+            const nombre = document.getElementById('clienteNombre').value.trim();
+            const email = document.getElementById('clienteEmail').value.trim();
+            
+            if (!nombre || !email) {
+                mostrarAlerta('⚠️ Por favor completa los datos obligatorios del cliente', 'warning');
+                return;
+            }
+            
+            if (productosCotizacion.length === 0) {
+                mostrarAlerta('⚠️ No hay productos en la cotización', 'warning');
+                return;
+            }
+            
+            if (!puntoVentaSeleccionado) {
+                mostrarAlerta('⚠️ Por favor selecciona un punto de venta', 'warning');
+                return;
+            }
+
+            // Obtener número de cotización
+            const numeroCotizacionInput = document.getElementById('numeroCotizacionInput');
+            const numeroCotizacion = numeroCotizacionInput.value.trim();
+            
+            if (!numeroCotizacion) {
+                mostrarAlerta('⚠️ Por favor ingrese el número de cotización', 'warning');
+                return;
+            }
+
+            console.log('Abriendo ventana de impresión POS...');
+            const ventana = window.open('', '_blank');
+            if (!ventana) {
+                console.error('No se pudo abrir la ventana de impresión');
+                alert('Error: No se pudo abrir la ventana de impresión. Verifique que el bloqueador de ventanas emergentes esté deshabilitado.');
+                return;
+            }
+            console.log('Ventana abierta correctamente');
+
+            // Calcular totales
+            const total = productosCotizacion.reduce((sum, p) => sum + p.subtotal, 0);
+            const subtotal = total / 1.19;
+            const iva = total - subtotal;
+
+            // Obtener información del punto de venta
+            const config = sedesConfig[sedeActual];
+            const puntoVenta = config.puntosVenta.find(p => p.nombre === puntoVentaSeleccionado);
+            const direccionPuntoVenta = puntoVenta ? puntoVenta.direccion || '' : '';
+            const telefonoPuntoVenta = puntoVenta ? puntoVenta.telefono || '' : '';
+
+            ventana.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cotización POS</title>
+                    <style>
+                        @media print {
+                            @page {
+                                size: 80mm auto;
+                                margin: 0;
+                            }
+                        }
+                        
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            margin: 0; 
+                            padding: 5px;
+                            background: white;
+                            color: black;
+                            font-size: 10px;
+                            line-height: 1.2;
+                            width: 80mm;
+                            max-width: 80mm;
+                        }
+                        
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 10px; 
+                            border-bottom: 1px solid #000;
+                            padding-bottom: 5px;
+                        }
+                        
+                        .header h1 {
+                            font-size: 16px;
+                            margin: 0 0 5px 0;
+                            font-weight: bold;
+                        }
+                        
+                        .header p {
+                            font-size: 10px;
+                            margin: 0;
+                        }
+                        
+                        .section { 
+                            margin-bottom: 8px; 
+                            border: none;
+                            padding: 0;
+                        }
+                        
+                        .section h2 {
+                            color: #000;
+                            border-bottom: 1px solid #000;
+                            padding-bottom: 2px;
+                            margin-bottom: 5px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            text-align: center;
+                        }
+                        
+                        .item { 
+                            margin: 1px 0; 
+                            padding: 1px 0;
+                            border-bottom: none;
+                            font-size: 9px;
+                            display: flex;
+                            justify-content: space-between;
+                        }
+                        
+                        .item strong {
+                            font-weight: bold;
+                        }
+                        
+                        .producto-item {
+                            border-bottom: 1px dotted #ccc;
+                            padding: 2px 0;
+                        }
+                        
+                        .producto-nombre {
+                            font-size: 8px;
+                            margin-bottom: 1px;
+                        }
+                        
+                        .producto-detalle {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 8px;
+                        }
+                        
+                        .totales {
+                            border-top: 2px solid #000;
+                            margin-top: 10px;
+                            padding-top: 5px;
+                        }
+                        
+                        .total-item {
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 10px;
+                            margin: 2px 0;
+                        }
+                        
+                        .total-final {
+                            font-weight: bold;
+                            font-size: 12px;
+                            border-top: 1px solid #000;
+                            padding-top: 3px;
+                        }
+                        
+                        .footer {
+                            text-align: center;
+                            margin-top: 10px;
+                            font-size: 8px;
+                            color: #666;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>COTIZACIÓN</h1>
+                        <p>${puntoVentaSeleccionado}</p>
+                        <p>${direccionPuntoVenta}</p>
+                        <p>Tel: ${telefonoPuntoVenta}</p>
+                        <p>Fecha: ${new Date().toLocaleDateString('es-CO')}</p>
+                        <p>Hora: ${new Date().toLocaleTimeString('es-CO')}</p>
+                        <p>Cotización #: ${numeroCotizacion}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>CLIENTE</h2>
+                        <div class="item">
+                            <span><strong>Nombre:</strong></span>
+                            <span>${nombre}</span>
+                        </div>
+                        <div class="item">
+                            <span><strong>Email:</strong></span>
+                            <span>${email}</span>
+                        </div>
+                        ${document.getElementById('clienteCelular').value.trim() ? `
+                        <div class="item">
+                            <span><strong>Celular:</strong></span>
+                            <span>${document.getElementById('clienteCelular').value.trim()}</span>
+                        </div>
+                        ` : ''}
+                        ${document.getElementById('clienteDocumento').value.trim() ? `
+                        <div class="item">
+                            <span><strong>Documento:</strong></span>
+                            <span>${document.getElementById('clienteDocumento').value.trim()}</span>
+                        </div>
+                        ` : ''}
+                        ${document.getElementById('clienteDireccion').value.trim() ? `
+                        <div class="item">
+                            <span><strong>Dirección:</strong></span>
+                            <span>${document.getElementById('clienteDireccion').value.trim()}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="section">
+                        <h2>PRODUCTOS</h2>
+                        ${productosCotizacion.map((producto, index) => `
+                            <div class="producto-item">
+                                <div class="producto-nombre">
+                                    <strong>${(index + 1)}.</strong> ${producto.codigoInterno}
+                                </div>
+                                <div class="producto-nombre">
+                                    ${producto.nombre.substring(0, 35)}
+                                </div>
+                                <div class="producto-detalle">
+                                    <span>Precio: ${formatearNumero(producto.precioCotizacion)}</span>
+                                    <span>Cant: ${producto.cantidad}</span>
+                                </div>
+                                <div class="producto-detalle">
+                                    <span></span>
+                                    <span><strong>Subtotal: ${formatearNumero(producto.subtotal)}</strong></span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="totales">
+                        <div class="total-item">
+                            <span>Subtotal:</span>
+                            <span>${formatearNumero(subtotal)}</span>
+                        </div>
+                        <div class="total-item">
+                            <span>IVA (19%):</span>
+                            <span>${formatearNumero(iva)}</span>
+                        </div>
+                        <div class="total-item total-final">
+                            <span>TOTAL:</span>
+                            <span>${formatearNumero(total)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>--- FIN DE COTIZACIÓN ---</p>
+                        <p>Válida por 30 días</p>
+                        <p>Desarrollado por: <strong>average</strong></p>
+                    </div>
+                </body>
+                </html>
+            `);
+            console.log('Documento escrito, cerrando y imprimiendo...');
+            ventana.document.close();
+            ventana.print();
+            console.log('Función de impresión POS completada');
         }
     </script>
 </body>
