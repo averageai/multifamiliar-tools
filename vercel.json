@@ -24,6 +24,10 @@
       "dest": "/server.js"
     },
     {
+      "src": "/control-api",
+      "dest": "/server.js"
+    },
+    {
       "src": "/validador",
       "dest": "/server.js"
     },

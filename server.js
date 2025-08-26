@@ -562,6 +562,7 @@ const appRoutes = {
     '/spa': 'spa.html',
     '/spam': 'spam.html',
     '/control': 'control.html',
+    '/control-api': 'control-api.html',
     '/validador': 'validador.html',
     '/validadorv2': 'validadorv2.html',
     '/validadorc': 'validadorc.html',
