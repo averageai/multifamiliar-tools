@@ -26,13 +26,43 @@ const sedesConfig = {
 // DESPUÉS (APIs JSON)
 const sedesConfig = {
     manizales: {
+        apiSede: 'manizales',
+        apiUrl: 'https://cristaleria.average.lat/api/products-json',
+        healthUrl: 'https://cristaleria.average.lat/api/health-db'
+    },
+    dorada: {
+        apiSede: 'ladorada', // La API usa 'ladorada' en lugar de 'dorada'
         apiUrl: 'https://cristaleria.average.lat/api/products-json',
         healthUrl: 'https://cristaleria.average.lat/api/health-db'
     }
 };
 ```
 
-### **3. Nuevas Funciones Implementadas**
+### **3. Nuevo Formato de API**
+
+#### **Endpoint Actualizado**
+```
+GET https://cristaleria.average.lat/api/products-json?sede=manizales
+GET https://cristaleria.average.lat/api/products-json?sede=ladorada
+```
+
+#### **Respuesta de la API**
+```json
+{
+  "success": true,
+  "message": "Datos extraídos exitosamente de manizales",
+  "sede": "manizales",
+  "data": [
+    ["Código Interno", "ID Siigo", "Nombre", "Descripción", ...],
+    ["1001", "12345", "Producto 1", "Descripción 1", ...]
+  ],
+  "count": 10400,
+  "timestamp": "2025-08-26T10:30:00.000Z",
+  "duration": "2500ms"
+}
+```
+
+### **4. Nuevas Funciones Implementadas**
 
 #### **Verificación de Salud de APIs**
 ```javascript
@@ -49,13 +79,13 @@ async function verificarSaludAPIs() {
 
 #### **Obtención de Datos con Retry**
 ```javascript
-async function obtenerDatosConRetry(maxRetries = 3) {
+async function obtenerDatosConRetry(sede, maxRetries = 3) {
     for (let i = 0; i < maxRetries; i++) {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 60000);
             
-            const response = await fetch('https://cristaleria.average.lat/api/products-json', {
+            const response = await fetch(`https://cristaleria.average.lat/api/products-json?sede=${sede}`, {
                 signal: controller.signal
             });
             
@@ -85,9 +115,8 @@ const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
 // DESPUÉS (API JSON)
 await verificarSaludAPIs();
-const apiData = await obtenerDatosConRetry();
-const sedeData = apiData.data[sede];
-const jsonData = sedeData.data;
+const apiData = await obtenerDatosConRetry(config.apiSede);
+const jsonData = apiData.data; // La API ya devuelve datos de la sede específica
 ```
 
 ### **4. Interfaz de Usuario Mejorada**
@@ -218,6 +247,24 @@ Al completar las pruebas, el sistema debería:
 - Implementar caché de datos si es necesario
 - Optimizar consultas de API
 - Mejorar manejo de errores
+
+---
+
+## 🔌 **ENDPOINTS UTILIZADOS:**
+
+### **Health Check**
+```
+GET https://cristaleria.average.lat/api/health-db
+```
+
+### **Datos de Productos**
+```
+GET https://cristaleria.average.lat/api/products-json?sede=manizales
+GET https://cristaleria.average.lat/api/products-json?sede=ladorada
+```
+
+### **Parámetros Requeridos**
+- `sede`: Obligatorio. Valores válidos: `manizales` o `ladorada`
 
 ---
 
