@@ -55,6 +55,12 @@ class Config {
                 name: 'Usuario',
                 role: 'usuario',
                 permissions: ['inventarios']
+            },
+            'develop': {
+                password: process.env.DEVELOP_PASSWORD || 'dev',
+                name: 'Desarrollador',
+                role: 'develop',
+                permissions: ['api-only']
             }
         };
     }

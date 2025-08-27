@@ -34,3 +34,6 @@ Thumbs.db
 *.bak
 *.backup 
 bases_datos/~$productos_dorada.xlsx
+
+# Carpeta de backup con archivos legacy
+backup/

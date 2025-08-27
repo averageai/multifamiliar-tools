@@ -559,21 +559,18 @@ app.get('/', (req, res) => {
 
 // Rutas específicas para cada aplicación
 const appRoutes = {
-    '/spa': 'spa.html',
+    '/spa': 'spa-api.html',
     '/spam': 'spam.html',
-    '/control': 'control.html',
-    '/control-api': 'control-api.html',
-    '/validador': 'validador.html',
-    '/validadorv2': 'validadorv2.html',
+    '/control': 'control-api.html',
+    '/validador': 'validador-api.html',
     '/validadorc': 'validadorc.html',
-    '/controlv2': 'controlv2.html',
     '/spav2': 'spav2.html',
-    '/duplicados': 'duplicados.html',
-    '/codigos-disponibles': 'codigos-disponibles.html',
-    '/cotizaciones': 'cotizaciones.html',
+    '/duplicados': 'duplicados-api.html',
+    '/codigos-disponibles': 'codigos-disponibles-api.html',
+    '/cotizaciones': 'cotizaciones-api.html',
     '/cierre-caja': 'cierre-caja.html',
     '/permisos-salida': 'permisos-salida.html',
-    '/faltantes': 'faltantes.html',
+    '/faltantes': 'faltantes-api.html',
     '/control-horas': 'control-horas.html'
 };
 

@@ -375,6 +375,27 @@
             color: white;
         }
 
+        .tool-card.api .tool-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
         .tool-card h3 {
             color: #ffffff;
             margin-bottom: 10px;
@@ -410,6 +431,12 @@
         .tool-card.scanner .tool-badge {
             background: #e8f5e8;
             color: #2e7d32;
+        }
+
+        .tool-card.api .tool-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
         }
 
         .logout-btn {
@@ -509,6 +536,7 @@
                         <option value="admin">Administrador</option>
                         <option value="operativo">Operativo</option>
                         <option value="usuario">Usuario</option>
+                        <option value="develop">Desarrollador</option>
                     </select>
                 </div>
                 
@@ -541,12 +569,12 @@
                 <span class="tool-badge">Local</span>
             </a>
 
-            <!-- Consulta de Precios (Validador V2 Conectado) -->
-            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validadorc'); return false;">
-                <div class="tool-icon">📷</div>
-                <h3>Consulta de Precios</h3>
-                <p>Sistema avanzado conectado con pistola y cámara. Bases de datos en nube con selector de sede automático.</p>
-                <span class="tool-badge">Multi-Sede</span>
+            <!-- Validador de Precios API -->
+            <a href="#" class="tool-card scanner" id="tool-validador-v2-conectado" onclick="navigateTo('/validador'); return false;">
+                <div class="tool-icon">🏷️</div>
+                <h3>Validador de Precios</h3>
+                <p>Sistema de precios codificados conectado a APIs JSON. Compatible con pistolas de código de barras y datos en tiempo real.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
             <!-- Sistema de Cierre de Caja -->
@@ -565,36 +593,36 @@
                 <span class="tool-badge">Local</span>
             </a>
 
-            <!-- Sistema de Cotizaciones -->
+            <!-- Sistema de Cotizaciones API -->
             <a href="#" class="tool-card operativo" id="tool-cotizaciones" onclick="navigateTo('/cotizaciones'); return false;">
                 <div class="tool-icon">📋</div>
                 <h3>Cotizaciones</h3>
-                <p>Creación rápida y estandarizada de cotizaciones para clientes. Multi-sede con todos los puntos de venta.</p>
-                <span class="tool-badge">Multi-Sede</span>
+                <p>Creación rápida y estandarizada de cotizaciones para clientes. Multi-sede con datos en tiempo real desde APIs JSON.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
-            <!-- Códigos Disponibles -->
+            <!-- Códigos Disponibles API -->
             <a href="#" class="tool-card operativo" id="tool-codigos-disponibles" onclick="navigateTo('/codigos-disponibles'); return false;">
                 <div class="tool-icon">📋</div>
                 <h3>Códigos Disponibles</h3>
-                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada. Listado para crear codigos nuevos sin afectar los existentes.</p>
-                <span class="tool-badge">Multi-Sede</span>
+                <p>Gestión de códigos libres con zonas seguras para Manizales y Dorada. Listado para crear codigos nuevos sin afectar los existentes. Datos en tiempo real desde APIs JSON.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
-            <!-- Detector de Duplicados -->
+            <!-- Detector de Duplicados API -->
             <a href="#" class="tool-card administrativo" id="tool-duplicados" onclick="navigateTo('/duplicados'); return false;">
                 <div class="tool-icon">🔍</div>
                 <h3>Detector de Duplicados</h3>
-                <p>Análisis de productos con códigos internos duplicados entre las bases de datos de Manizales y Dorada.</p>
-                <span class="tool-badge">Multi-Sede</span>
+                <p>Análisis de productos con códigos internos duplicados entre las bases de datos de Manizales y Dorada. Datos en tiempo real desde APIs JSON.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
-            <!-- Sistema de Faltantes Multi-Sede -->
+            <!-- Sistema de Faltantes API -->
             <a href="#" class="tool-card operativo" id="tool-faltantes" onclick="navigateTo('/faltantes'); return false;">
                 <div class="tool-icon">📦</div>
                 <h3>Faltantes</h3>
-                <p>Carga archivos Excel con códigos de faltantes, consulta automática en base de datos por sede (Manizales/Dorada), obtiene nombre y costo. Exporta a Excel o imprime en formato POS 80mm.</p>
-                <span class="tool-badge">Multi-Sede</span>
+                <p>Sistema de faltantes conectado a APIs JSON. Consulta automática en base de datos por sede (Manizales/Dorada), obtiene nombre y costo. Exporta a Excel o imprime en formato POS 80mm.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
             <!-- Control de Precios V2 -->
@@ -613,45 +641,25 @@
                 <span class="tool-badge">Conectado</span>
             </a>
 
-            <!-- Control de Inventarios -->
+            <!-- Control de Inventarios API -->
             <a href="#" class="tool-card administrativo" id="tool-inventarios" onclick="navigateTo('/control'); return false;">
                 <div class="tool-icon">📦</div>
-                <h3>Negativos</h3>
-                <p>Gestión administrativa de inventarios. Control de negativos con carga de archivos automatica.</p>
-                <span class="tool-badge">Multi-sede</span>
+                <h3>Control de Inventarios</h3>
+                <p>Gestión administrativa de inventarios conectada a APIs JSON. Control de negativos con datos en tiempo real.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
-            <!-- Control de Inventarios V2 -->
-            <a href="#" class="tool-card operativo" id="tool-control-v2" onclick="navigateTo('/controlv2'); return false;">
-                <div class="tool-icon">🎯</div>
-                <h3>Control de Inventarios V2</h3>
-                <p>Sistema multi-sede con conexión directa a bases de datos. Selector automático de sede (Manizales/Dorada).</p>
-                <span class="tool-badge">Multi-Sede</span>
-            </a>
-            
-            <!-- Sistema de Precios -->
+            <!-- Sistema de Precios API -->
             <a href="#" class="tool-card operativo" id="tool-precios" onclick="navigateTo('/spa'); return false;">
                 <div class="tool-icon">💰</div>
-                <h3>Precios Afectados (Manual)</h3>
-                <p>Consulta de precios y márgenes desde archivos excel. Se debe usar cuando el precio actual no es el anterior y se hace necesario un archivo viejo.</p>
-                <span class="tool-badge">Manual</span>
+                <h3>Consulta de Precios</h3>
+                <p>Consulta de precios y márgenes conectada a APIs JSON. Datos actualizados en tiempo real desde base de datos.</p>
+                <span class="tool-badge">API JSON</span>
             </a>
 
-            <!-- Validador de Precios -->
-            <a href="#" class="tool-card scanner" id="tool-validador" onclick="navigateTo('/validador'); return false;">
-                <div class="tool-icon">🏷️</div>
-                <h3>Precios de Productos (Manual)</h3>
-                <p>Sistema de precios codificados compatible con pistolas de código de barras. Referencias invertidas para validación rápida. Con carga de archivos manual.</p>
-                <span class="tool-badge">Manual</span>
-            </a>
 
-            <!-- Validador de Precios V2 -->
-            <a href="#" class="tool-card scanner" id="tool-validador-v2" onclick="navigateTo('/validadorv2'); return false;">
-                <div class="tool-icon">📷</div>
-                <h3>Validador de Precios + Camara (Manual)</h3>
-                <p>Sistema avanzado con pistola y cámara. Lectura automática de códigos de barras por cámara web y pistola scanner. Con carga de archivos manual.</p>
-                <span class="tool-badge">Manual</span>
-            </a>
+
+
 
         </div>
 
@@ -690,24 +698,30 @@
         class AuthConfig {
             constructor() {
                 this.credentials = {
-                    'admin': {
-                        password: '123',
-                        name: 'Administrador',
-                        role: 'admin',
-                        permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'validador','validador-v2', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'faltantes', 'control-horas']
-                    },
-                    'operativo': {
-                        password: '', // Sin contraseña
-                        name: 'Operativo',
-                        role: 'operativo',
-                        permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'control-horas']
-                    },
+                                         'admin': {
+                         password: '123',
+                         name: 'Administrador',
+                         role: 'admin',
+                         permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'faltantes', 'control-horas']
+                     },
+                                         'operativo': {
+                         password: '', // Sin contraseña
+                         name: 'Operativo',
+                         role: 'operativo',
+                         permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'control-horas']
+                     },
                     'usuario': {
                         password: '', // Sin contraseña
                         name: 'Usuario',
                         role: 'usuario',
                         permissions: [ 'validador-v2-conectado']
-                    }
+                    },
+                                         'develop': {
+                         password: 'dev',
+                         name: 'Desarrollador',
+                         role: 'develop',
+                         permissions: ['inventarios', 'precios', 'validador-v2-conectado', 'faltantes', 'duplicados', 'cotizaciones', 'codigos-disponibles', 'permisos-salida']
+                     }
                 };
             }
 
@@ -720,10 +734,10 @@
                     return { success: false, message: 'Tipo de usuario no válido' };
                 }
 
-                // Admin requiere contraseña
-                if (role === 'admin') {
+                // Admin y Develop requieren contraseña
+                if (role === 'admin' || role === 'develop') {
                     if (password !== user.password) {
-                        return { success: false, message: 'Contraseña incorrecta para administrador' };
+                        return { success: false, message: `Contraseña incorrecta para ${user.name}` };
                     }
                 } else {
                     // Operativo y Usuario no requieren contraseña
@@ -760,7 +774,7 @@
             const passwordGroup = document.getElementById('passwordGroup');
             const passwordInput = document.getElementById('password');
             
-            if (role === 'admin') {
+            if (role === 'admin' || role === 'develop') {
                 passwordGroup.style.display = 'block';
                 passwordInput.required = true;
                 passwordInput.placeholder = 'Ingresa la contraseña';
@@ -840,22 +854,20 @@
                 return;
             }
             
-            const toolPermissions = {
-                'tool-inventarios': 'inventarios',
-                'tool-precios': 'precios',
-                'tool-precios-manizales': 'precios-manizales',
-                'tool-validador': 'validador',
-                'tool-validador-v2': 'validador-v2',
-                'tool-validador-v2-conectado': 'validador-v2-conectado',
-                'tool-control-v2': 'control-v2',
-                'tool-spav2': 'spav2',
-                'tool-duplicados': 'duplicados',
-                'tool-codigos-disponibles': 'codigos-disponibles',
-                'tool-cotizaciones': 'cotizaciones',
-                'tool-cierre-caja': 'cierre-caja',
-                'tool-faltantes': 'faltantes',
-                'tool-control-horas': 'control-horas'
-            };
+                         const toolPermissions = {
+                 'tool-inventarios': 'inventarios',
+                 'tool-precios': 'precios',
+                 'tool-precios-manizales': 'precios-manizales',
+                 'tool-validador-v2-conectado': 'validador-v2-conectado',
+                 'tool-spav2': 'spav2',
+                 'tool-duplicados': 'duplicados',
+                 'tool-codigos-disponibles': 'codigos-disponibles',
+                 'tool-cotizaciones': 'cotizaciones',
+                 'tool-cierre-caja': 'cierre-caja',
+                 'tool-permisos-salida': 'permisos-salida',
+                 'tool-faltantes': 'faltantes',
+                 'tool-control-horas': 'control-horas'
+             };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
             console.log('📋 Permisos disponibles:', currentUser.permissions);
@@ -906,24 +918,21 @@
             console.log('🔧 Modo mantenimiento:', MAINTENANCE_MODE ? 'ACTIVADO' : 'DESACTIVADO');
         };
 
-        // Sistema de routing SPA
-        const routes = {
-            '/spa': 'spa.html',
-            '/spam': 'spam.html',
-            '/control': 'control.html',
-            '/validador': 'validador.html',
-            '/validadorv2': 'validadorv2.html',
-            '/validadorc': 'validadorc.html',
-            '/controlv2': 'controlv2.html',
-            '/spav2': 'spav2.html',
-            '/duplicados': 'duplicados.html',
-            '/codigos-disponibles': 'codigos-disponibles.html',
-            '/cotizaciones': 'cotizaciones.html',
-            '/cierre-caja': 'cierre-caja.html',
-            '/permisos-salida': 'permisos-salida.html',
-            '/faltantes': 'faltantes.html',
-            '/control-horas': 'control-horas.html'
-        };
+                 // Sistema de routing SPA
+         const routes = {
+             '/spa': 'spa-api.html',
+             '/spam': 'spam.html',
+             '/control': 'control-api.html',
+             '/validador': 'validador-api.html',
+             '/spav2': 'spav2.html',
+             '/duplicados': 'duplicados-api.html',
+             '/codigos-disponibles': 'codigos-disponibles-api.html',
+             '/cotizaciones': 'cotizaciones-api.html',
+             '/cierre-caja': 'cierre-caja.html',
+             '/permisos-salida': 'permisos-salida.html',
+             '/faltantes': 'faltantes-api.html',
+             '/control-horas': 'control-horas.html'
+         };
 
         // Función de navegación
         function navigateTo(route) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Precios Codificados V2 - Multi Sede</title>
+    <title>Sistema de Precios Codificados V2 - APIs JSON (Prueba)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
@@ -183,6 +183,17 @@
 
         .sede-icon {
             font-size: 24px;
+        }
+
+        .api-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
         }
 
         .loading {
@@ -643,7 +654,7 @@
             border: 2px solid #3498db;
             border-radius: 12px;
             padding: 25px;
-            text-align: center;
+                text-align: center;
             max-width: 350px;
             width: 90%;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -664,7 +675,7 @@
 
         .timeout-buttons {
             display: flex;
-            gap: 10px;
+                gap: 10px;
             justify-content: center;
         }
 
@@ -791,7 +802,7 @@
         <div class="header">
             <div class="logo">📷</div>
             <div class="header-text">
-                <h1>Sistema de Precios Codificados V2</h1>
+                <h1>Sistema de Precios Codificados V2 <span class="api-badge">APIs JSON</span></h1>
                 <p>Pistola + Cámara - Multi Sede - Referencias invertidas</p>
             </div>
             <div class="scanner-indicator">
@@ -804,11 +815,14 @@
             <!-- Selector de Sede -->
             <div class="sede-selector" id="sedeSelector">
                 <h2>🏢 Seleccionar Sede</h2>
+                <div id="apiStatus">
+                    <!-- Estado de las APIs se mostrará aquí -->
+                </div>
                 <div class="sede-buttons">
                     <button class="sede-btn" data-sede="manizales" onclick="seleccionarSede('manizales')">
                         <div class="sede-icon">🏪</div>
                         <div>Manizales</div>
-                    </button>
+                </button>
                     <button class="sede-btn" data-sede="dorada" onclick="seleccionarSede('dorada')">
                         <div class="sede-icon">🏬</div>
                         <div>Dorada</div>
@@ -923,7 +937,7 @@
                             <button class="clear-btn" style="background: #6f42c1;" onclick="cambiarSede()">🏢 Cambiar</button>
                             <button class="clear-btn" style="background: #ffc107; color: #000;" onclick="resetStats()">🔄</button>
                             <button class="clear-btn" style="background: #28a745;" onclick="exportarReporte()">📊</button>
-                            <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
+                        <button class="clear-btn" onclick="clearHistory()">Limpiar</button>
                         </div>
                     </div>
                     <div class="recent-list" id="recentList">
@@ -971,18 +985,112 @@
         let cameraStartTime = 0;
         let cameraLayoutMode = 'compact'; // 'overlay' o 'compact'
 
-        // Configuración de sedes y sus archivos
+        // Función para verificar salud de las APIs
+        async function verificarSaludAPIs() {
+            try {
+                actualizarProgreso('Verificando conectividad de APIs...');
+                const response = await fetch('https://cristaleria.average.lat/api/health-db');
+                const data = await response.json();
+                
+                if (data.status !== 'healthy') {
+                    throw new Error('APIs no disponibles: ' + (data.message || 'Error de conectividad'));
+                }
+                
+                console.log('✅ APIs saludables:', data.summary);
+                return true;
+            } catch (error) {
+                console.error('❌ Error verificando APIs:', error);
+                throw new Error('No se pudo conectar con las APIs: ' + error.message);
+            }
+        }
+
+        // Función para obtener datos desde APIs JSON con retry
+        async function obtenerDatosConRetry(sede, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+                    
+                    const response = await fetch(`https://cristaleria.average.lat/api/products-json?sede=${sede}`, {
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error('Error en API: ' + (data.message || 'Error desconocido'));
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Intento ${i + 1} falló:`, error.message);
+                    
+                    if (error.name === 'AbortError') {
+                        throw new Error('Timeout: La API tardó más de 60 segundos en responder');
+                    }
+                    
+                    if (i === maxRetries - 1) {
+                        throw new Error(`Falló después de ${maxRetries} intentos: ${error.message}`);
+                    }
+                    
+                    // Esperar antes del siguiente intento
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                }
+            }
+        }
+
+        // Función para mostrar estado de las APIs
+        async function mostrarEstadoAPIs() {
+            try {
+                const response = await fetch('https://cristaleria.average.lat/api/health-db');
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('apiStatus');
+                if (statusElement) {
+                    if (data.status === 'healthy') {
+                        statusElement.innerHTML = `
+                            <div style="color: #28a745; font-size: 12px; margin-bottom: 15px; text-align: center;">
+                                ✅ APIs Conectadas - ${data.summary.health_percentage}% Saludable
+                            </div>
+                        `;
+                    } else {
+                        statusElement.innerHTML = `
+                            <div style="color: #dc3545; font-size: 12px; margin-bottom: 15px; text-align: center;">
+                                ❌ APIs No Disponibles
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                const statusElement = document.getElementById('apiStatus');
+                if (statusElement) {
+                    statusElement.innerHTML = `
+                        <div style="color: #dc3545; font-size: 12px; margin-bottom: 15px; text-align: center;">
+                            ❌ Error conectando con APIs
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Configuración de sedes con APIs JSON
         const sedesConfig = {
             'manizales': {
                 nombre: 'Manizales',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                apiSede: 'manizales',
                 icon: '🏪',
                 color: '#28a745',
                 tipo: 'productos'
             },
             'dorada': {
                 nombre: 'Dorada',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                apiSede: 'ladorada', // La API usa 'ladorada' en lugar de 'dorada'
                 icon: '🏬',
                 color: '#3498db',
                 tipo: 'productos'
@@ -1021,19 +1129,19 @@
             
             document.getElementById('sedeSelector').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
-            
-            try {
+
+                try {
                 actualizarProgreso(`Conectando con ${config.nombre}...`);
-                
+                    
                 const datosReales = await cargarDatosReales(sede);
-                
+                    
                 actualizarProgreso('Procesando productos y precios...');
                 procesarDatosSegunFormato(datosReales, config.tipo);
-                
+                    
                 actualizarProgreso('Preparando sistema multi-scanner...');
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('scannerSection').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('scannerSection').style.display = 'block';
                     
                     actualizarInfoSede(config);
                     
@@ -1041,12 +1149,12 @@
                         document.getElementById('scannerInput').focus();
                     }
                     mostrarAlerta(`✅ ${config.nombre} conectado - Pistola y Cámara disponibles`, 'success');
-                }, 500);
-                
-            } catch (error) {
+                    }, 500);
+                    
+                } catch (error) {
                 console.error('Error cargando sede:', error);
                 mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
-                document.getElementById('loading').style.display = 'none';
+                    document.getElementById('loading').style.display = 'none';
                 document.getElementById('sedeSelector').style.display = 'block';
             }
         }
@@ -1058,21 +1166,28 @@
             }
 
             try {
-                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
+                // 1. Verificar salud de las APIs
+                await verificarSaludAPIs();
+                
+                console.log(`📂 Conectando con API de ${config.nombre}...`);
 
-                const response = await fetch(config.archivo);
-                if (!response.ok) {
-                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
+                // 2. Obtener datos desde API JSON con sede específica
+                const apiData = await obtenerDatosConRetry(config.apiSede);
+                
+                if (!apiData.success) {
+                    throw new Error(`Error obteniendo datos de ${config.nombre}: ${apiData.message || 'Datos no disponibles'}`);
                 }
-
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
-                return jsonData;
+                
+                const jsonData = apiData.data;
+                console.log(`✅ Datos obtenidos de ${config.nombre}:`, apiData.count, 'productos');
+                
+                // Convertir a formato de array para compatibilidad
+                const arrayData = [Object.keys(jsonData[0])]; // Headers
+                jsonData.forEach(producto => {
+                    arrayData.push(Object.values(producto));
+                });
+                
+                return arrayData;
 
             } catch (error) {
                 console.error(`Error cargando base de datos ${sede}:`, error);
@@ -1526,7 +1641,7 @@
         function procesarCodigoEscaneado() {
             const codigo = document.getElementById('scannerInput').value.trim();
             if (!codigo) return;
-            
+
             procesarCodigoDetectado(codigo);
             
             document.getElementById('scannerInput').value = '';
@@ -1550,7 +1665,7 @@
                 mostrarProductoNoEncontrado(codigo);
                 // Solo agregar al historial si viene del modo pistola
                 if (currentMode === 'pistol') {
-                    agregarAHistorial(codigo, 'NO ENCONTRADO', false);
+                agregarAHistorial(codigo, 'NO ENCONTRADO', false);
                 }
             }
             
@@ -1600,7 +1715,7 @@
                     ">
                         $${producto.precioEstandar.toLocaleString('es-CO')}
                     </div>
-                    <div style="
+                <div style="
                         font-size: 12px;
                         color: #000000;
                         opacity: 0.9;
@@ -1697,7 +1812,7 @@
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center; font-size: 10px;">
                         <span style="color: #6c757d;">${scan.sede}</span>
-                        <span class="recent-time">${scan.tiempo}</span>
+                    <span class="recent-time">${scan.tiempo}</span>
                     </div>
                 </div>
             `).join('');
@@ -1872,8 +1987,8 @@
                     </div>
                 `;
                 if (sedeActual && currentMode === 'pistol') {
-                    document.getElementById('scannerInput').focus();
-                }
+                document.getElementById('scannerInput').focus();
+            }
             }
             
             // Ctrl + Tab para cambiar modo
@@ -1888,10 +2003,10 @@
         // Mantener conexión activa para pistolas USB
         setInterval(() => {
             if (sedeActual && currentMode === 'pistol') {
-                const scannerInput = document.getElementById('scannerInput');
-                if (document.getElementById('scannerSection').style.display !== 'none' && 
-                    document.activeElement !== scannerInput) {
-                    scannerInput.focus();
+            const scannerInput = document.getElementById('scannerInput');
+            if (document.getElementById('scannerSection').style.display !== 'none' && 
+                document.activeElement !== scannerInput) {
+                scannerInput.focus();
                 }
             }
         }, 2000);
@@ -1901,6 +2016,15 @@
             if (cameraActive) {
                 detenerCamera();
             }
+        });
+
+        // Inicialización: Verificar estado de las APIs al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Validador API - Versión de prueba con APIs JSON');
+            mostrarEstadoAPIs();
+            
+            // Verificar estado cada 30 segundos
+            setInterval(mostrarEstadoAPIs, 30000);
         });
 
         // Información de ayuda al cargar

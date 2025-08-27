@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Cotizaciones - Cristalería Multifamiliar</title>
+    <title>Sistema de Cotizaciones - APIs JSON</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
     <script>
@@ -540,6 +540,68 @@
             color: #ffffff;
         }
 
+        .api-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .sede-btn {
+            background: #333;
+            color: #ffffff;
+            border: 2px solid #333;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 150px;
+        }
+
+        .sede-btn:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            background: #3498db;
+            border-color: #3498db;
+            color: white;
+        }
+
+        .sede-btn.active:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+        }
+
         @media (max-width: 1200px) {
             .container {
                 max-width: 100%;
@@ -638,6 +700,7 @@
                 <h1>Sistema de Cotizaciones</h1>
                 <p>Creación rápida y profesional de cotizaciones para clientes</p>
             </div>
+            <div class="api-badge">APIs JSON</div>
             <a href="index.html" class="back-btn">← Volver al MENU</a>
         </div>
 
@@ -645,6 +708,9 @@
             <!-- Selector de Sede -->
             <div class="sede-selector" id="sedeSelector">
                 <h2>🏢 Seleccionar Sede</h2>
+                <div id="apiStatus" style="text-align: center; margin-bottom: 15px; padding: 10px; background: #2a2a2a; border-radius: 8px; color: #ffffff;">
+                    <div>🔍 Verificando estado de APIs...</div>
+                </div>
                 <div class="sede-buttons">
                     <button class="sede-btn" data-sede="manizales" onclick="seleccionarSede('manizales')">
                         <div class="sede-icon">🏪</div>
@@ -848,79 +914,44 @@
         let sedeActual = '';
         let puntoVentaSeleccionado = '';
 
-        // Configuración de sedes y puntos de venta
-        const sedesConfig = {
-            manizales: {
-                nombre: 'Manizales',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
-                icon: '🏪',
-                color: '#28a745',
-                puntosVenta: [
-                    { 
-                        id: 'cristaleria_multifamiliar2', 
-                        nombre: 'Cristalería Multifamiliar 2',
-                        direccion: 'Cr 18 # 22 06, Manizales',
-                        telefono: '3185242131',
-                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
-                    },
-                    { 
-                        id: 'cristaleria_mi_hogar', 
-                        nombre: 'Cristalería Mi Hogar',
-                        direccion: 'Cll 22 # 18 53, Manizales',
-                        telefono: '3185242131',
-                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Mi_Hogar.png'
-                    }
-                ]
-            },
-            dorada: {
-                nombre: 'Dorada',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
-                icon: '🏬',
-                color: '#3498db',
-                puntosVenta: [
-                    { 
-                        id: 'cristaleria_multifamiliar', 
-                        nombre: 'Cristalería Multifamiliar',
-                        direccion: 'Cll 16 # 3 51, La Dorada',
-                        telefono: '3245967523',
-                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
-                    },
-                    { 
-                        id: 'cristaleria_el_hogar', 
-                        nombre: 'Cristalería El Hogar',
-                        direccion: 'Cll 16 # 4 04, La Dorada',
-                        telefono: '3242786480',
-                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_El_Hogar.png'
-                    },
-                    { 
-                        id: 'cristaleria_surtitodo', 
-                        nombre: 'Cristalería Surtitodo',
-                        direccion: 'Cr 4 # 15 55, La Dorada',
-                        telefono: '3100002224',
-                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Surtitodo.png'
-                    }
-                ]
-            }
-        };
 
-        function seleccionarSede(sede) {
-            console.log('🏢 Seleccionando sede:', sede);
-            sedeActual = sede;
-            
-            // Actualizar interfaz
-            document.querySelectorAll('.sede-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-sede="${sede}"]`).classList.add('active');
-            
-            // Cargar datos de la sede
-            cargarDatosSede(sede);
-        }
+
+
 
         function actualizarProgreso(mensaje) {
             const detailElement = document.getElementById('loadingDetail');
             if (detailElement) {
                 detailElement.textContent = mensaje;
+            }
+        }
+
+        async function cargarDatosReales(sede) {
+            const config = sedesConfig[sede];
+            if (!config) {
+                throw new Error(`Sede '${sede}' no encontrada`);
+            }
+
+            try {
+                // 1. Verificar salud de las APIs
+                await verificarSaludAPIs();
+                
+                console.log(`📂 Conectando con API de ${config.nombre}...`);
+
+                // 2. Obtener datos desde API JSON con sede específica
+                const apiData = await obtenerDatosConRetry(config.apiSede);
+                
+                if (!apiData.success) {
+                    throw new Error(`Error obteniendo datos de ${config.nombre}: ${apiData.message || 'Datos no disponibles'}`);
+                }
+                
+                const jsonData = apiData.data;
+                console.log(`✅ Datos obtenidos de ${config.nombre}:`, apiData.count, 'productos');
+                
+                return jsonData;
+
+            } catch (error) {
+                console.error(`Error cargando base de datos ${sede}:`, error);
+                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
             }
         }
 
@@ -964,34 +995,7 @@
             }
         }
 
-        async function cargarDatosReales(sede) {
-            const config = sedesConfig[sede];
-            if (!config) {
-                throw new Error(`Sede '${sede}' no encontrada`);
-            }
 
-            try {
-                console.log(`📂 Cargando archivo desde: ${config.archivo}`);
-
-                const response = await fetch(config.archivo);
-                if (!response.ok) {
-                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
-                }
-
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
-                return jsonData;
-
-            } catch (error) {
-                console.error(`Error cargando base de datos ${sede}:`, error);
-                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
-            }
-        }
 
         function actualizarInfoSede(config) {
             document.getElementById('sedeInfo').textContent = config.nombre;
@@ -1074,60 +1078,100 @@
         }
 
         function procesarDatosProductos(jsonData, sede) {
-            const headers = jsonData[0];
-            const dataRows = jsonData.slice(1);
+            console.log('📊 Procesando datos de productos desde API...');
+            console.log('Estructura de datos recibida:', jsonData);
             
-            console.log('Headers encontrados:', headers);
-            console.log('Total filas de datos:', dataRows.length);
-            
-            // Mapeo de índices basado en la estructura real
-            const indices = {
-                codigoInterno: 0,      // "Código Interno"
-                nombre: 2,             // "Nombre"
-                costo: 5,              // "Costo"
-                precioMayorista: 11,   // "Precio Mayorista"
-                precioMinorista: 12,   // "Precio Minorista"
-                precioEstandar: 13,    // "Precio Estándar"
-                stockTotal: 14,        // "Stock Total"
-                proveedor: 16,         // "Proveedor"
-                fechaActualizacion: 20 // "Última Actualización"
-            };
-            
-            console.log('Mapeo de índices:', indices);
-            
-            productosData = dataRows.map((row, index) => {
-                if (!row[indices.codigoInterno] || !row[indices.nombre]) {
-                    if (index < 5) { // Solo mostrar los primeros 5 para debug
-                        console.log(`Fila ${index} descartada - código: "${row[indices.codigoInterno]}", nombre: "${row[indices.nombre]}"`);
+            if (jsonData && jsonData.length > 0 && typeof jsonData[0] === 'object' && !Array.isArray(jsonData[0])) {
+                // Es un array de objetos desde API JSON
+                console.log('Procesando formato: Array de objetos (JSON)');
+                
+                productosData = jsonData.map((producto, index) => {
+                    // Verificar que el producto tenga los campos necesarios
+                    if (!producto.codigo_interno || !producto.nombre) {
+                        if (index < 5) { // Solo mostrar los primeros 5 para debug
+                            console.log(`Producto ${index} descartado - código: "${producto.codigo_interno}", nombre: "${producto.nombre}"`);
+                        }
+                        return null;
                     }
-                    return null;
-                }
+                    
+                    const productoProcesado = {
+                        codigoInterno: producto.codigo_interno.toString().trim(),
+                        nombre: producto.nombre.trim(),
+                        costo: parseFloat(producto.costo) || 0,
+                        precioMayorista: parseFloat(producto.precio_mayorista) || 0,
+                        precioMinorista: parseFloat(producto.precio_minorista) || 0,
+                        precioEstandar: parseFloat(producto.precio_estandar) || 0,
+                        stockTotal: parseInt(producto.stock_total) || 0,
+                        proveedor: producto.proveedor || '',
+                        fechaActualizacion: producto.fecha_actualizacion || ''
+                    };
+                    
+                    if (index < 3) { // Solo mostrar los primeros 3 productos para debug
+                        console.log(`Producto ${index + 1}:`, productoProcesado);
+                    }
+                    
+                    return productoProcesado;
+                }).filter(p => p !== null);
                 
-                const costo = parseFloat(row[indices.costo]) || 0;
-                const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
-                const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
-                const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+            } else {
+                // Es un array de arrays desde Excel (formato actual de la API)
+                console.log('Procesando formato: Array de arrays (Excel-like)');
                 
-                const producto = {
-                    codigoInterno: row[indices.codigoInterno].toString().trim(),
-                    nombre: row[indices.nombre].trim(),
-                    costo: costo,
-                    precioMayorista: precioMayorista,
-                    precioMinorista: precioMinorista,
-                    precioEstandar: precioEstandar,
-                    stockTotal: parseInt(row[indices.stockTotal]) || 0,
-                    proveedor: row[indices.proveedor] || '',
-                    fechaActualizacion: row[indices.fechaActualizacion] || ''
+                const headers = jsonData[0];
+                const dataRows = jsonData.slice(1);
+                
+                console.log('Headers encontrados:', headers);
+                console.log('Total filas de datos:', dataRows.length);
+                
+                // Mapeo de índices basado en la estructura real
+                const indices = {
+                    codigoInterno: 0,      // "Código Interno"
+                    nombre: 2,             // "Nombre"
+                    costo: 5,              // "Costo"
+                    precioMayorista: 11,   // "Precio Mayorista"
+                    precioMinorista: 12,   // "Precio Minorista"
+                    precioEstandar: 13,    // "Precio Estándar"
+                    stockTotal: 14,        // "Stock Total"
+                    proveedor: 16,         // "Proveedor"
+                    fechaActualizacion: 20 // "Última Actualización"
                 };
                 
-                if (index < 3) { // Solo mostrar los primeros 3 productos para debug
-                    console.log(`Producto ${index + 1}:`, producto);
-                }
+                console.log('Mapeo de índices:', indices);
                 
-                return producto;
-            }).filter(p => p !== null);
+                productosData = dataRows.map((row, index) => {
+                    if (!row[indices.codigoInterno] || !row[indices.nombre]) {
+                        if (index < 5) { // Solo mostrar los primeros 5 para debug
+                            console.log(`Fila ${index} descartada - código: "${row[indices.codigoInterno]}", nombre: "${row[indices.nombre]}"`);
+                        }
+                        return null;
+                    }
+                    
+                    const costo = parseFloat(row[indices.costo]) || 0;
+                    const precioMayorista = parseFloat(row[indices.precioMayorista]) || 0;
+                    const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
+                    const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
+                    
+                    const producto = {
+                        codigoInterno: row[indices.codigoInterno].toString().trim(),
+                        nombre: row[indices.nombre].trim(),
+                        costo: costo,
+                        precioMayorista: precioMayorista,
+                        precioMinorista: precioMinorista,
+                        precioEstandar: precioEstandar,
+                        stockTotal: parseInt(row[indices.stockTotal]) || 0,
+                        proveedor: row[indices.proveedor] || '',
+                        fechaActualizacion: row[indices.fechaActualizacion] || ''
+                    };
+                    
+                    if (index < 3) { // Solo mostrar los primeros 3 productos para debug
+                        console.log(`Producto ${index + 1}:`, producto);
+                    }
+                    
+                    return producto;
+                }).filter(p => p !== null);
+            }
             
-            console.log('Productos procesados:', productosData.length);
+            console.log('✅ Productos procesados:', productosData.length);
             console.log('Primeros 3 productos:', productosData.slice(0, 3));
         }
 
@@ -2150,6 +2194,164 @@
             // Enfocar el input para que el usuario pueda editarlo si lo desea
             document.getElementById('numeroCotizacionInput').focus();
         }
+
+        // Configuración de sedes y puntos de venta
+        const sedesConfig = {
+            manizales: {
+                nombre: 'Manizales',
+                apiSede: 'manizales',
+                apiUrl: 'https://cristaleria.average.lat/api/products-json',
+                healthUrl: 'https://cristaleria.average.lat/api/health-db',
+                icon: '🏪',
+                color: '#28a745',
+                puntosVenta: [
+                    { 
+                        id: 'cristaleria_multifamiliar2', 
+                        nombre: 'Cristalería Multifamiliar 2',
+                        direccion: 'Cr 18 # 22 06, Manizales',
+                        telefono: '3185242131',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
+                    },
+                    { 
+                        id: 'cristaleria_mi_hogar', 
+                        nombre: 'Cristalería Mi Hogar',
+                        direccion: 'Cll 22 # 18 53, Manizales',
+                        telefono: '3185242131',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Mi_Hogar.png'
+                    }
+                ]
+            },
+            dorada: {
+                nombre: 'Dorada',
+                apiSede: 'ladorada',
+                apiUrl: 'https://cristaleria.average.lat/api/products-json',
+                healthUrl: 'https://cristaleria.average.lat/api/health-db',
+                icon: '🏬',
+                color: '#3498db',
+                puntosVenta: [
+                    { 
+                        id: 'cristaleria_multifamiliar', 
+                        nombre: 'Cristalería Multifamiliar',
+                        direccion: 'Cll 16 # 3 51, La Dorada',
+                        telefono: '3245967523',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Multifamiliar.png'
+                    },
+                    { 
+                        id: 'cristaleria_el_hogar', 
+                        nombre: 'Cristalería El Hogar',
+                        direccion: 'Cll 16 # 4 04, La Dorada',
+                        telefono: '3242786480',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_El_Hogar.png'
+                    },
+                    { 
+                        id: 'cristaleria_surtitodo', 
+                        nombre: 'Cristalería Surtitodo',
+                        direccion: 'Cr 4 # 15 55, La Dorada',
+                        telefono: '3100002224',
+                        logo: 'https://raw.githubusercontent.com/averageai/files-source/main/Logo_Surtitodo.png'
+                    }
+                ]
+            }
+        };
+
+        function seleccionarSede(sede) {
+            console.log('🏢 Seleccionando sede:', sede);
+            sedeActual = sede;
+            
+            // Actualizar interfaz
+            document.querySelectorAll('.sede-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-sede="${sede}"]`).classList.add('active');
+            
+            // Cargar datos de la sede
+            cargarDatosSede(sede);
+        }
+
+        // Verificar salud de las APIs
+        async function verificarSaludAPIs() {
+            try {
+                actualizarProgreso('Verificando conectividad de APIs...');
+                const response = await fetch('https://cristaleria.average.lat/api/health-db');
+                const data = await response.json();
+                
+                if (data.status !== 'healthy') {
+                    throw new Error('APIs no disponibles: ' + (data.message || 'Error de conectividad'));
+                }
+                
+                console.log('✅ APIs saludables:', data.summary);
+                return true;
+            } catch (error) {
+                console.error('❌ Error verificando APIs:', error);
+                throw new Error('No se pudo conectar con las APIs: ' + error.message);
+            }
+        }
+
+        function mostrarEstadoAPIs() {
+            const statusDiv = document.getElementById('apiStatus');
+            
+            verificarSaludAPIs()
+                .then(() => {
+                    statusDiv.innerHTML = '<span style="color: #28a745;">✅ APIs conectadas y funcionando</span>';
+                    statusDiv.style.borderColor = '#28a745';
+                })
+                .catch((error) => {
+                    statusDiv.innerHTML = `<span style="color: #dc3545;">❌ Error de conexión: ${error.message}</span>`;
+                    statusDiv.style.borderColor = '#dc3545';
+                });
+        }
+
+        async function obtenerDatosConRetry(sede, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+                    
+                    const response = await fetch(`https://cristaleria.average.lat/api/products-json?sede=${sede}`, {
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (!data.success) {
+                        throw new Error('Error en API: ' + (data.message || 'Error desconocido'));
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Intento ${i + 1} falló:`, error.message);
+                    
+                    if (error.name === 'AbortError') {
+                        throw new Error('Timeout: La API tardó más de 60 segundos en responder');
+                    }
+                    
+                    if (i === maxRetries - 1) {
+                        throw new Error(`Falló después de ${maxRetries} intentos: ${error.message}`);
+                    }
+                    
+                    // Esperar antes del siguiente intento (backoff exponencial)
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                }
+            }
+        }
+
+
+
+
+
+        // Inicializar estado de APIs al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Cotizaciones API - Versión con APIs JSON');
+            mostrarEstadoAPIs();
+            
+            // Verificar estado cada 30 segundos
+            setInterval(mostrarEstadoAPIs, 30000);
+        });
 
         // Función para imprimir cotización en formato POS
         function imprimirPOS() {

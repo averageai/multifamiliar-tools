@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Precios - Multi-Sede</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+            <title>Sistema de Consulta de Precios - APIs JSON + Snapshots Históricos v3.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -55,6 +58,23 @@
         .back-btn:hover {
             background: #5a67d8;
             transform: translateY(-1px);
+        }
+
+        .api-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
 
         .logo {
@@ -110,52 +130,6 @@
             color: #a0a0a0;
         }
 
-        .sede-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .sede-btn {
-            background: #2c3e50;
-            color: white;
-            border: 2px solid #3498db;
-            padding: 20px;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 200px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sede-btn:hover {
-            background: #3498db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-        }
-
-        .sede-icon {
-            font-size: 24px;
-        }
-
-        .sede-info {
-            text-align: left;
-        }
-
-        .sede-name {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .sede-desc {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
         .upload-btn {
             background: #3498db;
             color: white;
@@ -169,6 +143,183 @@
 
         .upload-btn:hover {
             background: #2980b9;
+        }
+
+        .data-selector {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .data-selector h3 {
+            color: #3498db;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .step-label {
+            color: #ccc;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .data-type-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .data-type-btn {
+            background: #2a2a2a;
+            color: white;
+            border: 2px solid #444;
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .data-type-btn:hover {
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .data-type-btn.active {
+            border-color: #28a745;
+            background: #1e3a2e;
+        }
+
+        .data-select {
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            min-width: 180px;
+        }
+
+        .data-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .data-info {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-size: 11px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .load-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .load-button:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .load-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sede-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .sede-btn {
+            background: #2a2a2a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 120px;
+            color: #ffffff;
+        }
+
+        .sede-btn:hover {
+            border-color: #3498db;
+            background: #333;
+            transform: translateY(-2px);
+        }
+
+        .sede-btn.active {
+            border-color: #28a745;
+            background: #1e3a2e;
+        }
+
+        .sede-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .sede-btn div:last-child {
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .file-input {
@@ -502,35 +653,81 @@
         <div class="header">
             <div class="logo">💰</div>
             <div class="header-text">
-                <h1>Control de Inventarios</h1>
-                <p>Control de márgenes y precios anteriores para evitar pérdidas. Control de inventario y precios de referencia.</p>
+                <h1>Sistema de Consulta de Precios <span class="api-badge">APIs JSON + Snapshots</span></h1>
+                <p>Control de márgenes y precios anteriores para evitar pérdidas</p>
             </div>
             <a href="index.html" class="back-btn">← Volver al MENU</a>
         </div>
 
         <div class="content">
-            <div class="upload-section" id="sedeSelector">
-                <h2>Seleccionar Sede</h2>
-                <p><strong>Conecta directamente con las bases de datos:</strong></p>
-                <div class="sede-buttons">
-                    <button class="sede-btn" onclick="cargarDatosSede('manizales')">
-                        <div class="sede-icon">🏢</div>
-                        <div class="sede-info">
-                            <div class="sede-name">Manizales</div>
-                            <div class="sede-desc">Inventario Manizales</div>
-                        </div>
-                    </button>
-                    <button class="sede-btn" onclick="cargarDatosSede('dorada')">
-                        <div class="sede-icon">🏪</div>
-                        <div class="sede-info">
-                            <div class="sede-name">Dorada</div>
-                            <div class="sede-desc">Productos Dorada</div>
-                        </div>
-                    </button>
+            <div class="upload-section" id="uploadSection">
+                <h2>Seleccionar Sede para Cargar Datos</h2>
+                <div id="apiStatus" style="margin: 15px 0; padding: 10px; border-radius: 6px; background: #1a1a1a; border: 1px solid #333;">
+                    <span>🔄 Verificando conectividad de APIs...</span>
                 </div>
+                
+                <!-- Selector de Datos Integrado -->
+                <div class="data-selector">
+                    <h3>📊 Cargar Datos de Productos</h3>
+                    <div class="step-container">
+                        <!-- Paso 1: Tipo de datos -->
+                        <div class="step">
+                            <div class="step-label">1️⃣ Selecciona el tipo de datos</div>
+                            <div class="step-controls">
+                                <div class="data-type-buttons">
+                                    <button class="data-type-btn" id="btnActuales" onclick="seleccionarTipoDatos('actuales')">
+                                        📊 Datos Actuales
+                </button>
+                                    <button class="data-type-btn" id="btnHistoricos" onclick="seleccionarTipoDatos('historicos')">
+                                        📅 Datos Históricos
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Sede -->
+                        <div class="step" id="stepSede" style="display: none;">
+                            <div class="step-label">2️⃣ Selecciona la sede</div>
+                            <div class="step-controls">
+                                <select id="dataSede" class="data-select" onchange="seleccionarSede()">
+                                    <option value="">Seleccionar sede...</option>
+                                    <option value="manizales">🏪 Manizales</option>
+                                    <option value="ladorada">🏬 La Dorada</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Paso 3: Fecha (solo para históricos) -->
+                        <div class="step" id="stepFecha" style="display: none;">
+                            <div class="step-label">3️⃣ Selecciona la fecha histórica</div>
+                            <div class="step-controls">
+                                <select id="dataFecha" class="data-select" onchange="mostrarInfoDatos()">
+                                    <option value="">Seleccionar fecha...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Información -->
+                        <div class="step" id="stepInfo" style="display: none;">
+                            <div id="dataInfo" class="data-info">
+                                <span>📊 Información de los datos seleccionados</span>
+                            </div>
+                        </div>
+
+                        <!-- Botón de carga -->
+                        <div class="step" id="stepCargar" style="display: none;">
+                            <button class="load-button" onclick="cargarDatosSeleccionados()" id="btnCargarDatos">
+                                📊 Cargar Datos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="alert">
-                    <strong>Info:</strong> Conexión automática a las bases de datos sin necesidad de cargar archivos
+                    <strong>Info:</strong> Carga automáticamente todos los productos con precios y márgenes desde las APIs. También puedes consultar datos históricos usando snapshots guardados.
                 </div>
+
             </div>
 
             <div class="loading" id="loading">
@@ -601,105 +798,158 @@
     </div>
 
     <script>
-        let productosData = [];
-        let productosEnLista = [];
-        let totalSearches = 0;
-        let productsFound = 0;
-        let productsNotFound = 0;
-        let currentSede = null;
-
-        // Configuración de sedes - URLs directas como en validadorc.html
+        // Configuración de sedes con APIs JSON (debe estar al inicio)
         const sedesConfig = {
             manizales: {
                 nombre: 'Manizales',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_manizales.xlsx',
+                apiSede: 'manizales',
                 icon: '🏪',
                 color: '#28a745'
             },
             dorada: {
                 nombre: 'Dorada',
-                archivo: 'https://raw.githubusercontent.com/averageai/files-source/main/productos_dorada.xlsx',
+                apiSede: 'ladorada', // La API usa 'ladorada' en lugar de 'dorada'
                 icon: '🏬',
                 color: '#3498db'
             }
         };
 
-        // Función para cargar datos de sede
-        async function cargarDatosSede(sede) {
-            const config = sedesConfig[sede];
-            if (!config) {
-                mostrarError('Sede no encontrada');
-                return;
-            }
+        let productosData = [];
+        let productosEnLista = [];
+        let totalSearches = 0;
+        let productsFound = 0;
+        let productsNotFound = 0;
 
-            console.log('📂 Cargando datos de:', config.nombre);
+        // Configurar drag and drop (solo para compatibilidad, no usado en versión API)
+        const uploadSection = document.getElementById('uploadSection');
 
-            document.getElementById('sedeSelector').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
+        if (uploadSection) {
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#3498db';
+            uploadSection.style.background = '#e3f2fd';
+        });
 
-            try {
-                actualizarProgreso(`Conectando con ${config.nombre}...`);
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+        });
 
-                const datosReales = await cargarDatosReales(sede);
-
-                actualizarProgreso('Procesando productos y precios...');
-                procesarDatosSegunFormato(datosReales);
-
-                actualizarProgreso('Inicializando sistema...');
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('searchSection').style.display = 'block';
-
-                    currentSede = sede;
-                    actualizarInfoSede(config);
-
-                    document.getElementById('searchInput').focus();
-                    mostrarAlerta(`✅ ${config.nombre} conectado - Sistema listo`, 'success');
-                }, 500);
-
-            } catch (error) {
-                console.error('Error cargando sede:', error);
-                mostrarError(`Error conectando con ${config.nombre}: ${error.message}`);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('sedeSelector').style.display = 'block';
-            }
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#dee2e6';
+            uploadSection.style.background = '#f8f9fa';
+                // No procesar archivos en versión API
+            });
         }
 
-        // Función para cargar datos reales desde Excel
-        async function cargarDatosReales(sede) {
-            const config = sedesConfig[sede];
-            if (!config) {
-                throw new Error(`Sede '${sede}' no encontrada`);
-            }
-
+        // Función para verificar salud de las APIs
+        async function verificarSaludAPIs() {
             try {
-                console.log(`📂 Cargando archivo: ${config.archivo}`);
-
-                const response = await fetch(config.archivo);
-                if (!response.ok) {
-                    throw new Error(`Error cargando ${config.archivo}: ${response.status} ${response.statusText}`);
+                actualizarProgreso('Verificando conectividad de APIs...');
+                const response = await fetch('https://cristaleria.average.lat/api/health-db');
+                const data = await response.json();
+                
+                if (data.status !== 'healthy') {
+                    throw new Error('APIs no disponibles: ' + (data.message || 'Error de conectividad'));
                 }
-
-                const arrayBuffer = await response.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-
-                console.log(`✅ Archivo cargado: ${jsonData.length} filas`);
-                return jsonData;
-
+                
+                console.log('✅ APIs saludables:', data.summary);
+                return true;
             } catch (error) {
-                console.error(`Error cargando base de datos ${sede}:`, error);
-                throw new Error(`No se pudo cargar la base de datos de ${config.nombre}: ${error.message}`);
+                console.error('❌ Error verificando APIs:', error);
+                throw new Error('No se pudo conectar con las APIs: ' + error.message);
             }
         }
 
-        // Función para actualizar información de sede
-        function actualizarInfoSede(config) {
-            document.getElementById('systemInfo').innerHTML = `
-                <strong>${config.nombre}</strong> - Sistema Conectado
-            `;
+        // Función para obtener datos desde APIs JSON con retry
+        async function obtenerDatosConRetry(sede, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+                    
+                    const response = await fetch(`https://cristaleria.average.lat/api/products-json?sede=${sede}`, {
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error('Error en API: ' + (data.message || 'Error desconocido'));
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Intento ${i + 1} falló:`, error.message);
+                    
+                    if (error.name === 'AbortError') {
+                        throw new Error('Timeout: La API tardó más de 60 segundos en responder');
+                    }
+                    
+                    if (i === maxRetries - 1) {
+                        throw new Error(`Falló después de ${maxRetries} intentos: ${error.message}`);
+                    }
+                    
+                    // Esperar antes del siguiente intento
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                }
+            }
+        }
+
+        // Función para cargar datos desde API JSON
+        async function cargarDatosDesdeAPI(sede) {
+            const config = sedesConfig[sede];
+            
+            try {
+                // Mostrar loading y ocultar upload section
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('searchSection').style.display = 'none';
+                
+                // 1. Verificar salud de las APIs
+                await verificarSaludAPIs();
+                
+                actualizarProgreso(`Conectando con base de datos de ${config.nombre}...`);
+                
+                // 2. Obtener datos desde API JSON con sede específica
+                actualizarProgreso('Obteniendo datos de productos desde API...');
+                const apiData = await obtenerDatosConRetry(config.apiSede);
+                
+                // 3. Procesar datos directamente (la API ya devuelve datos de la sede específica)
+                actualizarProgreso('Procesando datos de productos...');
+                
+                if (!apiData.success) {
+                    throw new Error(`Error obteniendo datos de ${config.nombre}: ${apiData.message || 'Datos no disponibles'}`);
+                }
+                
+                const jsonData = apiData.data;
+                console.log(`📊 Datos obtenidos de ${config.nombre}:`, apiData.count, 'productos');
+                    
+                    actualizarProgreso('Procesando precios y márgenes...');
+                    procesarDatosProductos(jsonData);
+                    
+                    actualizarProgreso('Inicializando sistema...');
+                    setTimeout(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('searchSection').style.display = 'block';
+                    mostrarAlerta(`✅ Sistema cargado correctamente desde ${config.nombre}`, 'success');
+                        document.getElementById('searchInput').focus();
+                    }, 300);
+                    
+                } catch (error) {
+                console.error('Error cargando datos:', error);
+                mostrarError('Error cargando datos: ' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                }
         }
 
         function actualizarProgreso(mensaje) {
@@ -709,75 +959,282 @@
             }
         }
 
-        function procesarDatosSegunFormato(jsonData) {
-            // Validar que jsonData existe y tiene datos
-            if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) {
-                console.error('❌ Error: No se recibieron datos válidos del archivo Excel');
-                throw new Error('El archivo Excel está vacío o no tiene el formato esperado');
+        // Función para mostrar estado de las APIs
+        async function mostrarEstadoAPIs() {
+            try {
+                const response = await fetch('https://cristaleria.average.lat/api/health-db');
+                const data = await response.json();
+                
+                const statusElement = document.getElementById('apiStatus');
+                if (statusElement) {
+                    if (data.status === 'healthy') {
+                        statusElement.innerHTML = `
+                            <div style="color: #28a745; font-size: 12px; margin-bottom: 15px; text-align: center; padding: 10px; border-radius: 6px; background: #1a1a1a; border: 1px solid #28a745;">
+                                ✅ APIs Conectadas - ${data.summary?.health_percentage || '100'}% Saludable
+                            </div>
+                        `;
+                    } else {
+                        statusElement.innerHTML = `
+                            <div style="color: #dc3545; font-size: 12px; margin-bottom: 15px; text-align: center; padding: 10px; border-radius: 6px; background: #1a1a1a; border: 1px solid #dc3545;">
+                                ❌ APIs No Disponibles
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                const statusElement = document.getElementById('apiStatus');
+                if (statusElement) {
+                    statusElement.innerHTML = `
+                        <div style="color: #dc3545; font-size: 12px; margin-bottom: 15px; text-align: center; padding: 10px; border-radius: 6px; background: #1a1a1a; border: 1px solid #dc3545;">
+                            ❌ Error conectando con APIs
+                        </div>
+                    `;
+                }
             }
-
-            const headers = jsonData[0];
-            const dataRows = jsonData.slice(1);
-            
-            console.log('Headers encontrados:', headers);
-            console.log('Total filas de datos:', dataRows.length);
-            
-            // Validar que hay headers y datos
-            if (!headers || headers.length === 0) {
-                console.error('❌ Error: No se encontraron headers en el archivo Excel');
-                throw new Error('El archivo Excel no tiene el formato esperado (sin headers)');
-            }
-            
-            // Usar el mismo procesamiento para ambas sedes
-            procesarDatosProductos(jsonData);
         }
 
-        function procesarArchivo(archivo) {
-            console.log('Iniciando procesamiento del archivo:', archivo.name);
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('uploadSection').style.display = 'none';
+        // Variables para el flujo de datos
+        let tipoDatosSeleccionado = null;
+        let sedeSeleccionada = null;
+        let fechaSeleccionada = null;
+        let fechasDisponibles = [];
+        let snapshotSeleccionado = null;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    actualizarProgreso('Leyendo archivo Excel...');
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+        // Función para seleccionar tipo de datos
+        function seleccionarTipoDatos(tipo) {
+            tipoDatosSeleccionado = tipo;
+            
+            // Actualizar botones
+            document.getElementById('btnActuales').classList.toggle('active', tipo === 'actuales');
+            document.getElementById('btnHistoricos').classList.toggle('active', tipo === 'historicos');
+            
+            // Mostrar siguiente paso
+            document.getElementById('stepSede').style.display = 'flex';
+            
+            // Limpiar selecciones posteriores
+            document.getElementById('dataSede').value = '';
+            document.getElementById('dataFecha').value = '';
+            document.getElementById('stepFecha').style.display = 'none';
+            document.getElementById('stepInfo').style.display = 'none';
+            document.getElementById('stepCargar').style.display = 'none';
+        }
+
+        // Función para seleccionar sede
+        async function seleccionarSede() {
+            const sedeSelect = document.getElementById('dataSede');
+            sedeSeleccionada = sedeSelect.value;
+            
+            console.log('🏪 Sede seleccionada:', sedeSeleccionada);
+            console.log('📊 Tipo de datos seleccionado:', tipoDatosSeleccionado);
+            
+            if (!sedeSeleccionada) {
+                document.getElementById('stepFecha').style.display = 'none';
+                document.getElementById('stepInfo').style.display = 'none';
+                document.getElementById('stepCargar').style.display = 'none';
+                return;
+            }
+            
+            if (tipoDatosSeleccionado === 'actuales') {
+                // Para datos actuales, mostrar información y botón de carga
+                mostrarInfoDatos();
+            } else {
+                // Para datos históricos, cargar fechas disponibles
+                await cargarFechasDisponibles();
+            }
+        }
+
+        // Función para cargar fechas disponibles de snapshots
+        async function cargarFechasDisponibles() {
+            try {
+                console.log(`🔄 Cargando fechas para sede: ${sedeSeleccionada}`);
+                actualizarProgreso(`Cargando fechas disponibles para ${sedeSeleccionada}...`);
+                
+                const url = `https://cristaleria.average.lat/api/list-historical-dates?sede=${sedeSeleccionada}`;
+                console.log(`📡 URL de la API: ${url}`);
+                
+                const response = await fetch(url);
+                console.log(`📡 Response status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log(`📊 Respuesta completa de la API:`, data);
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Error cargando fechas');
+                }
+                
+                // La API por sede devuelve directamente el array de fechas
+                fechasDisponibles = data.dates || [];
+                
+                console.log(`📊 Fechas disponibles (${fechasDisponibles.length}):`, fechasDisponibles);
+                
+                // Limpiar y poblar el selector de fechas
+                const dateSelect = document.getElementById('dataFecha');
+                dateSelect.innerHTML = '<option value="">Seleccionar fecha...</option>';
+                
+                if (fechasDisponibles.length > 0) {
+                    fechasDisponibles.forEach((fecha, index) => {
+                        console.log(`📅 Procesando fecha ${index + 1}:`, fecha);
+                        
+                        const option = document.createElement('option');
+                        // Usar camelCase (snapshotDate, productCount) que es lo que devuelve la API por sede
+                        option.value = fecha.snapshotDate;
+                        option.textContent = `${fecha.snapshotDate} (${fecha.productCount} productos)`;
+                        dateSelect.appendChild(option);
+                        
+                        console.log(`✅ Opción agregada: ${option.value} - ${option.textContent}`);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No hay fechas históricas disponibles';
+                    option.disabled = true;
+                    dateSelect.appendChild(option);
+                    console.log('⚠️ No se encontraron fechas históricas');
+                }
+                
+                // Mostrar selector de fecha
+                document.getElementById('stepFecha').style.display = 'flex';
+                actualizarProgreso(`✅ ${fechasDisponibles.length} fechas disponibles cargadas`);
+                
+            } catch (error) {
+                console.error('❌ Error cargando fechas:', error);
+                mostrarError(`Error cargando fechas: ${error.message}`);
+                
+                const dateSelect = document.getElementById('dataFecha');
+                dateSelect.innerHTML = '<option value="">Error cargando fechas...</option>';
+                document.getElementById('stepFecha').style.display = 'flex';
+            }
+        }
+
+        // Función para mostrar información de los datos seleccionados
+        function mostrarInfoDatos() {
+            const infoDiv = document.getElementById('dataInfo');
+            
+            if (tipoDatosSeleccionado === 'actuales') {
+                infoDiv.innerHTML = `
+                    <span>📊 Datos en tiempo real desde la base de datos actual de ${sedeSeleccionada}</span>
+                `;
+                document.getElementById('stepInfo').style.display = 'flex';
+                document.getElementById('stepCargar').style.display = 'flex';
+                return;
+            }
+            
+            const fechaSelect = document.getElementById('dataFecha');
+            fechaSeleccionada = fechaSelect.value;
+            
+            if (!fechaSeleccionada) {
+                document.getElementById('stepInfo').style.display = 'none';
+                document.getElementById('stepCargar').style.display = 'none';
+                return;
+            }
+            
+            const snapshot = fechasDisponibles.find(f => f.snapshotDate === fechaSeleccionada);
+            if (snapshot) {
+                infoDiv.innerHTML = `
+                    <span>📅 ${snapshot.snapshotDate} | 📦 ${snapshot.productCount} productos | 📊 ${snapshot.totalStock.toLocaleString()} stock total</span>
+                `;
+                document.getElementById('stepInfo').style.display = 'flex';
+                document.getElementById('stepCargar').style.display = 'flex';
+                snapshotSeleccionado = snapshot;
+            } else {
+                document.getElementById('stepInfo').style.display = 'none';
+                document.getElementById('stepCargar').style.display = 'none';
+            }
+        }
+
+        // Función para cargar datos seleccionados
+        async function cargarDatosSeleccionados() {
+            if (!tipoDatosSeleccionado || !sedeSeleccionada) {
+                mostrarError('Selecciona el tipo de datos y la sede');
+                return;
+            }
+            
+            if (tipoDatosSeleccionado === 'historicos' && !fechaSeleccionada) {
+                mostrarError('Selecciona una fecha histórica');
+                return;
+            }
+            
+            try {
+                // Mostrar loading y ocultar upload section
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('searchSection').style.display = 'none';
+                
+                if (tipoDatosSeleccionado === 'actuales') {
+                    // Cargar datos actuales
+                    actualizarProgreso(`Cargando datos actuales de ${sedeSeleccionada}...`);
+                    await cargarDatosDesdeAPI(sedeSeleccionada);
+                } else {
+                    // Cargar datos históricos
+                    actualizarProgreso(`Cargando datos históricos de ${sedeSeleccionada} del ${fechaSeleccionada}...`);
                     
-                    actualizarProgreso('Extrayendo datos de productos...');
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    const response = await fetch(`https://cristaleria.average.lat/api/products-json-historical?sede=${sedeSeleccionada}&date=${fechaSeleccionada}`);
+                    const data = await response.json();
                     
-                    actualizarProgreso('Procesando precios y márgenes...');
+                    if (!data.success) {
+                        throw new Error(data.message || 'Error cargando datos históricos');
+                    }
+                    
+                    actualizarProgreso('Procesando datos históricos...');
+                    
+                    // Los datos históricos vienen en formato array de arrays (como Excel)
+                    const jsonData = data.data;
                     procesarDatosProductos(jsonData);
                     
-                    actualizarProgreso('Inicializando sistema...');
+                    actualizarProgreso('Inicializando sistema con datos históricos...');
                     setTimeout(() => {
-                        document.getElementById('loading').style.display = 'none';
+                document.getElementById('loading').style.display = 'none';
                         document.getElementById('searchSection').style.display = 'block';
-                        mostrarAlerta('✅ Sistema cargado correctamente', 'success');
+                        mostrarAlerta(`✅ Datos históricos cargados: ${data.productCount || data.product_count} productos del ${fechaSeleccionada}`, 'success');
                         document.getElementById('searchInput').focus();
                     }, 300);
-                    
-                } catch (error) {
-                    console.error('Error completo:', error);
-                    mostrarError('Error procesando archivo: ' + error.message);
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('uploadSection').style.display = 'block';
                 }
-            };
-
-            reader.onerror = function() {
-                console.error('Error leyendo el archivo');
-                mostrarError('Error leyendo el archivo');
+                
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                mostrarError(`Error cargando datos: ${error.message}`);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('uploadSection').style.display = 'block';
-            };
-
-            reader.readAsArrayBuffer(archivo);
+            }
         }
 
         function procesarDatosProductos(jsonData) {
+            console.log('📊 Procesando datos de productos desde API JSON...');
+            console.log('Estructura de datos recibida:', jsonData);
+            
+            // Verificar si es un array de objetos (API JSON) o array de arrays (Excel)
+            if (jsonData && jsonData.length > 0 && typeof jsonData[0] === 'object' && !Array.isArray(jsonData[0])) {
+                // Es un array de objetos desde API JSON
+                productosData = jsonData.map(producto => {
+                    if (!producto.codigo_interno || !producto.nombre) {
+                        return null;
+                    }
+                    
+                    const costo = parseFloat(producto.costo) || 0;
+                    const precioMayorista = parseFloat(producto.precio_mayorista) || 0;
+                    const precioMinorista = parseFloat(producto.precio_minorista) || 0;
+                    const precioEstandar = parseFloat(producto.precio_estandar) || 0;
+                    
+                    return {
+                        codigoInterno: producto.codigo_interno.toString().trim(),
+                        nombre: producto.nombre.trim(),
+                        costo: costo,
+                        porcentajeMayorista: parseFloat(producto.porcentaje_mayorista) || 0,
+                        porcentajeMinorista: parseFloat(producto.porcentaje_minorista) || 0,
+                        porcentajeEstandar: parseFloat(producto.porcentaje_estandar) || 0,
+                        precioMayorista: precioMayorista,
+                        precioMinorista: precioMinorista,
+                        precioEstandar: precioEstandar,
+                        margenMayorista: parseFloat(producto.porcentaje_mayorista) || 0,
+                        margenMinorista: parseFloat(producto.porcentaje_minorista) || 0,
+                        margenEstandar: parseFloat(producto.porcentaje_estandar) || 0,
+                        stockTotal: parseInt(producto.stock) || 0,
+                        proveedor: producto.proveedor || '',
+                        fechaActualizacion: producto.fecha_actualizacion || ''
+                    };
+                }).filter(p => p !== null);
+            } else {
+                // Es un array de arrays desde Excel (mantener compatibilidad)
             const headers = jsonData[0];
             const dataRows = jsonData.slice(1);
             
@@ -810,11 +1267,6 @@
                 const precioMinorista = parseFloat(row[indices.precioMinorista]) || 0;
                 const precioEstandar = parseFloat(row[indices.precioEstandar]) || 0;
                 
-                // Calcular márgenes reales (pero mostrar los configurados)
-                const margenMayorista = costo > 0 ? ((precioMayorista - costo) / costo * 100) : 0;
-                const margenMinorista = costo > 0 ? ((precioMinorista - costo) / costo * 100) : 0;
-                const margenEstandar = costo > 0 ? ((precioEstandar - costo) / costo * 100) : 0;
-                
                 return {
                     codigoInterno: row[indices.codigoInterno].toString().trim(),
                     nombre: row[indices.nombre].trim(),
@@ -825,27 +1277,24 @@
                     precioMayorista: precioMayorista,
                     precioMinorista: precioMinorista,
                     precioEstandar: precioEstandar,
-                    margenMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0, // Usar columna I
-                    margenMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0, // Usar columna J
-                    margenEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,   // Usar columna K
+                        margenMayorista: parseFloat(row[indices.porcentajeMayorista]) || 0,
+                        margenMinorista: parseFloat(row[indices.porcentajeMinorista]) || 0,
+                        margenEstandar: parseFloat(row[indices.porcentajeEstandar]) || 0,
                     stockTotal: parseInt(row[indices.stockTotal]) || 0,
                     proveedor: row[indices.proveedor] || '',
                     fechaActualizacion: row[indices.fechaActualizacion] || ''
                 };
             }).filter(p => p !== null);
+            }
             
-            console.log('Productos procesados:', productosData.length);
+            console.log('✅ Productos procesados:', productosData.length);
             actualizarEstadisticas();
         }
 
-
-
         function actualizarEstadisticas() {
             // Actualizar chips de estadísticas
-            const sedeInfo = currentSede ? sedesConfig[currentSede].nombre : 'Sistema';
             document.getElementById('statsChips').innerHTML = `
                 <span class="stat-chip">${productosData.length.toLocaleString()} productos</span>
-                <span class="stat-chip">${sedeInfo}</span>
                 <span class="stat-chip">Sistema activo</span>
             `;
             
@@ -1484,8 +1933,6 @@
             mostrarAlerta('✅ Productos con precios exportados', 'success');
         }
 
-
-
         // Mejorar los botones de acción
         document.addEventListener('DOMContentLoaded', function() {
             // Agregar botones adicionales después de un momento
@@ -1505,6 +1952,15 @@
                     actionButtons.appendChild(resetBtn);
                 }
             }, 500);
+        });
+
+        // Inicialización: Verificar estado de las APIs al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando SPA API - Versión de prueba con APIs JSON');
+            mostrarEstadoAPIs();
+            
+            // Verificar estado cada 30 segundos
+            setInterval(mostrarEstadoAPIs, 30000);
         });
     </script>
 </body>
