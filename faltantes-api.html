@@ -987,7 +987,7 @@
 
              dataRows.forEach((row, index) => {
                  const codigo = row[codigoColumnIndex] ? row[codigoColumnIndex].toString().trim() : '';
-                 const sedeReporto = row[1] ? row[1].toString().trim() : sedeActual.toUpperCase(); // Columna B
+                 const sedeReporto = row[2] ? row[2].toString().trim() : sedeActual.toUpperCase(); // Columna C (índice 2) - Usuario
                  const fechaReporte = row[4] ? row[4].toString().trim() : new Date().toLocaleDateString('es-CO'); // Columna E
                  
                  if (!codigo) return;
