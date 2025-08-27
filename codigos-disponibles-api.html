@@ -375,6 +375,24 @@
             margin: 5px 0;
         }
 
+        .last-update-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+        }
+
+        .last-update-info p {
+            margin: 5px 0;
+            font-size: 11px;
+            color: #e0e0e0;
+        }
+
+        .last-update-info strong {
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
             .tables-container {
                 grid-template-columns: 1fr;
@@ -402,6 +420,10 @@
             <div class="api-status" id="apiStatus">
                 <h3>🔄 Verificando conectividad de APIs...</h3>
                 <p>Conectando con bases de datos en tiempo real</p>
+                <div class="last-update-info" id="lastUpdateInfo">
+                    <p><strong>📅 Última actualización:</strong> <span id="lastUpdateDate">Calculando...</span></p>
+                    <p><strong>⏰ Próxima actualización:</strong> <span id="nextUpdateDate">Calculando...</span></p>
+                </div>
             </div>
 
             <div class="start-section" id="start-section">
@@ -409,12 +431,11 @@
                 <p style="margin: 20px 0; color: #a0a0a0;">
                     Este sistema analiza las bases de datos de Manizales y Dorada para encontrar códigos internos disponibles.
                     <br><br>
-                    <strong>Nueva lógica implementada:</strong><br>
-                    1. Juntar ambas bases de datos<br>
-                    2. Organizar de menor a mayor<br>
-                    3. Encontrar próximos 500 espacios libres desde 5000<br>
-                    4. Dorada: códigos 1-100 de los espacios libres<br>
-                    5. Manizales: códigos 101-200 de los espacios libres
+                    <strong>Proceso implementado:</strong><br>
+                    1. Tomar todos los códigos internos de ambas sedes y ponerlos en una lista<br>
+                    2. Organizarla de mayor a menor<br>
+                    3. Encontrar a partir de 5,000 los espacios vacíos (únicos y sin usar)<br>
+                    4. Presentar los primeros 100 libres para Dorada y los 100 siguientes para Manizales
                 </p>
                 <button class="start-btn" onclick="iniciarAnalisis()">
                     🚀 Iniciar Análisis
@@ -428,14 +449,20 @@
                 <div class="loading-info">
                     <h3>📊 Procesamiento en Curso</h3>
                     <p><strong>Paso 1:</strong> Conectando con APIs JSON de Manizales y Dorada</p>
-                    <p><strong>Paso 2:</strong> Procesando códigos internos de productos</p>
-                    <p><strong>Paso 3:</strong> Encontrando espacios libres desde código 5000</p>
-                    <p><strong>Paso 4:</strong> Generando zonas seguras por sede</p>
-                    <p><strong>Paso 5:</strong> Creando tablas de códigos disponibles</p>
+                    <p><strong>Paso 2:</strong> Tomando todos los códigos internos de ambas sedes</p>
+                    <p><strong>Paso 3:</strong> Organizando códigos de mayor a menor</p>
+                    <p><strong>Paso 4:</strong> Encontrando espacios vacíos desde código 5000</p>
+                    <p><strong>Paso 5:</strong> Distribuyendo códigos por sede (100 para cada una)</p>
                 </div>
             </div>
 
             <div class="results-section" id="results-section">
+                <!-- Información de última actualización en resultados -->
+                <div class="last-update-info" style="margin-bottom: 20px;">
+                    <p><strong>📅 Última actualización de datos:</strong> <span id="lastUpdateDateResults">Calculando...</span></p>
+                    <p><strong>⏰ Próxima actualización:</strong> <span id="nextUpdateDateResults">Calculando...</span></p>
+                </div>
+
                 <div class="stats-bar">
                     <div class="stat-card">
                         <div class="stat-number" id="total-manizales">0</div>
@@ -461,8 +488,8 @@
                             <div class="safezone-title">🏪 Zona Segura Manizales</div>
                             <div class="safezone-text">
                                 Códigos reservados para uso exclusivo de Manizales. 
-                                Muestra códigos 101-200 de los próximos 500 espacios libres desde 5000.
-                                Lógica optimizada: ordenar códigos y encontrar espacios secuenciales.
+                                Muestra códigos 101-200 de los espacios libres encontrados desde 5000.
+                                Proceso: códigos ordenados de mayor a menor, espacios únicos y sin usar.
                             </div>
                         </div>
                         <div class="table-title">📊 Códigos Disponibles - Manizales</div>
@@ -474,8 +501,8 @@
                             <div class="safezone-title">🏭 Zona Segura Dorada</div>
                             <div class="safezone-text">
                                 Códigos reservados para uso exclusivo de Dorada. 
-                                Muestra códigos 1-100 de los próximos 500 espacios libres desde 5000.
-                                Lógica optimizada: ordenar códigos y encontrar espacios secuenciales.
+                                Muestra códigos 1-100 de los espacios libres encontrados desde 5000.
+                                Proceso: códigos ordenados de mayor a menor, espacios únicos y sin usar.
                             </div>
                         </div>
                         <div class="table-title">📊 Códigos Disponibles - Dorada</div>
@@ -596,15 +623,89 @@
             }
         }
 
+        // Función para obtener la fecha de la última actualización (2am horario Americas)
+        function obtenerUltimaActualizacion() {
+            const ahora = new Date();
+            const horaActual = ahora.getHours();
+            const minutosActual = ahora.getMinutes();
+            
+            // Crear fecha de hoy a las 2am
+            const hoy2am = new Date(ahora);
+            hoy2am.setHours(2, 0, 0, 0);
+            
+            // Crear fecha de ayer a las 2am
+            const ayer2am = new Date(ahora);
+            ayer2am.setDate(ayer2am.getDate() - 1);
+            ayer2am.setHours(2, 0, 0, 0);
+            
+            // Si ya pasó las 2am de hoy, la última actualización fue hoy a las 2am
+            // Si no ha llegado a las 2am de hoy, la última actualización fue ayer a las 2am
+            const ultimaActualizacion = (horaActual >= 2) ? hoy2am : ayer2am;
+            
+            // La próxima actualización será mañana a las 2am
+            const proximaActualizacion = new Date(ultimaActualizacion);
+            proximaActualizacion.setDate(proximaActualizacion.getDate() + 1);
+            
+            return {
+                ultima: ultimaActualizacion,
+                proxima: proximaActualizacion
+            };
+        }
+
+        // Función para formatear fecha en español
+        function formatearFecha(fecha) {
+            const opciones = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'America/Bogota'
+            };
+            
+            return fecha.toLocaleDateString('es-CO', opciones);
+        }
+
+        // Función para calcular tiempo restante hasta la próxima actualización
+        function calcularTiempoRestante(proximaActualizacion) {
+            const ahora = new Date();
+            const diferencia = proximaActualizacion - ahora;
+            
+            if (diferencia <= 0) {
+                return 'Próximamente';
+            }
+            
+            const horas = Math.floor(diferencia / (1000 * 60 * 60));
+            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (horas > 0) {
+                return `en ${horas}h ${minutos}m`;
+            } else {
+                return `en ${minutos}m`;
+            }
+        }
+
         // Mostrar estado de APIs
         async function mostrarEstadoAPIs() {
             const apiStatus = document.getElementById('apiStatus');
             
             try {
                 await verificarSaludAPIs();
+                
+                // Calcular fechas de actualización
+                const fechas = obtenerUltimaActualizacion();
+                const ultimaFormateada = formatearFecha(fechas.ultima);
+                const proximaFormateada = formatearFecha(fechas.proxima);
+                const tiempoRestante = calcularTiempoRestante(fechas.proxima);
+                
                 apiStatus.innerHTML = `
                     <h3>✅ APIs Conectadas</h3>
                     <p>Bases de datos de Manizales y Dorada disponibles</p>
+                    <div class="last-update-info">
+                        <p><strong>📅 Última actualización:</strong> ${ultimaFormateada}</p>
+                        <p><strong>⏰ Próxima actualización:</strong> ${proximaFormateada} (${tiempoRestante})</p>
+                    </div>
                 `;
                 apiStatus.style.borderColor = '#10b981';
             } catch (error) {
@@ -641,7 +742,7 @@
                 const processEndTime = performance.now();
                 console.log(`⚙️ Procesamiento completado en: ${(processEndTime - processStartTime).toFixed(2)}ms`);
                 
-                actualizarProgreso('Generando zonas seguras...');
+                actualizarProgreso('Distribuyendo códigos por sede...');
                 setTimeout(() => {
                     mostrarResultados();
                     const totalTime = performance.now() - startTime;
@@ -662,12 +763,11 @@
         }
 
         function mostrarInfoBusqueda() {
-            console.log(`🔍 Nueva lógica implementada:`);
-            console.log(`   1. Juntar ambas bases de datos`);
-            console.log(`   2. Organizar de menor a mayor`);
-            console.log(`   3. Encontrar próximos 500 espacios libres desde 5000`);
-            console.log(`   4. Dorada: códigos 1-100 de los espacios libres`);
-            console.log(`   5. Manizales: códigos 101-200 de los espacios libres`);
+            console.log(`🔍 Proceso implementado:`);
+            console.log(`   1. Tomar todos los códigos internos de ambas sedes y ponerlos en una lista`);
+            console.log(`   2. Organizarla de mayor a menor`);
+            console.log(`   3. Encontrar a partir de 5,000 los espacios vacíos (únicos y sin usar)`);
+            console.log(`   4. Presentar los primeros 100 libres para Dorada y los 100 siguientes para Manizales`);
         }
 
         async function cargarDatos() {
@@ -722,28 +822,50 @@
             console.log('📊 Procesando datos de productos desde API JSON...');
             console.log('Estructura de datos recibida:', jsonData);
             
-            if (jsonData && jsonData.length > 0 && typeof jsonData[0] === 'object' && !Array.isArray(jsonData[0])) {
+            if (!jsonData || !Array.isArray(jsonData) || jsonData.length === 0) {
+                console.warn(`⚠️ Datos vacíos o inválidos para ${sede}`);
+                return [];
+            }
+            
+            if (typeof jsonData[0] === 'object' && !Array.isArray(jsonData[0])) {
                 // Es un array de objetos desde API JSON
                 console.log('Procesando formato: Array de objetos (JSON)');
-                return jsonData.map(producto => {
-                    if (!producto.codigo_interno) { return null; }
+                const productos = jsonData.map(producto => {
+                    if (!producto.codigo_interno) { 
+                        console.warn(`⚠️ Producto sin código interno en ${sede}:`, producto);
+                        return null; 
+                    }
                     return {
                         codigoInterno: producto.codigo_interno.toString().trim(),
                         sede: sede
                     };
                 }).filter(p => p !== null);
+                
+                console.log(`✅ ${sede}: ${productos.length} productos procesados (formato JSON)`);
+                return productos;
             } else {
                 // Es un array de arrays desde Excel (formato actual de la API)
                 console.log('Procesando formato: Array de arrays (Excel-like)');
                 const headers = jsonData[0];
                 const dataRows = jsonData.slice(1);
+                
+                if (!headers || !Array.isArray(headers)) {
+                    throw new Error(`Headers inválidos en ${sede}`);
+                }
+                
                 const codigoIndex = headers.findIndex(h => h === 'Código Interno');
                 
                 if (codigoIndex === -1) {
+                    console.error(`❌ Headers disponibles en ${sede}:`, headers);
                     throw new Error(`No se encontró la columna 'Código Interno' en ${sede}`);
                 }
                 
-                return dataRows.map((row, index) => {
+                const productos = dataRows.map((row, index) => {
+                    if (!row || !Array.isArray(row)) {
+                        console.warn(`⚠️ Fila inválida en ${sede}, índice ${index}:`, row);
+                        return null;
+                    }
+                    
                     const codigoInterno = row[codigoIndex];
                     
                     if (!codigoInterno) {
@@ -755,6 +877,9 @@
                         sede: sede
                     };
                 }).filter(p => p !== null);
+                
+                console.log(`✅ ${sede}: ${productos.length} productos procesados (formato Excel-like)`);
+                return productos;
             }
         }
 
@@ -762,88 +887,108 @@
             const startTime = performance.now();
             console.log('🔧 Iniciando procesamiento de códigos...');
             
-            // 1. JUNTAR AMBAS BASES DE DATOS
+            // 1. TOMAR TODOS LOS CÓDIGOS INTERNOS DE AMBAS SEDES Y PONERLOS EN UNA LISTA
             const todosLosCodigos = new Set();
             
             // Debug: Procesar Manizales
             const manizalesStart = performance.now();
+            let codigosValidosManizales = 0;
             for (const producto of datosManizales) {
                 if (producto.codigoInterno) {
-                    const codigo = producto.codigoInterno.toString();
-                    todosLosCodigos.add(codigo);
+                    const codigo = producto.codigoInterno.toString().trim();
+                    if (codigo && codigo !== 'undefined' && codigo !== 'null') {
+                        todosLosCodigos.add(codigo);
+                        codigosValidosManizales++;
+                    }
                 }
             }
             const manizalesEnd = performance.now();
-            console.log(`🏪 Procesados ${datosManizales.length} códigos Manizales en: ${(manizalesEnd - manizalesStart).toFixed(2)}ms`);
+            console.log(`🏪 Procesados ${codigosValidosManizales}/${datosManizales.length} códigos válidos Manizales en: ${(manizalesEnd - manizalesStart).toFixed(2)}ms`);
             
             // Debug: Procesar Dorada
             const doradaStart = performance.now();
+            let codigosValidosDorada = 0;
             for (const producto of datosDorada) {
                 if (producto.codigoInterno) {
-                    const codigo = producto.codigoInterno.toString();
-                    todosLosCodigos.add(codigo);
+                    const codigo = producto.codigoInterno.toString().trim();
+                    if (codigo && codigo !== 'undefined' && codigo !== 'null') {
+                        todosLosCodigos.add(codigo);
+                        codigosValidosDorada++;
+                    }
                 }
             }
             const doradaEnd = performance.now();
-            console.log(`🏭 Procesados ${datosDorada.length} códigos Dorada en: ${(doradaEnd - doradaStart).toFixed(2)}ms`);
+            console.log(`🏭 Procesados ${codigosValidosDorada}/${datosDorada.length} códigos válidos Dorada en: ${(doradaEnd - doradaStart).toFixed(2)}ms`);
 
-            // 2. ORGANIZAR DE MENOR A MAYOR (OPTIMIZADO)
+            console.log(`📊 Total de códigos únicos: ${todosLosCodigos.size}`);
+
+            // 2. ORGANIZARLA DE MAYOR A MENOR
             const ordenarStart = performance.now();
             const codigosOrdenados = Array.from(todosLosCodigos)
                 .map(codigo => parseInt(codigo))
-                .filter(codigo => !isNaN(codigo) && codigo >= 5000) // Solo códigos >= 5000
-                .sort((a, b) => a - b);
+                .filter(codigo => !isNaN(codigo) && codigo > 0) // Solo códigos válidos
+                .sort((a, b) => b - a); // Ordenar de mayor a menor
             const ordenarEnd = performance.now();
-            console.log(`📊 Códigos ordenados: ${codigosOrdenados.length} (>=5000) en ${(ordenarEnd - ordenarStart).toFixed(2)}ms`);
+            console.log(`📊 Códigos ordenados de mayor a menor: ${codigosOrdenados.length} totales en ${(ordenarEnd - ordenarStart).toFixed(2)}ms`);
+            
+            // Mostrar rango de códigos
+            if (codigosOrdenados.length > 0) {
+                console.log(`📈 Rango de códigos: ${codigosOrdenados[codigosOrdenados.length - 1]} - ${codigosOrdenados[0]}`);
+            }
 
-            // 3. ENCONTRAR LOS PRÓXIMOS 500 ESPACIOS LIBRES DEL 5000 EN ADELANTE
+            // 3. ENCONTRAR A PARTIR DE 5,000 LOS ESPACIOS VACÍOS (ÚNICOS Y SIN USAR)
             const espaciosStart = performance.now();
-            const espaciosLibres = encontrarEspaciosLibres(codigosOrdenados, 500);
+            const espaciosLibres = encontrarEspaciosLibresDesde5000(codigosOrdenados, 200); // Solo necesitamos 200 (100 para cada sede)
             const espaciosEnd = performance.now();
-            console.log(`🔍 Encontrados ${espaciosLibres.length} espacios libres en ${(espaciosEnd - espaciosStart).toFixed(2)}ms`);
+            console.log(`🔍 Encontrados ${espaciosLibres.length} espacios libres desde 5000 en ${(espaciosEnd - espaciosStart).toFixed(2)}ms`);
 
-            // 4. DIVIDIR: PRIMEROS 100 PARA DORADA, 101-200 PARA MANIZALES (OPTIMIZADO)
+            // 4. PRESENTAR LOS PRIMEROS 100 LIBRES PARA DORADA Y LOS 100 SIGUIENTES PARA MANIZALES
             const convertirAString = (codigo) => codigo.toString();
             
             codigosDisponiblesDorada = espaciosLibres.slice(0, 100).map(convertirAString);
             codigosDisponiblesManizales = espaciosLibres.slice(100, 200).map(convertirAString);
 
-            // Crear safezones para mostrar en estadísticas
-            safezoneManizales = espaciosLibres.slice(200, 400).map(convertirAString);
-            safezoneDorada = espaciosLibres.slice(400, 500).map(convertirAString);
+            // Crear safezones para mostrar en estadísticas (opcional)
+            safezoneManizales = [];
+            safezoneDorada = [];
+
+            // Validar que los códigos sean únicos
+            validarCodigosUnicos();
+
+            console.log(`📋 Distribución de códigos disponibles:`);
+            console.log(`   - Dorada: ${codigosDisponiblesDorada.length} códigos (primeros 100)`);
+            console.log(`   - Manizales: ${codigosDisponiblesManizales.length} códigos (siguientes 100)`);
 
             const totalTime = performance.now() - startTime;
             console.log(`⚙️ Procesamiento total completado en: ${totalTime.toFixed(2)}ms`);
         }
 
-        function encontrarEspaciosLibres(codigosOrdenados, cantidad) {
+        function encontrarEspaciosLibresDesde5000(codigosOrdenados, cantidad) {
             const startTime = performance.now();
             const espaciosLibres = [];
             
-            // Siempre empezar desde 5000
+            // Crear un Set para búsqueda más eficiente
+            const codigosExistentes = new Set(codigosOrdenados);
+            console.log(`🔍 Buscando ${cantidad} espacios libres desde código 5000...`);
+            console.log(`📊 Total de códigos existentes: ${codigosExistentes.size}`);
+
+            // Empezar desde 5000 y buscar espacios libres
             let codigoActual = 5000;
-            let indiceCodigo = 0;
             let iteraciones = 0;
+            const maxIteraciones = 100000; // Límite alto para asegurar que encontremos suficientes códigos
 
-            console.log(`🔍 Buscando ${cantidad} espacios libres desde código ${codigoActual}...`);
+            console.log(`🚀 Iniciando búsqueda desde código ${codigoActual}`);
 
-            // Optimización: Saltar códigos existentes menores al punto de partida
-            while (indiceCodigo < codigosOrdenados.length && codigosOrdenados[indiceCodigo] < codigoActual) {
-                indiceCodigo++;
-            }
-
-            while (espaciosLibres.length < cantidad && iteraciones < 10000) {
-                // Si hemos revisado todos los códigos existentes, el código actual está libre
-                if (indiceCodigo >= codigosOrdenados.length || codigoActual < codigosOrdenados[indiceCodigo]) {
+            while (espaciosLibres.length < cantidad && iteraciones < maxIteraciones) {
+                // Verificar si el código actual NO está en la lista de códigos existentes
+                if (!codigosExistentes.has(codigoActual)) {
+                    // El código actual está libre
                     espaciosLibres.push(codigoActual);
                     
-                    // Log cada 50 espacios para no saturar la consola
-                    if (espaciosLibres.length % 50 === 0) {
+                    // Log cada 25 espacios para monitoreo
+                    if (espaciosLibres.length % 25 === 0) {
                         console.log(`✅ ${espaciosLibres.length} espacios libres encontrados (último: ${codigoActual})`);
                     }
-                } else {
-                    // Avanzar al siguiente código existente
-                    indiceCodigo++;
                 }
                 
                 codigoActual++;
@@ -852,6 +997,12 @@
 
             const endTime = performance.now();
             console.log(`🔍 Encontrados ${espaciosLibres.length} espacios libres en ${(endTime - startTime).toFixed(2)}ms (${iteraciones} iteraciones)`);
+            
+            if (espaciosLibres.length < cantidad) {
+                console.warn(`⚠️ Solo se encontraron ${espaciosLibres.length} espacios libres de ${cantidad} solicitados`);
+            } else {
+                console.log(`✅ Se encontraron exactamente ${espaciosLibres.length} espacios libres`);
+            }
 
             return espaciosLibres;
         }
@@ -862,6 +1013,33 @@
             document.getElementById('total-dorada').textContent = datosDorada.length;
             document.getElementById('safezone-manizales').textContent = safezoneManizales.length;
             document.getElementById('safezone-dorada').textContent = safezoneDorada.length;
+
+            // Actualizar información de última actualización en resultados
+            const fechas = obtenerUltimaActualizacion();
+            const ultimaFormateada = formatearFecha(fechas.ultima);
+            const proximaFormateada = formatearFecha(fechas.proxima);
+            const tiempoRestante = calcularTiempoRestante(fechas.proxima);
+            
+            document.getElementById('lastUpdateDateResults').textContent = ultimaFormateada;
+            document.getElementById('nextUpdateDateResults').textContent = `${proximaFormateada} (${tiempoRestante})`;
+
+            // Debug: Mostrar información detallada
+            console.log('📊 RESUMEN FINAL:');
+            console.log(`   - Productos Manizales: ${datosManizales.length}`);
+            console.log(`   - Productos Dorada: ${datosDorada.length}`);
+            console.log(`   - Códigos disponibles Manizales: ${codigosDisponiblesManizales.length}`);
+            console.log(`   - Códigos disponibles Dorada: ${codigosDisponiblesDorada.length}`);
+            console.log(`   - Última actualización de datos: ${ultimaFormateada}`);
+            
+            if (codigosDisponiblesManizales.length > 0) {
+                console.log(`   - Primer código Manizales: ${codigosDisponiblesManizales[0]}`);
+                console.log(`   - Último código Manizales: ${codigosDisponiblesManizales[codigosDisponiblesManizales.length - 1]}`);
+            }
+            
+            if (codigosDisponiblesDorada.length > 0) {
+                console.log(`   - Primer código Dorada: ${codigosDisponiblesDorada[0]}`);
+                console.log(`   - Último código Dorada: ${codigosDisponiblesDorada[codigosDisponiblesDorada.length - 1]}`);
+            }
 
             // Mostrar tablas
             mostrarTablaCodigos('manizales', codigosDisponiblesManizales);
@@ -965,16 +1143,76 @@
             }, 5000);
         }
 
+        function validarCodigosUnicos() {
+            console.log('🔍 Validando unicidad de códigos...');
+            
+            const todosLosCodigosDisponibles = [
+                ...codigosDisponiblesDorada,
+                ...codigosDisponiblesManizales,
+                ...safezoneManizales,
+                ...safezoneDorada
+            ];
+            
+            const codigosUnicos = new Set(todosLosCodigosDisponibles);
+            
+            if (codigosUnicos.size !== todosLosCodigosDisponibles.length) {
+                console.warn('⚠️ Se encontraron códigos duplicados en los espacios libres');
+                const duplicados = todosLosCodigosDisponibles.filter((codigo, index) => 
+                    todosLosCodigosDisponibles.indexOf(codigo) !== index
+                );
+                console.warn('Códigos duplicados:', duplicados);
+            } else {
+                console.log('✅ Todos los códigos disponibles son únicos');
+            }
+            
+            // Verificar que no haya conflictos con códigos existentes
+            const todosLosCodigosExistentes = new Set();
+            datosManizales.forEach(p => todosLosCodigosExistentes.add(p.codigoInterno));
+            datosDorada.forEach(p => todosLosCodigosExistentes.add(p.codigoInterno));
+            
+            const conflictos = todosLosCodigosDisponibles.filter(codigo => 
+                todosLosCodigosExistentes.has(codigo)
+            );
+            
+            if (conflictos.length > 0) {
+                console.error('❌ CONFLICTO: Los siguientes códigos ya existen:', conflictos);
+            } else {
+                console.log('✅ No hay conflictos con códigos existentes');
+            }
+        }
+
         function mostrarError(mensaje) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('start-section').style.display = 'block';
             mostrarAlerta(mensaje, 'error');
         }
 
+        // Función para actualizar el tiempo restante en tiempo real
+        function actualizarTiempoRestante() {
+            const fechas = obtenerUltimaActualizacion();
+            const proximaFormateada = formatearFecha(fechas.proxima);
+            const tiempoRestante = calcularTiempoRestante(fechas.proxima);
+            
+            // Actualizar en la sección de estado de APIs
+            const nextUpdateSpan = document.getElementById('nextUpdateDate');
+            if (nextUpdateSpan) {
+                nextUpdateSpan.textContent = `${proximaFormateada} (${tiempoRestante})`;
+            }
+            
+            // Actualizar en la sección de resultados
+            const nextUpdateResultsSpan = document.getElementById('nextUpdateDateResults');
+            if (nextUpdateResultsSpan) {
+                nextUpdateResultsSpan.textContent = `${proximaFormateada} (${tiempoRestante})`;
+            }
+        }
+
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Inicializando Códigos Disponibles API...');
             mostrarEstadoAPIs();
+            
+            // Actualizar tiempo restante cada minuto
+            setInterval(actualizarTiempoRestante, 60000);
         });
     </script>
 </body>
