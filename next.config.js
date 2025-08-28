@@ -26,8 +26,19 @@ const nextConfig = {
   },
   async rewrites() {
     return [
+      // Redirigir la raíz a index.html
       {
         source: '/',
+        destination: '/index.html',
+      },
+      // Servir archivos HTML estáticos directamente
+      {
+        source: '/(.*\\.html)',
+        destination: '/$1',
+      },
+      // Para cualquier otra ruta, redirigir a index.html (SPA behavior)
+      {
+        source: '/(.*)',
         destination: '/index.html',
       },
     ];
