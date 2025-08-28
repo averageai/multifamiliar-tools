@@ -629,7 +629,7 @@
 
     <script>
         // Configuración de la API
-        const API_BASE = 'http://localhost:3002'; // Puerto de la API de compras recientes
+        const API_BASE = window.location.origin; // API de Next.js en el mismo dominio
         let comprasData = null;
         let comprasSeleccionadas = new Set();
 

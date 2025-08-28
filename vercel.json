@@ -1,74 +1,49 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "src/pages/api/ventas-dia.js": {
+      "maxDuration": 30
+    },
+    "src/pages/api/compras-recientes.js": {
+      "maxDuration": 30
+    },
+    "src/pages/api/proveedores.js": {
+      "maxDuration": 30
+    },
+    "src/pages/api/generar-json-compras.js": {
+      "maxDuration": 10
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/spa",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/spam",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/control",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/validador",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/validadorc",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/spav2",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/duplicados",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/codigos-disponibles",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/cotizaciones",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/cierre-caja",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/faltantes",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/control-horas",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ],
+  },
   "env": {
-    "NODE_ENV": "production"
-  }
+    "DB_HOST": "5.161.103.230",
+    "DB_PORT": "7717",
+    "DB_USER": "vercel_user",
+    "DB_PASSWORD": "non@ver@ge",
+    "DB_USER_MANIZALES": "vercel_user",
+    "DB_PASSWORD_MANIZALES": "non@ver@ge",
+    "DB_USER_LADORADA": "vercel_user",
+    "DB_PASSWORD_LADORADA": "non@ver@ge",
+    "DB_NAME_MANIZALES": "crsitaleriamanizales_complete",
+    "DB_NAME_LADORADA": "cristaleriaprod_complete"
+  },
+  "regions": ["iad1"],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type"
+        }
+      ]
+    }
+  ]
 } 

@@ -525,7 +525,7 @@
 
     <script>
         // Configuración de la API
-        const API_BASE = 'http://localhost:3001'; // Puerto de la API de ventas por día
+        const API_BASE = window.location.origin; // API de Next.js en el mismo dominio
         let ventasData = null;
 
         // HeadquarterId por sede
