@@ -582,16 +582,8 @@
                             <input type="text" id="documento" required placeholder="Ingrese número de documento..." onkeypress="handleKeyPress(event)">
                         </div>
                         
-                                                 <div class="form-group">
-                             <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">✅ Validar Empleado</button>
-                         </div>
-                        
-                        <!-- Sección de información del empleado (oculta inicialmente) -->
-                        <div id="empleadoInfo" style="display: none;">
-                            <div class="form-group">
-                                <label>Empleado Validado</label>
-                                <div id="empleadoNombre" class="form-input" style="background: #2c3e50; color: #fff; font-weight: bold;"></div>
-                            </div>
+                        <div class="form-group" id="validacionContainer">
+                            <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">✅ Validar Empleado</button>
                         </div>
                         
                         <div class="form-group">
@@ -820,11 +812,19 @@
                 empleadoValidado = empleadoResult.data;
                 console.log('✅ Empleado encontrado:', empleadoValidado);
 
-                // Actualizar interfaz
-                document.getElementById('empleadoNombre').textContent = `${empleadoValidado.nombre} (${empleadoValidado.documento})`;
-                
-                // Mostrar sección de información
-                document.getElementById('empleadoInfo').style.display = 'block';
+                // Reemplazar el botón con los datos del empleado
+                const validacionContainer = document.getElementById('validacionContainer');
+                validacionContainer.innerHTML = `
+                    <div style="margin-top: 25px; padding: 15px; background: #1e3a2e; border: 1px solid #4ade80; border-radius: 8px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label style="color: #4ade80; font-weight: 600; margin: 0;">✅ Empleado Validado</label>
+                            <button type="button" class="btn btn-secondary" onclick="resetearValidacion()" style="padding: 4px 8px; font-size: 12px; height: auto;">🔄 Cambiar</button>
+                        </div>
+                        <div style="background: #2c3e50; color: #fff; font-weight: bold; padding: 10px; border-radius: 6px; font-size: 14px;">
+                            ${empleadoValidado.nombre} (${empleadoValidado.documento})
+                        </div>
+                    </div>
+                `;
 
                 mostrarAlerta(`✅ Empleado validado: ${empleadoValidado.nombre}`, 'success');
 
@@ -1261,13 +1261,35 @@
             `;
         }
 
+        function resetearValidacion() {
+            // Limpiar empleado validado
+            empleadoValidado = null;
+            
+            // Restaurar el botón de validación
+            const validacionContainer = document.getElementById('validacionContainer');
+            validacionContainer.innerHTML = `
+                <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">✅ Validar Empleado</button>
+            `;
+            
+            // Limpiar el campo de documento
+            document.getElementById('documento').value = '';
+            document.getElementById('documento').focus();
+            
+            mostrarAlerta('🔄 Validación reseteada. Puede ingresar un nuevo documento.', 'info');
+        }
+
         function limpiarFormulario() {
             if (confirm('¿Está seguro de que desea limpiar todos los datos del formulario?')) {
                 document.getElementById('permisoForm').reset();
                 
                 // Limpiar información del empleado validado
                 empleadoValidado = null;
-                document.getElementById('empleadoInfo').style.display = 'none';
+                
+                // Restaurar el botón de validación
+                const validacionContainer = document.getElementById('validacionContainer');
+                validacionContainer.innerHTML = `
+                    <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">✅ Validar Empleado</button>
+                `;
                 
                 // Restablecer fecha y hora actual
                 const fechaPermiso = document.getElementById('fechaPermiso');
