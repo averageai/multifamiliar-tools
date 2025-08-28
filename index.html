@@ -657,9 +657,26 @@
                 <span class="tool-badge">API JSON</span>
             </a>
 
+            <!-- Separador para herramientas de bodega -->
+            <div style="grid-column: 1 / -1; text-align: center; margin: 20px 0; padding: 15px; background: #2c3e50; border-radius: 8px; border: 2px solid #3498db;">
+                <h3 style="color: #3498db; margin: 0; font-size: 18px;">🏪 Para uso en Bodega!</h3>
+            </div>
 
+            <!-- Surtido Diario -->
+            <a href="#" class="tool-card operativo" id="tool-surtido-diario" onclick="navigateTo('/surtido-diario'); return false;">
+                <div class="tool-icon">📊</div>
+                <h3>Surtido Diario</h3>
+                <p>Impresión de ventas del día anterior en formato POS 80mm. Organizado por sede y punto de venta con estadísticas detalladas.</p>
+                <span class="tool-badge">API JSON</span>
+            </a>
 
-
+            <!-- Surtido Compras -->
+            <a href="#" class="tool-card operativo" id="tool-surtido-compras" onclick="navigateTo('/surtido-compras'); return false;">
+                <div class="tool-icon">🛒</div>
+                <h3>Surtido Compras</h3>
+                <p>Selección de compras recientes para impresión. Permite filtrar por proveedor, sede y generar JSON personalizado.</p>
+                <span class="tool-badge">API JSON</span>
+            </a>
 
         </div>
 
@@ -702,13 +719,13 @@
                          password: '123',
                          name: 'Administrador',
                          role: 'admin',
-                         permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'faltantes', 'control-horas']
+                         permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'faltantes', 'control-horas', 'surtido-diario', 'surtido-compras']
                      },
                                          'operativo': {
                          password: '', // Sin contraseña
                          name: 'Operativo',
                          role: 'operativo',
-                         permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'control-horas']
+                         permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'control-horas', 'surtido-diario', 'surtido-compras']
                      },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -720,7 +737,7 @@
                          password: 'dev',
                          name: 'Desarrollador',
                          role: 'develop',
-                         permissions: ['inventarios', 'precios', 'validador-v2-conectado', 'faltantes', 'duplicados', 'cotizaciones', 'codigos-disponibles', 'permisos-salida']
+                         permissions: ['inventarios', 'precios', 'validador-v2-conectado', 'faltantes', 'duplicados', 'cotizaciones', 'codigos-disponibles', 'permisos-salida', 'surtido-diario', 'surtido-compras']
                      }
                 };
             }

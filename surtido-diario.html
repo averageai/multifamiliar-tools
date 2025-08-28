@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surtido Diario - Sistema Multifamiliar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            background: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-header:hover {
+            background: #34495e;
+        }
+
+        .section-header h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+            transition: all 0.3s;
+        }
+
+        .status-indicator.complete {
+            background: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+        }
+
+        .status-indicator.pending {
+            background: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .section-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid #27ae60;
+            color: #4ade80;
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.2);
+            border: 1px solid #f39c12;
+            color: #fbbf24;
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #f87171;
+        }
+
+        .alert-info {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #3498db;
+            color: #60a5fa;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+        }
+
+        .data-table tr:hover {
+            background: #333;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .print-preview {
+            background: white;
+            color: black;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.2;
+            max-width: 80mm;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            display: none;
+        }
+
+        .print-preview.show {
+            display: block;
+        }
+
+        .print-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .print-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .print-footer {
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Volver</a>
+            <div class="logo">SD</div>
+            <div class="header-text">
+                <h1>Surtido Diario</h1>
+                <p>Impresión de ventas del día anterior - Formato POS 80mm</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Configuración -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('config')">
+                    <h2>
+                        <span class="status-indicator" id="config-status">●</span>
+                        ⚙️ Configuración de Impresión
+                    </h2>
+                </div>
+                <div class="section-content active" id="config-content">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fecha">Fecha de Ventas</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sede">Sede</label>
+                            <select id="sede" required>
+                                <option value="">Seleccionar sede...</option>
+                                <option value="manizales">Manizales</option>
+                                <option value="ladorada">La Dorada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="headquarter">Punto de Venta</label>
+                            <select id="headquarter" required>
+                                <option value="">Seleccionar punto de venta...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="cargarVentas()">
+                        📊 Cargar Ventas de Todos los Puntos de Venta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('stats')">
+                    <h2>
+                        <span class="status-indicator" id="stats-status">●</span>
+                        📈 Estadísticas de Ventas
+                    </h2>
+                </div>
+                <div class="section-content" id="stats-content">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-productos">0</div>
+                            <div class="stat-label">Productos Vendidos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-cantidad">0</div>
+                            <div class="stat-label">Cantidad Total</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-proveedores">0</div>
+                            <div class="stat-label">Proveedores</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos de Ventas -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('data')">
+                    <h2>
+                        <span class="status-indicator" id="data-status">●</span>
+                        📋 Datos de Ventas
+                    </h2>
+                </div>
+                <div class="section-content" id="data-content">
+                    <div id="alert-container"></div>
+                    <div id="loading-container" class="hidden">
+                        <div class="alert alert-info">
+                            <div class="loading"></div>
+                            Cargando datos de ventas...
+                        </div>
+                    </div>
+                    <div id="data-container" class="hidden">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Punto de Venta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ventas-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Previa de Impresión -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection('preview')">
+                    <h2>
+                        <span class="status-indicator" id="preview-status">●</span>
+                        🖨️ Vista Previa de Impresión
+                    </h2>
+                </div>
+                <div class="section-content" id="preview-content">
+                    <div class="print-preview" id="print-preview">
+                        <div class="print-header">
+                            <strong>SURTIDO DIARIO</strong><br>
+                            <span id="print-fecha"></span><br>
+                            <span id="print-sede"></span>
+                        </div>
+                        <div id="print-items">
+                            <!-- Items se generan dinámicamente -->
+                        </div>
+                        <div class="print-footer">
+                            <strong>Total: <span id="print-total">0</span> productos</strong><br>
+                            Impreso: <span id="print-timestamp"></span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="imprimirSurtido()">
+                            🖨️ Imprimir Punto de Venta Actual
+                        </button>
+                        <button class="btn btn-primary" onclick="imprimirTodosLosHeadquarters()">
+                            🖨️ Imprimir Todos los Puntos de Venta
+                        </button>
+                        <button class="btn btn-warning" onclick="descargarJSON()">
+                            📄 Descargar JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de la API
+        const API_BASE = 'http://localhost:3001'; // Puerto de la API de ventas por día
+        let ventasData = null;
+
+        // HeadquarterId por sede
+        const headquarters = {
+            manizales: [
+                { id: 3, nombre: 'MI HOGAR' },
+                { id: 1, nombre: 'MULTIFAMILIAR 2' },
+                { id: 2, nombre: 'BODEGA' }
+            ],
+            ladorada: [
+                { id: 6, nombre: 'CRISTALERIA MI HOGAR' },
+                { id: 3, nombre: 'SURTITODO' },
+                { id: 2, nombre: 'CRISTALERIA MULTIFAMILIAR' },
+                { id: 5, nombre: 'CRISTALERIA MULTIFAMILIAR 2' }
+            ]
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fecha por defecto (día anterior)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            document.getElementById('fecha').value = yesterday.toISOString().split('T')[0];
+            
+            // Configurar eventos
+            document.getElementById('sede').addEventListener('change', actualizarHeadquarters);
+        });
+
+        // Función para alternar secciones
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + '-content');
+            const status = document.getElementById(sectionId + '-status');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                status.className = 'status-indicator';
+            } else {
+                content.classList.add('active');
+                status.className = 'status-indicator complete';
+            }
+        }
+
+        // Función para actualizar headquarters según la sede
+        function actualizarHeadquarters() {
+            const sede = document.getElementById('sede').value;
+            const headquarterSelect = document.getElementById('headquarter');
+            
+            headquarterSelect.innerHTML = '<option value="">Seleccionar punto de venta...</option>';
+            
+            if (sede && headquarters[sede]) {
+                headquarters[sede].forEach(hq => {
+                    const option = document.createElement('option');
+                    option.value = hq.id;
+                    option.textContent = hq.nombre;
+                    headquarterSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo}`;
+            alert.innerHTML = mensaje;
+            
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Función para cargar ventas
+        async function cargarVentas() {
+            const sede = document.getElementById('sede').value;
+            
+            if (!sede) {
+                mostrarAlerta('⚠️ Por favor selecciona primero una sede', 'warning');
+                return;
+            }
+            
+            const fecha = document.getElementById('fecha').value;
+            
+            if (!fecha) {
+                mostrarAlerta('⚠️ Por favor selecciona una fecha', 'warning');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('loading-container').classList.remove('hidden');
+            document.getElementById('data-container').classList.add('hidden');
+            document.getElementById('alert-container').innerHTML = '';
+
+            try {
+                console.log('🔍 Cargando ventas para:', { fecha, sede });
+                
+                // Cargar ventas para todos los puntos de venta de la sede
+                const headquarterPromises = headquarters[sede].map(async (hq) => {
+                    const response = await fetch(`${API_BASE}/api/ventas-dia?fecha=${fecha}&sede=${sede}&headquarter_id=${hq.id}`);
+                    const result = await response.json();
+                    return { headquarter: hq, result };
+                });
+
+                const headquarterResults = await Promise.all(headquarterPromises);
+                
+                // Combinar todos los resultados
+                ventasData = {};
+                ventasData[sede] = {};
+                
+                headquarterResults.forEach(({ headquarter, result }) => {
+                    if (result.success && result.data && result.data[sede]) {
+                        const headquarterData = result.data[sede];
+                        Object.keys(headquarterData).forEach(headquarterKey => {
+                            ventasData[sede][headquarterKey] = headquarterData[headquarterKey];
+                        });
+                    }
+                });
+
+                mostrarVentas(ventasData);
+                actualizarEstadisticas(ventasData);
+                generarVistaPrevia(ventasData);
+                
+                mostrarAlerta('✅ Ventas cargadas exitosamente para todos los puntos de venta', 'success');
+                
+            } catch (error) {
+                console.error('Error cargando ventas:', error);
+                mostrarAlerta(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('loading-container').classList.add('hidden');
+            }
+        }
+
+        // Función para mostrar ventas en tabla
+        function mostrarVentas(data) {
+            const tbody = document.getElementById('ventas-table-body');
+            tbody.innerHTML = '';
+            
+            if (!data || Object.keys(data).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #a0a0a0;">No hay ventas para mostrar</td></tr>';
+                return;
+            }
+
+            // Procesar datos por sede y punto de venta
+            Object.keys(data).forEach(sede => {
+                const sedeData = data[sede];
+                Object.keys(sedeData).forEach(headquarter => {
+                    const productos = sedeData[headquarter];
+                    
+                    productos.forEach(producto => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${producto.codigo}</td>
+                            <td>${producto.nombre}</td>
+                            <td>${producto.cantidad}</td>
+                            <td>${headquarter}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                });
+            });
+
+            document.getElementById('data-container').classList.remove('hidden');
+        }
+
+        // Función para actualizar estadísticas
+        function actualizarEstadisticas(data) {
+            let totalProductos = 0;
+            let totalCantidad = 0;
+            let totalProveedores = new Set();
+
+            if (data) {
+                Object.keys(data).forEach(sede => {
+                    const sedeData = data[sede];
+                    Object.keys(sedeData).forEach(headquarter => {
+                        const productos = sedeData[headquarter];
+                        totalProductos += productos.length;
+                        
+                        productos.forEach(producto => {
+                            totalCantidad += producto.cantidad;
+                        });
+                    });
+                });
+            }
+
+            document.getElementById('total-productos').textContent = totalProductos;
+            document.getElementById('total-cantidad').textContent = totalCantidad;
+            document.getElementById('total-proveedores').textContent = totalProveedores.size;
+        }
+
+        // Función para generar vista previa de impresión
+        function generarVistaPrevia(data) {
+            const fecha = document.getElementById('fecha').value;
+            const sede = document.getElementById('sede').value;
+            const headquarter = document.getElementById('headquarter');
+            const headquarterNombre = headquarter.options[headquarter.selectedIndex].text;
+
+            document.getElementById('print-fecha').textContent = new Date(fecha).toLocaleDateString('es-ES');
+            document.getElementById('print-sede').textContent = `${sede.toUpperCase()} - ${headquarterNombre}`;
+            document.getElementById('print-timestamp').textContent = new Date().toLocaleString('es-ES');
+
+            const printItems = document.getElementById('print-items');
+            printItems.innerHTML = '';
+
+            if (data && Object.keys(data).length > 0) {
+                let totalProductos = 0;
+                
+                Object.keys(data).forEach(sede => {
+                    const sedeData = data[sede];
+                    Object.keys(sedeData).forEach(headquarter => {
+                        const productos = sedeData[headquarter];
+                        
+                        productos.forEach(producto => {
+                            const item = document.createElement('div');
+                            item.className = 'print-item';
+                            item.innerHTML = `
+                                <span>${producto.codigo}</span>
+                                <span>${producto.nombre}</span>
+                                <span>${producto.cantidad}</span>
+                            `;
+                            printItems.appendChild(item);
+                            totalProductos += producto.cantidad;
+                        });
+                    });
+                });
+
+                document.getElementById('print-total').textContent = totalProductos;
+            }
+
+            document.getElementById('print-preview').classList.add('show');
+        }
+
+        // Función para generar vista previa por punto de venta
+        function generarVistaPreviaPorHeadquarter(data) {
+            const fecha = document.getElementById('fecha').value;
+            const sede = document.getElementById('sede').value;
+            
+            if (!data || Object.keys(data).length === 0) {
+                mostrarAlerta('⚠️ No hay datos para generar vista previa', 'warning');
+                return;
+            }
+
+            const printItems = document.getElementById('print-items');
+            printItems.innerHTML = '';
+
+            // Mostrar solo el punto de venta seleccionado
+            const headquarter = document.getElementById('headquarter');
+            const headquarterId = headquarter.value;
+            const headquarterNombre = headquarter.options[headquarter.selectedIndex].text;
+
+            document.getElementById('print-fecha').textContent = new Date(fecha).toLocaleDateString('es-ES');
+            document.getElementById('print-sede').textContent = `${sede.toUpperCase()} - ${headquarterNombre}`;
+            document.getElementById('print-timestamp').textContent = new Date().toLocaleString('es-ES');
+
+            let totalProductos = 0;
+            
+            Object.keys(data).forEach(sede => {
+                const sedeData = data[sede];
+                Object.keys(sedeData).forEach(headquarterKey => {
+                    // Solo mostrar productos del punto de venta seleccionado
+                    if (headquarterKey === headquarterNombre) {
+                        const productos = sedeData[headquarterKey];
+                        
+                        productos.forEach(producto => {
+                            const item = document.createElement('div');
+                            item.className = 'print-item';
+                            item.innerHTML = `
+                                <span>${producto.codigo}</span>
+                                <span>${producto.nombre}</span>
+                                <span>${producto.cantidad}</span>
+                            `;
+                            printItems.appendChild(item);
+                            totalProductos += producto.cantidad;
+                        });
+                    }
+                });
+            });
+
+            document.getElementById('print-total').textContent = totalProductos;
+            document.getElementById('print-preview').classList.add('show');
+        }
+
+        // Función para imprimir surtido
+        function imprimirSurtido() {
+            if (!ventasData) {
+                mostrarAlerta('⚠️ No hay datos para imprimir', 'warning');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            const printContent = document.getElementById('print-preview').innerHTML;
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Surtido Diario</title>
+                    <style>
+                        body { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.2; }
+                        .print-preview { max-width: 80mm; margin: 0 auto; }
+                        .print-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+                        .print-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+                        .print-footer { border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; text-align: center; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-preview">
+                        ${printContent}
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Función para imprimir todos los puntos de venta por separado
+        function imprimirTodosLosHeadquarters() {
+            if (!ventasData) {
+                mostrarAlerta('⚠️ No hay datos para imprimir', 'warning');
+                return;
+            }
+
+            const fecha = document.getElementById('fecha').value;
+            const sede = document.getElementById('sede').value;
+            const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES');
+            const timestamp = new Date().toLocaleString('es-ES');
+
+            const printWindow = window.open('', '_blank');
+            let allContent = '';
+
+            // Generar contenido para cada punto de venta
+            Object.keys(ventasData).forEach(sedeKey => {
+                const sedeData = ventasData[sedeKey];
+                Object.keys(sedeData).forEach(headquarterNombre => {
+                    const productos = sedeData[headquarterNombre];
+                    let totalProductos = 0;
+                    
+                    // Generar contenido del punto de venta
+                    let headquarterContent = `
+                        <div class="print-preview" style="page-break-after: always;">
+                            <div class="print-header">
+                                <strong>SURTIDO DIARIO</strong><br>
+                                ${fechaFormateada}<br>
+                                ${sede.toUpperCase()} - ${headquarterNombre}
+                            </div>
+                            <div class="print-items">
+                    `;
+
+                    productos.forEach(producto => {
+                        headquarterContent += `
+                            <div class="print-item">
+                                <span>${producto.codigo}</span>
+                                <span>${producto.nombre}</span>
+                                <span>${producto.cantidad}</span>
+                            </div>
+                        `;
+                        totalProductos += producto.cantidad;
+                    });
+
+                    headquarterContent += `
+                            </div>
+                            <div class="print-footer">
+                                <strong>Total: ${totalProductos} productos</strong><br>
+                                Impreso: ${timestamp}
+                            </div>
+                        </div>
+                    `;
+
+                    allContent += headquarterContent;
+                });
+            });
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Surtido Diario - Todos los Puntos de Venta</title>
+                    <style>
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            font-size: 12px; 
+                            line-height: 1.2; 
+                            margin: 0;
+                            padding: 10px;
+                        }
+                        .print-preview { 
+                            max-width: 80mm; 
+                            margin: 0 auto; 
+                            background: white;
+                            color: black;
+                            padding: 10px;
+                            border: 1px solid #ccc;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                        }
+                        .print-header { 
+                            text-align: center; 
+                            border-bottom: 1px dashed #000; 
+                            padding-bottom: 10px; 
+                            margin-bottom: 10px; 
+                        }
+                        .print-item { 
+                            display: flex; 
+                            justify-content: space-between; 
+                            margin-bottom: 5px; 
+                        }
+                        .print-footer { 
+                            border-top: 1px dashed #000; 
+                            padding-top: 10px; 
+                            margin-top: 10px; 
+                            text-align: center; 
+                        }
+                        @media print { 
+                            body { margin: 0; } 
+                            .print-preview { 
+                                page-break-after: always; 
+                                border: none;
+                                margin-bottom: 0;
+                            }
+                            .print-preview:last-child { 
+                                page-break-after: avoid; 
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${allContent}
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // Función para descargar JSON
+        function descargarJSON() {
+            if (!ventasData) {
+                mostrarAlerta('⚠️ No hay datos para descargar', 'warning');
+                return;
+            }
+
+            const fecha = document.getElementById('fecha').value;
+            const sede = document.getElementById('sede').value;
+            const headquarter = document.getElementById('headquarter');
+            const headquarterNombre = headquarter.options[headquarter.selectedIndex].text;
+
+            const jsonData = {
+                fecha: fecha,
+                sede: sede,
+                punto_venta: headquarterNombre,
+                total_productos: 0,
+                productos: []
+            };
+
+            // Procesar datos para JSON
+            if (ventasData) {
+                Object.keys(ventasData).forEach(sede => {
+                    const sedeData = ventasData[sede];
+                    Object.keys(sedeData).forEach(headquarter => {
+                        const productos = sedeData[headquarter];
+                        
+                        productos.forEach(producto => {
+                            jsonData.productos.push({
+                                codigo: producto.codigo,
+                                nombre: producto.nombre,
+                                cantidad: producto.cantidad
+                            });
+                            jsonData.total_productos += producto.cantidad;
+                        });
+                    });
+                });
+            }
+
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `surtido-diario-${fecha}-${sede}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            mostrarAlerta('✅ JSON descargado exitosamente', 'success');
+        }
+    </script>
+</body>
+</html>

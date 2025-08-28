@@ -1,0 +1,27 @@
+{
+  "name": "api-ventas-dia",
+  "version": "1.0.0",
+  "description": "API para listar productos vendidos por sede y punto de venta en un día específico",
+  "main": "api-ventas-dia.js",
+  "scripts": {
+    "start": "node api-ventas-dia.js",
+    "dev": "nodemon api-ventas-dia.js",
+    "test": "node test-ventas.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "api",
+    "ventas",
+    "postgresql",
+    "multifamiliar"
+  ],
+  "author": "Sistema Multifamiliar",
+  "license": "MIT"
+}
