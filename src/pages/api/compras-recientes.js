@@ -77,7 +77,7 @@ async function getComprasRecientes(sede, dias = 30, providerId = null, limit = 1
         p.internal_code,
         p.name as nombre_producto,
         pp.quantity,
-        pp.cost,
+        pp.unit_price,
         pur.created_at as fecha_compra,
         prov.name as nombre_proveedor,
         prov.id as provider_id
@@ -128,7 +128,7 @@ async function getComprasRecientes(sede, dias = 30, providerId = null, limit = 1
         codigo: compra.internal_code,
         nombre: compra.nombre_producto.substring(0, 25), // Limitar a 25 caracteres
         cantidad: parseInt(compra.quantity),
-        costo: parseFloat(compra.cost),
+        costo: parseFloat(compra.unit_price),
         fecha_compra: compra.fecha_compra
       });
     });
