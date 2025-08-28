@@ -845,13 +845,40 @@
         }
 
         function formatearFecha(fecha) {
-            const opciones = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            };
-            return new Date(fecha).toLocaleDateString('es-CO', opciones);
+            // Validar que la fecha sea válida
+            if (!fecha) {
+                return 'Fecha no válida';
+            }
+            
+            try {
+                // Crear la fecha asegurando que se interprete en zona horaria local
+                // Para fechas en formato YYYY-MM-DD, agregamos T00:00:00 para evitar problemas de zona horaria
+                let fechaObj;
+                if (fecha.includes('-')) {
+                    // Formato YYYY-MM-DD
+                    fechaObj = new Date(fecha + 'T00:00:00');
+                } else {
+                    // Otros formatos
+                    fechaObj = new Date(fecha);
+                }
+                
+                // Validar que la fecha sea válida
+                if (isNaN(fechaObj.getTime())) {
+                    return 'Fecha no válida';
+                }
+                
+                const opciones = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                
+                return fechaObj.toLocaleDateString('es-CO', opciones);
+            } catch (error) {
+                console.error('Error formateando fecha:', error);
+                return 'Error en fecha';
+            }
         }
 
         function formatearHora(hora) {
