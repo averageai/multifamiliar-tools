@@ -172,23 +172,92 @@
             cursor: pointer;
         }
 
-        .time-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+                 .time-group {
+             display: grid;
+             grid-template-columns: 1fr 1fr;
+             gap: 15px;
+         }
+         
+                             .permiso-time-container {
+              display: grid;
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 15px;
+              align-items: start;
+          }
+          
+          .permiso-time-container .form-group {
+              display: flex;
+              flex-direction: column;
+          }
+          
+          .permiso-time-container .form-group label {
+              margin-bottom: 8px;
+              font-size: 14px;
+              color: #a0a0a0;
+              font-weight: 500;
+              line-height: 1.2;
+              min-height: 20px;
+              display: flex;
+              align-items: center;
+          }
+          
+          .permiso-time-container .form-group input,
+          .permiso-time-container .form-group select {
+              height: 48px;
+              padding: 12px 16px;
+              border: 1px solid #333;
+              border-radius: 8px;
+              font-size: 14px;
+              background: #1a1a1a;
+              color: #ffffff;
+              transition: all 0.3s;
+              box-sizing: border-box;
+          }
+         
+         .permiso-time-container .form-group input:focus,
+         .permiso-time-container .form-group select:focus {
+             outline: none;
+             border-color: #3498db;
+             background: #333;
+             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+         }
+         
+         .permiso-time-container .form-group:first-child {
+             grid-column: 1;
+         }
+         
+         .permiso-time-container .form-group[id*="hora"] {
+             grid-column: span 1;
+         }
+         
+         @media (max-width: 768px) {
+             .permiso-time-container {
+                 grid-template-columns: 1fr;
+                 gap: 15px;
+             }
+             
+             .permiso-time-container .form-group[id*="hora"] {
+                 grid-column: 1;
+             }
+         }
 
-        .btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
+                 .btn {
+             background: #28a745;
+             color: white;
+             border: none;
+             padding: 12px 24px;
+             font-size: 14px;
+             border-radius: 8px;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             font-weight: 600;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 8px;
+             min-height: 48px;
+             box-sizing: border-box;
+         }
 
         .btn:hover {
             background: #218838;
@@ -239,13 +308,40 @@
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
-        .buttons-container {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 25px;
-        }
+                 .buttons-container {
+             display: flex;
+             gap: 15px;
+             justify-content: center;
+             flex-wrap: wrap;
+             margin-top: 25px;
+             align-items: center;
+         }
+         
+         .buttons-container .btn {
+             min-width: 140px;
+             height: 48px;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 8px;
+             font-size: 14px;
+             font-weight: 600;
+             text-decoration: none;
+             border: none;
+             border-radius: 8px;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             box-sizing: border-box;
+         }
+         
+         .buttons-container .btn:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+         }
+         
+         .buttons-container .btn:active {
+             transform: translateY(0);
+         }
 
         .admin-modal {
             display: none;
@@ -486,9 +582,9 @@
                             <input type="text" id="documento" required placeholder="Ingrese número de documento..." onkeypress="handleKeyPress(event)">
                         </div>
                         
-                        <div class="form-group">
-                            <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px;">✅ Validar Empleado</button>
-                        </div>
+                                                 <div class="form-group">
+                             <button type="button" class="btn btn-primary" onclick="validarEmpleado()" style="margin-top: 25px; height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px;">✅ Validar Empleado</button>
+                         </div>
                         
                         <!-- Sección de información del empleado (oculta inicialmente) -->
                         <div id="empleadoInfo" style="display: none;">
@@ -507,44 +603,46 @@
                             </select>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="fechaPermiso">Fecha del Permiso *</label>
-                            <input type="date" id="fechaPermiso" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="horaSalida">Hora de Salida *</label>
-                            <input type="time" id="horaSalida" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="tipoPermiso">Tipo de Permiso *</label>
-                            <select id="tipoPermiso" required>
-                                <option value="">Seleccionar tipo</option>
-                                <option value="Día Completo">Día Completo</option>
-                                <option value="Horas">Horas</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group" id="horaEntradaGroup" style="display: none;">
-                            <label for="horaEntrada">Hora Estimada de Entrada</label>
-                            <input type="time" id="horaEntrada">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="autoriza">Quien Autoriza *</label>
-                            <select id="autoriza" required>
-                                <option value="">Seleccionar autorización</option>
-                                <option value="Martha Culma">Martha Culma</option>
-                                <option value="Liliana Bañol">Liliana Bañol</option>
-                                <option value="Edwin Godoy">Edwin Godoy</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="motivo">Motivo del Permiso *</label>
-                            <textarea id="motivo" required placeholder="Describa el motivo del permiso"></textarea>
-                        </div>
+                                                 <div class="form-group">
+                             <label for="fechaPermiso">Fecha del Permiso *</label>
+                             <input type="date" id="fechaPermiso" required>
+                         </div>
+                         
+                         <div class="form-group">
+                             <label for="autoriza">Quien Autoriza *</label>
+                             <select id="autoriza" required>
+                                 <option value="">Seleccionar autorización</option>
+                                 <option value="Martha Culma">Martha Culma</option>
+                                 <option value="Liliana Bañol">Liliana Bañol</option>
+                                 <option value="Edwin Godoy">Edwin Godoy</option>
+                             </select>
+                         </div>
+                         
+                         <div class="form-group">
+                             <label for="motivo">Motivo del Permiso *</label>
+                             <textarea id="motivo" required placeholder="Describa el motivo del permiso"></textarea>
+                         </div>
+                         
+                         <div class="permiso-time-container">
+                             <div class="form-group">
+                                 <label for="tipoPermiso">Tipo de Permiso *</label>
+                                 <select id="tipoPermiso" required>
+                                     <option value="">Seleccionar tipo</option>
+                                     <option value="Día Completo">Día Completo</option>
+                                     <option value="Horas">Horas</option>
+                                 </select>
+                             </div>
+                             
+                             <div class="form-group" id="horaSalidaGroup" style="display: none;">
+                                 <label for="horaSalida">Hora de Salida *</label>
+                                 <input type="time" id="horaSalida" required>
+                             </div>
+                             
+                                                           <div class="form-group" id="horaEntradaGroup" style="display: none;">
+                                  <label for="horaEntrada">Hora Estimada</label>
+                                  <input type="time" id="horaEntrada">
+                              </div>
+                         </div>
                     </div>
                     
                     <div class="form-group">
@@ -648,6 +746,10 @@
             // Eventos del formulario
             inicializarEventos();
             
+            // Ocultar campos de hora por defecto
+            document.getElementById('horaEntradaGroup').style.display = 'none';
+            document.getElementById('horaSalidaGroup').style.display = 'none';
+            
             console.log('Sistema inicializado correctamente');
         });
 
@@ -657,12 +759,26 @@
             if (tipoPermiso) {
                 tipoPermiso.addEventListener('change', function() {
                     const horaEntradaGroup = document.getElementById('horaEntradaGroup');
+                    const horaSalidaGroup = document.getElementById('horaSalidaGroup');
+                    
                     if (this.value === 'Horas') {
+                        // Mostrar ambos campos para permisos por horas
                         horaEntradaGroup.style.display = 'block';
+                        horaSalidaGroup.style.display = 'block';
                         document.getElementById('horaEntrada').required = true;
-                    } else {
+                        document.getElementById('horaSalida').required = true;
+                    } else if (this.value === 'Día Completo') {
+                        // Ocultar ambos campos para permisos de día completo
                         horaEntradaGroup.style.display = 'none';
+                        horaSalidaGroup.style.display = 'none';
                         document.getElementById('horaEntrada').required = false;
+                        document.getElementById('horaSalida').required = false;
+                    } else {
+                        // Estado inicial - ocultar ambos
+                        horaEntradaGroup.style.display = 'none';
+                        horaSalidaGroup.style.display = 'none';
+                        document.getElementById('horaEntrada').required = false;
+                        document.getElementById('horaSalida').required = false;
                     }
                 });
             }
@@ -788,7 +904,7 @@
             }
 
             const requiredFields = [
-                'documento', 'cargo', 'fechaPermiso', 'horaSalida', 
+                'documento', 'cargo', 'fechaPermiso', 
                 'tipoPermiso', 'autoriza', 'motivo'
             ];
             
@@ -803,13 +919,20 @@
                 }
             });
             
-            // Validar hora de entrada si es permiso por horas
+            // Validar hora de entrada y salida si es permiso por horas
             const tipoPermiso = document.getElementById('tipoPermiso').value;
             if (tipoPermiso === 'Horas') {
                 const horaEntrada = document.getElementById('horaEntrada');
+                const horaSalida = document.getElementById('horaSalida');
+                
                 if (!horaEntrada.value) {
                     isValid = false;
                     errorMessage += '• Hora Estimada de Entrada\n';
+                }
+                
+                if (!horaSalida.value) {
+                    isValid = false;
+                    errorMessage += '• Hora de Salida\n';
                 }
             }
             
@@ -835,7 +958,7 @@
                 documento: empleadoValidado ? empleadoValidado.documento : '',
                 cargo: document.getElementById('cargo').value,
                 fechaPermiso: document.getElementById('fechaPermiso').value,
-                horaSalida: document.getElementById('horaSalida').value,
+                horaSalida: tipoPermiso === 'Horas' ? document.getElementById('horaSalida').value : null,
                 tipoPermiso: tipoPermiso,
                 horaEntrada: tipoPermiso === 'Horas' ? document.getElementById('horaEntrada').value : null,
                 autoriza: document.getElementById('autoriza').value,
@@ -1078,27 +1201,27 @@
                         </div>
                     </div>
                     
-                    <div class="section">
-                        <h2>DETALLES DEL PERMISO</h2>
-                        <div class="item">
-                            <span class="item-label">Fecha:</span>
-                            <span class="item-value">${fechaFormateada}</span>
-                        </div>
-                        <div class="item">
-                            <span class="item-label">Hora Salida:</span>
-                            <span class="item-value">${horaSalidaFormateada}</span>
-                        </div>
-                        <div class="item">
-                            <span class="item-label">Tipo:</span>
-                            <span class="item-value">${datos.tipoPermiso}</span>
-                        </div>
-                        ${datos.tipoPermiso === 'Horas' ? `
-                        <div class="item">
-                            <span class="item-label">Hora Entrada:</span>
-                            <span class="item-value">${horaEntradaFormateada}</span>
-                        </div>
-                        ` : ''}
-                    </div>
+                                         <div class="section">
+                         <h2>DETALLES DEL PERMISO</h2>
+                         <div class="item">
+                             <span class="item-label">Fecha:</span>
+                             <span class="item-value">${fechaFormateada}</span>
+                         </div>
+                         <div class="item">
+                             <span class="item-label">Tipo:</span>
+                             <span class="item-value">${datos.tipoPermiso}</span>
+                         </div>
+                         ${datos.tipoPermiso === 'Horas' ? `
+                         <div class="item">
+                             <span class="item-label">Hora Salida:</span>
+                             <span class="item-value">${horaSalidaFormateada}</span>
+                         </div>
+                         <div class="item">
+                             <span class="item-label">Hora Entrada:</span>
+                             <span class="item-value">${horaEntradaFormateada}</span>
+                         </div>
+                         ` : ''}
+                     </div>
                     
                     <div class="section">
                         <h2>MOTIVO</h2>
@@ -1161,9 +1284,11 @@
                     horaSalida.value = timeString;
                 }
                 
-                // Ocultar grupo de hora de entrada
+                // Ocultar grupos de hora de entrada y salida
                 document.getElementById('horaEntradaGroup').style.display = 'none';
+                document.getElementById('horaSalidaGroup').style.display = 'none';
                 document.getElementById('horaEntrada').required = false;
+                document.getElementById('horaSalida').required = false;
                 
                 console.log('Formulario limpiado correctamente');
             }
