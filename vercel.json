@@ -1,19 +1,29 @@
 {
   "version": 2,
-  "functions": {
-    "src/pages/api/ventas-dia.js": {
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
     },
-    "src/pages/api/compras-recientes.js": {
-      "maxDuration": 30
-    },
-    "src/pages/api/proveedores.js": {
-      "maxDuration": 30
-    },
-    "src/pages/api/generar-json-compras.js": {
-      "maxDuration": 10
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
     }
-  },
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "env": {
     "DB_HOST": "5.161.103.230",
     "DB_PORT": "7717",

@@ -1,0 +1,34 @@
+# Dependencias
+node_modules/
+
+# Archivos de desarrollo
+.git/
+.gitignore
+README*.md
+CHANGELOG.md
+
+# Archivos de configuración local
+.env*
+*.log
+
+# Archivos temporales
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+
+# Archivos de backup
+backup/
+bases_datos/
+
+# Archivos de test
+test-*.js
+*.test.js
+*.spec.js
+
+# Archivos de documentación
+readme/

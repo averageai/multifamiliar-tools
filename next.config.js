@@ -24,6 +24,16 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/',
+        destination: '/index.html',
+      },
+    ];
+  },
+  trailingSlash: false,
+  generateEtags: false,
 };
 
 module.exports = nextConfig;

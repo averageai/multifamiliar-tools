@@ -30,6 +30,10 @@ Thumbs.db
 # Vercel
 .vercel
 
+# Next.js
+.next/
+out/
+
 # Archivos de sistema
 *.bak
 *.backup 
