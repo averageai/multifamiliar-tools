@@ -871,7 +871,7 @@
                 return;
             }
             
-                         const toolPermissions = {
+                                                   const toolPermissions = {
                  'tool-inventarios': 'inventarios',
                  'tool-precios': 'precios',
                  'tool-precios-manizales': 'precios-manizales',
@@ -883,7 +883,9 @@
                  'tool-cierre-caja': 'cierre-caja',
                  'tool-permisos-salida': 'permisos-salida',
                  'tool-faltantes': 'faltantes',
-                 'tool-control-horas': 'control-horas'
+                 'tool-control-horas': 'control-horas',
+                 'tool-surtido-diario': 'surtido-diario',
+                 'tool-surtido-compras': 'surtido-compras'
              };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -948,7 +950,9 @@
              '/cierre-caja': 'cierre-caja.html',
              '/permisos-salida': 'permisos-salida.html',
              '/faltantes': 'faltantes-api.html',
-             '/control-horas': 'control-horas.html'
+             '/control-horas': 'control-horas.html',
+             '/surtido-diario': 'surtido-diario.html',
+             '/surtido-compras': 'surtido-compras.html'
          };
 
         // Función de navegación
