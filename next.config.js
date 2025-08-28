@@ -1,8 +1,26 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
+  // Configuración básica
+  reactStrictMode: true,
+  swcMinify: true,
+  
+  // Configuración para servir archivos estáticos
+  async rewrites() {
+    return [
+      // Servir archivos HTML estáticos directamente desde la raíz
+      {
+        source: '/(.*\\.html)',
+        destination: '/$1',
+      },
+      // Para cualquier otra ruta, redirigir a index.html (SPA behavior)
+      {
+        source: '/(.*)',
+        destination: '/index.html',
+      },
+    ];
   },
+  
+  // Headers para CORS
   async headers() {
     return [
       {
@@ -24,25 +42,8 @@ const nextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      // Redirigir la raíz a index.html
-      {
-        source: '/',
-        destination: '/index.html',
-      },
-      // Servir archivos HTML estáticos directamente
-      {
-        source: '/(.*\\.html)',
-        destination: '/$1',
-      },
-      // Para cualquier otra ruta, redirigir a index.html (SPA behavior)
-      {
-        source: '/(.*)',
-        destination: '/index.html',
-      },
-    ];
-  },
+  
+  // Configuración adicional
   trailingSlash: false,
   generateEtags: false,
 };
