@@ -60,6 +60,10 @@
       "dest": "/server.js"
     },
     {
+      "src": "/ventas-diarias-pos",
+      "dest": "/server.js"
+    },
+    {
       "src": "/",
       "dest": "/server.js"
     },

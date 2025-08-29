@@ -44,6 +44,9 @@ const cors = require('cors');
 const path = require('path');
 const { dbConfig, sedesConfig, queries } = require('./db-config');
 
+// Importar funciones de ventas diarias
+const { getVentasDiarias, getHeadquarterInfo, getHeadquarters, headquarterIds, dbConfigs } = require('./ventas-diarias-api.js');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -464,6 +467,83 @@ app.post('/api/registros/finalizar-jornada', async (req, res) => {
     }
 });
 
+// ========================================
+// 📊 ENDPOINTS - VENTAS DIARIAS
+// ========================================
+
+// Endpoint para obtener ventas diarias
+app.get('/api/ventas-diarias', async (req, res) => {
+    try {
+        const { sede, headquarterId, fecha } = req.query;
+        
+        if (!sede || !headquarterId || !fecha) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faltan parámetros requeridos: sede, headquarterId, fecha'
+            });
+        }
+        
+        if (!['manizales', 'ladorada'].includes(sede)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Sede debe ser "manizales" o "ladorada"'
+            });
+        }
+        
+        const ventas = await getVentasDiarias(sede, headquarterId, fecha);
+        const headquarterInfo = getHeadquarterInfo(sede, headquarterId);
+        
+        res.json({
+            success: true,
+            data: {
+                ventas,
+                headquarter: headquarterInfo,
+                sede,
+                fecha,
+                total_productos: ventas.length,
+                total_cantidad: ventas.reduce((sum, v) => sum + v.cantidad, 0)
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error en endpoint ventas-diarias:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+});
+
+// Endpoint para obtener headquarters de una sede
+app.get('/api/headquarters/:sede', (req, res) => {
+    try {
+        const { sede } = req.params;
+        
+        if (!['manizales', 'ladorada'].includes(sede)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Sede debe ser "manizales" o "ladorada"'
+            });
+        }
+        
+        const headquarters = getHeadquarters(sede);
+        
+        res.json({
+            success: true,
+            data: headquarters
+        });
+        
+    } catch (error) {
+        console.error('Error en endpoint headquarters:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error interno del servidor',
+            error: error.message
+        });
+    }
+});
+
 // Nuevos endpoints para funcionalidades adicionales
 
 // Obtener registros de una fecha específica
@@ -571,7 +651,8 @@ const appRoutes = {
     '/cierre-caja': 'cierre-caja.html',
     '/permisos-salida': 'permisos-salida.html',
     '/faltantes': 'faltantes-api.html',
-    '/control-horas': 'control-horas.html'
+    '/control-horas': 'control-horas.html',
+    '/ventas-diarias-pos': 'ventas-diarias-pos.html'
 };
 
 // Configurar rutas para cada aplicación
