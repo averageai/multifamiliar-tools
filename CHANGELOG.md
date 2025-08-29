@@ -2,22 +2,21 @@
 
 ## [2025-08-29] - CORRECCIONES Y VALIDACIONES - VENTAS DIARIAS POS
 
-### ✅ **Compatibilidad Multi-Entorno:**
-- **Problema**: HTML hardcodeado para `localhost:3001` solo funcionaba en desarrollo
-- **Solución**: Detección automática de entorno (desarrollo vs producción)
-- **Resultado**: Funciona tanto en localhost como en servidor de producción
+### ✅ **Conexión Directa a API:**
+- **Problema**: Sistema complejo de detección de entorno innecesario
+- **Solución**: Conexión directa a `/api` en el mismo servidor
+- **Resultado**: Configuración simplificada y más confiable
 - **Características**:
-  - Detección automática de hostname
-  - URL dinámica según entorno
-  - Indicador visual de estado de conexión
-  - Mejor manejo de errores de red
-  - Script de prueba multi-entorno creado
+  - URL relativa `/api/ventas-diarias`
+  - Sin detección de entorno
+  - Indicador simplificado
+  - Conexión directa al servidor actual
 
 ### ✅ **Indicador de Estado de Conexión:**
-- **Implementación**: Indicador visual que muestra el entorno actual
-- **Estados**: Desarrollo Local (🏠) / Producción (🌍)
-- **Información**: Muestra la URL de conexión actual
-- **Estilos**: Colores diferenciados por entorno
+- **Implementación**: Indicador visual simplificado
+- **Estado**: API conectada directamente (🌐)
+- **Información**: Muestra conexión directa a /api
+- **Estilos**: Color verde para indicar conexión activa
 
 ### ✅ **Validación de Headquarter IDs:**
 - **Problema**: Los headquarters configurados no coincidían con la base de datos
@@ -56,7 +55,8 @@
 - `validacion-directa-postgres.js` - Comparación directa API vs PostgreSQL
 - `test-html-api.js` - Test de integración HTML-API
 - `diagnostico-fechas.js` - Diagnóstico de fechas disponibles
-- `test-multi-entorno.js` - Test de compatibilidad multi-entorno
+- `test-api-directa.js` - Test de conexión directa a API
+
 
 ### 📚 **DOCUMENTACIÓN ACTUALIZADA:**
 - `VALIDACION_HEADQUARTERS.md` - Documentación de validación de headquarters

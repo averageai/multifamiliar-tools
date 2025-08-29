@@ -468,7 +468,7 @@
             <!-- Indicador de estado de conexión -->
             <div id="connectionStatus" class="connection-status">
                 <span id="connectionIcon" class="connection-icon">🌐</span>
-                <span id="connectionText">Detectando entorno...</span>
+                <span id="connectionText">API conectada directamente a /api</span>
             </div>
 
             <div class="loading" id="loading">
@@ -587,18 +587,9 @@
 
         // Función para actualizar el indicador de conexión
         function updateConnectionStatus() {
-            const apiBaseUrl = getApiBaseUrl();
-            const isLocal = apiBaseUrl === 'http://localhost:3001';
-            
-            if (isLocal) {
-                connectionIcon.textContent = '🏠';
-                connectionText.textContent = 'Desarrollo Local - API en puerto 3001';
-                connectionStatus.className = 'connection-status local';
-            } else {
-                connectionIcon.textContent = '🌍';
-                connectionText.textContent = `Producción - ${apiBaseUrl}`;
-                connectionStatus.className = 'connection-status production';
-            }
+            connectionIcon.textContent = '🌐';
+            connectionText.textContent = 'API conectada directamente a /api';
+            connectionStatus.className = 'connection-status production';
         }
 
         // Configurar fecha por defecto (hoy) - Horario colombiano (UTC-5)
@@ -666,10 +657,6 @@
             btnImprimir.disabled = true;
 
             try {
-                // Mostrar información de conexión
-                const apiBaseUrl = getApiBaseUrl();
-                console.log(`🌐 Entorno detectado: ${apiBaseUrl === 'http://localhost:3001' ? 'Desarrollo Local' : 'Producción'}`);
-                
                 // Consultar ventas reales desde la API
                 const ventas = await consultarVentasReales(sede, headquarterId, fecha);
                 
@@ -692,25 +679,15 @@
 
         // Función para obtener la URL base de la API
         function getApiBaseUrl() {
-            // Detectar si estamos en localhost o en producción
-            const hostname = window.location.hostname;
-            const protocol = window.location.protocol;
-            
-            if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                // Desarrollo local
-                return 'http://localhost:3001';
-            } else {
-                // Producción - usar la misma URL base que el HTML
-                return `${protocol}//${hostname}`;
-            }
+            // Conectar directamente a /api en el mismo servidor
+            return '';
         }
 
         // Función para consultar ventas reales desde la API
         async function consultarVentasReales(sede, headquarterId, fecha) {
             try {
-                // URL de la API (detecta automáticamente el entorno)
-                const apiBaseUrl = getApiBaseUrl();
-                const apiUrl = `${apiBaseUrl}/api/ventas-diarias?sede=${sede}&headquarterId=${headquarterId}&fecha=${fecha}`;
+                // URL de la API (conexión directa a /api)
+                const apiUrl = `/api/ventas-diarias?sede=${sede}&headquarterId=${headquarterId}&fecha=${fecha}`;
                 
                 console.log(`🔗 Conectando a API: ${apiUrl}`);
                 const response = await fetch(apiUrl);
