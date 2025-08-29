@@ -657,9 +657,21 @@
                 <span class="tool-badge">API JSON</span>
             </a>
 
+            <!-- Ventas Diarias POS -->
+            <a href="#" class="tool-card operativo" id="tool-ventas-diarias" onclick="navigateTo('/ventas-diarias'); return false;">
+                <div class="tool-icon">🖨️</div>
+                <h3>Ventas Diarias POS</h3>
+                <p>Generación e impresión de reportes de ventas diarias en formato POS 80mm. Selección de sede, punto de venta y fecha específica.</p>
+                <span class="tool-badge">Multi-Sede</span>
+            </a>
 
-
-
+            <!-- === HERRAMIENTAS DE BODEGAS === -->
+            <!-- Las herramientas relacionadas con bodegas incluyen: -->
+            <!-- - Control de Inventarios (tool-inventarios) -->
+            <!-- - Faltantes (tool-faltantes) -->
+            <!-- - Ventas Diarias POS (tool-ventas-diarias) -->
+            <!-- - Control de Precios V2 (tool-spav2) -->
+            <!-- - Sistema de Precios API (tool-precios) -->
 
         </div>
 
@@ -702,13 +714,13 @@
                          password: '123',
                          name: 'Administrador',
                          role: 'admin',
-                         permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'faltantes', 'control-horas']
+                         permissions: [ 'spav2', 'validador-v2-conectado', 'precios','duplicados', 'precios-manizales', 'inventarios', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'faltantes', 'control-horas', 'ventas-diarias']
                      },
                                          'operativo': {
                          password: '', // Sin contraseña
                          name: 'Operativo',
                          role: 'operativo',
-                         permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'control-horas']
+                         permissions: [ 'spav2', 'validador-v2-conectado','precios-manizales', 'codigos-disponibles', 'cotizaciones', 'cierre-caja', 'permisos-salida', 'control-horas', 'ventas-diarias']
                      },
                     'usuario': {
                         password: '', // Sin contraseña
@@ -720,7 +732,7 @@
                          password: 'dev',
                          name: 'Desarrollador',
                          role: 'develop',
-                         permissions: ['inventarios', 'precios', 'validador-v2-conectado', 'faltantes', 'duplicados', 'cotizaciones', 'codigos-disponibles', 'permisos-salida']
+                         permissions: ['inventarios', 'precios', 'validador-v2-conectado', 'faltantes', 'duplicados', 'cotizaciones', 'codigos-disponibles', 'permisos-salida', 'ventas-diarias']
                      }
                 };
             }
@@ -866,7 +878,8 @@
                  'tool-cierre-caja': 'cierre-caja',
                  'tool-permisos-salida': 'permisos-salida',
                  'tool-faltantes': 'faltantes',
-                 'tool-control-horas': 'control-horas'
+                 'tool-control-horas': 'control-horas',
+                 'tool-ventas-diarias': 'ventas-diarias'
              };
             
             console.log('🔍 Verificando permisos para usuario:', currentUser.username);
@@ -931,7 +944,8 @@
              '/cierre-caja': 'cierre-caja.html',
              '/permisos-salida': 'permisos-salida.html',
              '/faltantes': 'faltantes-api.html',
-             '/control-horas': 'control-horas.html'
+             '/control-horas': 'control-horas.html',
+             '/ventas-diarias': 'ventas-diarias-pos.html'
          };
 
         // Función de navegación

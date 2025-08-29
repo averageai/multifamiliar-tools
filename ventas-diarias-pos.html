@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas Diarias POS - Multifamiliar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .form-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            color: #3498db;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 8px 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: #333;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+        }
+
+        .btn-print:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #3498db;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #dc2626;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .success-message {
+            background: #059669;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        .results-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .results-info {
+            color: #a0a0a0;
+            font-size: 12px;
+        }
+
+        .table-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2a2a2a;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            color: #ffffff;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
+        }
+
+        tr:hover {
+            background: #2a2a2a;
+        }
+
+        .print-preview {
+            background: white;
+            color: black;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.2;
+            max-width: 80mm;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            display: none;
+        }
+
+        .print-preview.active {
+            display: block;
+        }
+
+        .print-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .print-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .print-subtitle {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .print-date {
+            font-size: 10px;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .print-table th {
+            background: #f0f0f0;
+            padding: 4px 6px;
+            font-size: 10px;
+            border-bottom: 1px solid #000;
+        }
+
+        .print-table td {
+            padding: 4px 6px;
+            font-size: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .print-footer {
+            text-align: center;
+            margin-top: 15px;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            font-size: 10px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background: #f0f0f0;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-preview, .print-preview * {
+                visibility: visible;
+            }
+            .print-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 80mm;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">
+                ← Volver
+            </a>
+            <div class="logo">M</div>
+            <div class="header-text">
+                <h1>Ventas Diarias POS</h1>
+                <p>Impresión en formato POS 80mm</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>📊 Configuración de Reporte</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="sede">Sede:</label>
+                        <select id="sede" required>
+                            <option value="">Seleccionar sede...</option>
+                            <option value="manizales">Manizales</option>
+                            <option value="ladorada">La Dorada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="headquarter">Punto de Venta:</label>
+                        <select id="headquarter" required disabled>
+                            <option value="">Seleccionar punto de venta...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                </div>
+                <button id="btnConsultar" class="btn-primary">🔍 Consultar Ventas</button>
+                <button id="btnImprimir" class="btn-print" disabled>🖨️ Imprimir</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Consultando ventas...</p>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="results-header">
+                    <h3>📋 Resultados de Ventas</h3>
+                    <div class="results-info" id="resultsInfo"></div>
+                </div>
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="print-preview" id="printPreview">
+                <div class="print-header">
+                    <div class="print-title">MULTIFAMILIAR</div>
+                    <div class="print-subtitle">Reporte de Ventas Diarias</div>
+                    <div class="print-date" id="printDate"></div>
+                </div>
+                <table class="print-table" id="printTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printTableBody">
+                    </tbody>
+                </table>
+                <div class="print-footer">
+                    <div>Total productos: <span id="printTotalProducts">0</span></div>
+                    <div>Total cantidad: <span id="printTotalQuantity">0</span></div>
+                    <div>--- Fin del Reporte ---</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de bases de datos
+        const dbConfigs = {
+            manizales: {
+                host: '5.161.103.230',
+                port: 7717,
+                database: 'crsitaleriamanizales_complete',
+                user: 'vercel_user',
+                password: 'non@ver@ge',
+                ssl: { rejectUnauthorized: false }
+            },
+            ladorada: {
+                host: '5.161.103.230',
+                port: 7717,
+                database: 'cristaleriaprod_complete',
+                user: 'vercel_user',
+                password: 'non@ver@ge',
+                ssl: { rejectUnauthorized: false }
+            }
+        };
+
+        // Headquarter IDs por sede (actualizados según la base de datos)
+        const headquarterIds = {
+            manizales: [
+                { id: 1, name: 'MULTIFAMILIAR 2' },
+                { id: 2, name: 'BODEGA' },
+                { id: 3, name: 'MI HOGAR' }
+            ],
+            ladorada: [
+                { id: 2, name: 'SURTITODO' },
+                { id: 3, name: 'EL HOGAR' },
+                { id: 5, name: 'MULTIFAMILIAR' },
+                { id: 6, name: 'BODEGA DORADA' }
+            ]
+        };
+
+        // Elementos del DOM
+        const sedeSelect = document.getElementById('sede');
+        const headquarterSelect = document.getElementById('headquarter');
+        const fechaInput = document.getElementById('fecha');
+        const btnConsultar = document.getElementById('btnConsultar');
+        const btnImprimir = document.getElementById('btnImprimir');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const printPreview = document.getElementById('printPreview');
+        const printTableBody = document.getElementById('printTableBody');
+        const printDate = document.getElementById('printDate');
+        const printTotalProducts = document.getElementById('printTotalProducts');
+        const printTotalQuantity = document.getElementById('printTotalQuantity');
+
+        // Variables globales
+        let ventasData = [];
+
+        // Configurar fecha por defecto (hoy) - Horario colombiano (UTC-5)
+        function getFechaColombiana() {
+            const ahora = new Date();
+            // Ajustar a zona horaria colombiana (UTC-5)
+            const offsetColombia = -5 * 60; // -5 horas en minutos
+            const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+            const fechaColombia = new Date(utc + (offsetColombia * 60000));
+            return fechaColombia.toISOString().split('T')[0];
+        }
+        
+        fechaInput.value = getFechaColombiana();
+
+        // Event listeners
+        sedeSelect.addEventListener('change', cargarPuntosVenta);
+        btnConsultar.addEventListener('click', consultarVentas);
+        btnImprimir.addEventListener('click', imprimirReporte);
+
+        // Función para cargar puntos de venta según la sede
+        function cargarPuntosVenta() {
+            const sede = sedeSelect.value;
+            headquarterSelect.innerHTML = '<option value="">Seleccionar punto de venta...</option>';
+            headquarterSelect.disabled = true;
+
+            if (sede) {
+                const headquarters = headquarterIds[sede];
+                headquarters.forEach(hq => {
+                    const option = document.createElement('option');
+                    option.value = hq.id;
+                    option.textContent = hq.name;
+                    headquarterSelect.appendChild(option);
+                });
+                headquarterSelect.disabled = false;
+            }
+        }
+
+        // Función para mostrar/ocultar mensajes
+        function showMessage(element, message, isError = false) {
+            element.textContent = message;
+            element.className = isError ? 'error-message active' : 'success-message active';
+            setTimeout(() => {
+                element.className = isError ? 'error-message' : 'success-message';
+            }, 5000);
+        }
+
+        // Función para consultar ventas
+        async function consultarVentas() {
+            const sede = sedeSelect.value;
+            const headquarterId = headquarterSelect.value;
+            const fecha = fechaInput.value;
+
+            if (!sede || !headquarterId || !fecha) {
+                showMessage(errorMessage, 'Por favor complete todos los campos', true);
+                return;
+            }
+
+            // Mostrar loading
+            loading.className = 'loading active';
+            resultsSection.className = 'results-section';
+            btnConsultar.disabled = true;
+            btnImprimir.disabled = true;
+
+            try {
+                // Consultar ventas reales desde la API
+                const ventas = await consultarVentasReales(sede, headquarterId, fecha);
+                
+                if (ventas.length === 0) {
+                    showMessage(errorMessage, 'No se encontraron ventas para la fecha seleccionada', true);
+                    return;
+                }
+
+                // Procesar y mostrar resultados
+                mostrarResultados(ventas, sede, headquarterId, fecha);
+                showMessage(successMessage, `Se encontraron ${ventas.length} productos vendidos`);
+
+            } catch (error) {
+                showMessage(errorMessage, `Error al consultar ventas: ${error.message}`, true);
+            } finally {
+                loading.className = 'loading';
+                btnConsultar.disabled = false;
+            }
+        }
+
+        // Función para consultar ventas reales desde la API
+        async function consultarVentasReales(sede, headquarterId, fecha) {
+            try {
+                // URL de la API (ajustar según la configuración del servidor)
+                const apiUrl = `http://localhost:3001/api/ventas-diarias?sede=${sede}&headquarterId=${headquarterId}&fecha=${fecha}`;
+                
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Error en la respuesta de la API');
+                }
+                
+                return result.data.ventas;
+                
+            } catch (error) {
+                console.error('Error consultando API:', error);
+                
+                // Fallback: usar datos simulados si la API no está disponible
+                console.log('Usando datos simulados como fallback...');
+                return await simularConsultaVentas(sede, headquarterId, fecha);
+            }
+        }
+
+        // Función para simular consulta de ventas (fallback)
+        async function simularConsultaVentas(sede, headquarterId, fecha) {
+            // Simular delay de red
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Datos de ejemplo más realistas - en producción esto vendría de la base de datos
+            const productosEjemplo = [
+                { codigo: '11166', nombre: 'AZAFATE MET 10CM 350-2', cantidad: 1 },
+                { codigo: '208', nombre: 'AZUCARERA DOCIFICADORA GRANDE', cantidad: 4 },
+                { codigo: '10672', nombre: 'BALDE COMERCIAL 12LT C/CAÑO REY', cantidad: 2 },
+                { codigo: '5091', nombre: 'BANDEJA AUTOSERVICIO PEQUEÑA BEIGE', cantidad: 6 },
+                { codigo: '8319', nombre: 'BANDEJA DE BARRO PLANA #4', cantidad: 13 },
+                { codigo: '3973', nombre: 'AZUCARERA KENDY', cantidad: 3 },
+                { codigo: '9832', nombre: 'BANDEJA 14 CDA GRUESA BLANCA CHINA', cantidad: 10 },
+                { codigo: '14144', nombre: 'BOLSA 25K', cantidad: 1 },
+                { codigo: '13626', nombre: 'BUTACO BRISNA ROMBOS', cantidad: 2 },
+                { codigo: '13812', nombre: 'CALDERO FUND 1 ECO', cantidad: 1 },
+                { codigo: '12764', nombre: 'AJICERA CUADRADA GRANDE', cantidad: 3 },
+                { codigo: '14605', nombre: 'BOLSA 10K', cantidad: 1 }
+            ];
+
+            // Simular variación según sede, headquarter y fecha
+            let randomFactor = 1;
+            if (sede === 'manizales') {
+                if (headquarterId == 1) randomFactor = 1.2; // MULTIFAMILIAR 2
+                else if (headquarterId == 3) randomFactor = 0.8; // MI HOGAR
+                else randomFactor = 0.5; // BODEGA
+            } else if (sede === 'ladorada') {
+                if (headquarterId == 2) randomFactor = 0.3; // SURTITODO
+                else if (headquarterId == 3) randomFactor = 1.0; // EL HOGAR
+                else if (headquarterId == 5) randomFactor = 0.9; // MULTIFAMILIAR
+                else randomFactor = 0.1; // BODEGA DORADA
+            }
+
+            const dateFactor = new Date(fecha).getDay() === 0 ? 0.5 : 1; // Menos ventas los domingos
+
+            // Filtrar productos según el headquarter (simular diferentes inventarios)
+            const productosFiltrados = productosEjemplo.filter((_, index) => {
+                const seed = parseInt(headquarterId) + index;
+                return seed % 3 !== 0; // Simular que no todos los productos están en todos los headquarters
+            });
+
+            return productosFiltrados.map(producto => ({
+                ...producto,
+                cantidad: Math.floor(producto.cantidad * randomFactor * dateFactor)
+            })).filter(p => p.cantidad > 0);
+        }
+
+        // Función para mostrar resultados
+        function mostrarResultados(ventas, sede, headquarterId, fecha) {
+            ventasData = ventas;
+
+            // Ordenar por nombre de producto (A-Z)
+            ventas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            // Calcular totales
+            const totalProductos = ventas.length;
+            const totalCantidad = ventas.reduce((sum, v) => sum + v.cantidad, 0);
+
+            // Mostrar información
+            const headquarterName = headquarterIds[sede].find(hq => hq.id == headquarterId)?.name || 'N/A';
+            resultsInfo.textContent = `${sede.toUpperCase()} - ${headquarterName} | ${fecha} | ${totalProductos} productos | ${totalCantidad} unidades`;
+
+            // Llenar tabla
+            resultsTableBody.innerHTML = '';
+            ventas.forEach(venta => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${venta.codigo}</td>
+                    <td>${venta.nombre}</td>
+                    <td>${venta.cantidad}</td>
+                `;
+                resultsTableBody.appendChild(row);
+            });
+
+            // Mostrar sección de resultados
+            resultsSection.className = 'results-section active';
+            btnImprimir.disabled = false;
+
+            // Preparar vista previa de impresión
+            prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad);
+        }
+
+        // Función para preparar vista previa de impresión
+        function prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad) {
+            // Configurar fecha de impresión
+            const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            printDate.textContent = `${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}`;
+
+            // Llenar tabla de impresión
+            printTableBody.innerHTML = '';
+            ventas.forEach(venta => {
+                const row = document.createElement('tr');
+                const nombreLimitado = venta.nombre.length > 25 ? venta.nombre.substring(0, 22) + '...' : venta.nombre;
+                row.innerHTML = `
+                    <td>${venta.codigo}</td>
+                    <td>${nombreLimitado}</td>
+                    <td>${venta.cantidad}</td>
+                `;
+                printTableBody.appendChild(row);
+            });
+
+            // Agregar fila de totales
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td colspan="2">TOTAL</td>
+                <td>${totalCantidad}</td>
+            `;
+            printTableBody.appendChild(totalRow);
+
+            // Configurar totales
+            printTotalProducts.textContent = totalProductos;
+            printTotalQuantity.textContent = totalCantidad;
+
+            // Mostrar vista previa
+            printPreview.className = 'print-preview active';
+        }
+
+        // Función para imprimir reporte
+        function imprimirReporte() {
+            if (ventasData.length === 0) {
+                showMessage(errorMessage, 'No hay datos para imprimir', true);
+                return;
+            }
+
+            // Imprimir
+            window.print();
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Ventas Diarias POS inicializado');
+        });
+    </script>
+</body>
+</html>

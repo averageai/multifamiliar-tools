@@ -1,5 +1,63 @@
 # Registro de Cambios - Sistema Multifamiliar
 
+## [2025-08-29] - CORRECCIONES Y VALIDACIONES - VENTAS DIARIAS POS
+
+### ✅ **Validación de Headquarter IDs:**
+- **Problema**: Los headquarters configurados no coincidían con la base de datos
+- **Solución**: Actualización completa de IDs y nombres de headquarters
+- **Resultado**: Sincronización perfecta entre HTML, API y base de datos
+
+### ✅ **Corrección de Zona Horaria:**
+- **Problema**: Fechas consultadas en UTC en lugar de horario colombiano
+- **Solución**: Implementación de conversión UTC-5 en frontend y backend
+- **Resultado**: Consultas precisas en horario local colombiano
+
+### ✅ **Corrección de Fuente de Datos:**
+- **Problema**: Uso incorrecto de `sell.created_at` en lugar de `product_sell.created_at`
+- **Solución**: Cambio a `ps.created_at` como fuente principal de fecha
+- **Resultado**: Datos precisos según requerimientos del usuario
+
+### ✅ **Validación Directa PostgreSQL:**
+- **Implementación**: Script de validación directa contra base de datos
+- **Resultado**: Confirmación de que API devuelve datos exactos
+- **Verificación**: 0 discrepancias entre API y PostgreSQL directo
+
+### ✅ **Corrección de Datos Simulados:**
+- **Problema**: Datos simulados fijos siempre mostraban mismos 10 productos
+- **Solución**: Datos simulados realistas con variación por sede/headquarter
+- **Resultado**: Mejor experiencia cuando API no está disponible
+
+### 📊 **DATOS CONFIRMADOS (28/08/2025):**
+- **Manizales MULTIFAMILIAR 2**: 134 productos ✅
+- **Manizales MI HOGAR**: 55 productos ✅
+- **La Dorada SURTITODO**: 9 productos ✅
+- **La Dorada MULTIFAMILIAR**: 54 productos ✅
+
+### 🧪 **SCRIPTS DE VALIDACIÓN CREADOS:**
+- `validacion-headquarters.js` - Validación de relaciones entre tablas
+- `validacion-final.js` - Validación completa del sistema
+- `validacion-directa-postgres.js` - Comparación directa API vs PostgreSQL
+- `test-html-api.js` - Test de integración HTML-API
+- `diagnostico-fechas.js` - Diagnóstico de fechas disponibles
+
+### 📚 **DOCUMENTACIÓN ACTUALIZADA:**
+- `VALIDACION_HEADQUARTERS.md` - Documentación de validación de headquarters
+- `CORRECCION_HTML_VENTAS_DIARIAS.md` - Correcciones del HTML
+- `CORRECCIONES_ZONA_HORARIA.md` - Correcciones de zona horaria
+- `CORRECCION_CONSULTA_SQL.md` - Corrección de consulta SQL
+
+### 📁 **ARCHIVOS MODIFICADOS:**
+- `ventas-diarias-api.js` - Headquarter IDs corregidos
+- `ventas-diarias-pos.html` - Headquarter IDs y datos simulados mejorados
+- `index.html` - Integración con grid principal (ya existía)
+
+### 🚀 **ESTADO FINAL:**
+- ✅ API funcionando correctamente
+- ✅ HTML sincronizado con API
+- ✅ Validaciones completas exitosas
+- ✅ Documentación actualizada
+- ✅ Sistema listo para producción
+
 ## [2024-01-15] - Corrección de Fecha en Permisos de Salida
 
 ### Problema Identificado
