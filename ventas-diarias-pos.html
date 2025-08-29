@@ -340,10 +340,10 @@
         .print-preview {
             background: white;
             color: black;
-            padding: 20px;
+            padding: 15px;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1.2;
+            font-size: 10px;
+            line-height: 1.1;
             max-width: 80mm;
             margin: 20px auto;
             border: 1px solid #ccc;
@@ -356,51 +356,51 @@
 
         .print-header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             border-bottom: 1px solid #000;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
 
         .print-title {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .print-subtitle {
-            font-size: 10px;
-            margin-bottom: 5px;
+            font-size: 9px;
+            margin-bottom: 3px;
         }
 
         .print-date {
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .print-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .print-table th {
             background: #f0f0f0;
-            padding: 4px 6px;
-            font-size: 10px;
+            padding: 3px 4px;
+            font-size: 9px;
             border-bottom: 1px solid #000;
         }
 
         .print-table td {
-            padding: 4px 6px;
-            font-size: 10px;
+            padding: 3px 4px;
+            font-size: 9px;
             border-bottom: 1px solid #ccc;
         }
 
         .print-footer {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 10px;
             border-top: 1px solid #000;
-            padding-top: 10px;
-            font-size: 10px;
+            padding-top: 8px;
+            font-size: 9px;
         }
 
         .total-row {
@@ -501,25 +501,25 @@
 
             <div class="print-preview" id="printPreview">
                 <div class="print-header">
-                    <div class="print-title">MULTIFAMILIAR</div>
-                    <div class="print-subtitle">Reporte de Ventas Diarias</div>
+                    <div class="print-title"><strong>MULTIFAMILIAR</strong></div>
+                    <div class="print-subtitle"><strong>Reporte de Ventas Diarias</strong></div>
                     <div class="print-date" id="printDate"></div>
                 </div>
                 <table class="print-table" id="printTable">
                     <thead>
                         <tr>
-                            <th>Código</th>
-                            <th>Producto</th>
-                            <th>Cant.</th>
+                            <th><strong>Código</strong></th>
+                            <th><strong>Producto</strong></th>
+                            <th><strong>Cant.</strong></th>
                         </tr>
                     </thead>
                     <tbody id="printTableBody">
                     </tbody>
                 </table>
                 <div class="print-footer">
-                    <div>Total productos: <span id="printTotalProducts">0</span></div>
-                    <div>Total cantidad: <span id="printTotalQuantity">0</span></div>
-                    <div>--- Fin del Reporte ---</div>
+                    <div><strong>Total productos:</strong> <span id="printTotalProducts">0</span></div>
+                    <div><strong>Total cantidad:</strong> <span id="printTotalQuantity">0</span></div>
+                    <div><strong>--- Fin del Reporte ---</strong></div>
                 </div>
             </div>
         </div>
@@ -810,22 +810,22 @@
         function prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad) {
             // Configurar fecha de impresión
             const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
-                weekday: 'long',
+                weekday: 'short',
                 year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric'
             });
-            printDate.textContent = `${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}`;
+            printDate.innerHTML = `<strong>${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}</strong>`;
 
             // Llenar tabla de impresión
             printTableBody.innerHTML = '';
             ventas.forEach(venta => {
                 const row = document.createElement('tr');
-                const nombreLimitado = venta.nombre.length > 25 ? venta.nombre.substring(0, 22) + '...' : venta.nombre;
+                const nombreLimitado = venta.nombre.length > 20 ? venta.nombre.substring(0, 17) + '...' : venta.nombre;
                 row.innerHTML = `
-                    <td>${venta.codigo}</td>
+                    <td><strong>${venta.codigo}</strong></td>
                     <td>${nombreLimitado}</td>
-                    <td>${venta.cantidad}</td>
+                    <td><strong>${venta.cantidad}</strong></td>
                 `;
                 printTableBody.appendChild(row);
             });
@@ -834,8 +834,8 @@
             const totalRow = document.createElement('tr');
             totalRow.className = 'total-row';
             totalRow.innerHTML = `
-                <td colspan="2">TOTAL</td>
-                <td>${totalCantidad}</td>
+                <td colspan="2"><strong>TOTAL</strong></td>
+                <td><strong>${totalCantidad}</strong></td>
             `;
             printTableBody.appendChild(totalRow);
 
