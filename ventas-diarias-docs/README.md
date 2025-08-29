@@ -12,6 +12,7 @@ Esta carpeta contiene toda la documentación, scripts de validación y archivos 
 - `validacion-directa-postgres.js` - Comparación directa API vs PostgreSQL
 - `test-html-api.js` - Test de integración HTML-API
 - `diagnostico-fechas.js` - Diagnóstico de fechas disponibles
+- `test-multi-entorno.js` - Test de compatibilidad multi-entorno
 
 ### 📚 **Documentación:**
 - `VALIDACION_HEADQUARTERS.md` - Documentación de validación de headquarters
@@ -37,7 +38,9 @@ node test-html-api.js
 
 # Diagnóstico de fechas
 node diagnostico-fechas.js
-```
+
+# Test de compatibilidad multi-entorno
+node test-multi-entorno.js
 
 ### **Para revisar documentación:**
 - Abrir cualquier archivo `.md` para ver la documentación detallada
@@ -57,6 +60,7 @@ node diagnostico-fechas.js
 - ✅ Fuente de datos correcta (`product_sell.created_at`)
 - ✅ 0 discrepancias entre API y PostgreSQL
 - ✅ Datos simulados mejorados
+- ✅ Compatibilidad multi-entorno (desarrollo/producción)
 
 ## 📞 **SOPORTE**
 

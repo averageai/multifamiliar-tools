@@ -9,7 +9,7 @@
  */
 
 const { Pool } = require('pg');
-const { getVentasDiarias } = require('./ventas-diarias-api.js');
+const { getVentasDiarias } = require('../ventas-diarias-api.js');
 
 // Configuración de bases de datos
 const dbConfigs = {

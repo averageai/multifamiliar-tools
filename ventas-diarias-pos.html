@@ -241,6 +241,38 @@
             display: block;
         }
 
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .connection-icon {
+            font-size: 14px;
+        }
+
+        .connection-status.local {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .connection-status.production {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .connection-status.error {
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
         .results-section {
             background: #1a1a1a;
             border: 1px solid #333;
@@ -432,6 +464,12 @@
                 <button id="btnConsultar" class="btn-primary">🔍 Consultar Ventas</button>
                 <button id="btnImprimir" class="btn-print" disabled>🖨️ Imprimir</button>
             </div>
+            
+            <!-- Indicador de estado de conexión -->
+            <div id="connectionStatus" class="connection-status">
+                <span id="connectionIcon" class="connection-icon">🌐</span>
+                <span id="connectionText">Detectando entorno...</span>
+            </div>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
@@ -540,9 +578,28 @@
         const printDate = document.getElementById('printDate');
         const printTotalProducts = document.getElementById('printTotalProducts');
         const printTotalQuantity = document.getElementById('printTotalQuantity');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionIcon = document.getElementById('connectionIcon');
+        const connectionText = document.getElementById('connectionText');
 
         // Variables globales
         let ventasData = [];
+
+        // Función para actualizar el indicador de conexión
+        function updateConnectionStatus() {
+            const apiBaseUrl = getApiBaseUrl();
+            const isLocal = apiBaseUrl === 'http://localhost:3001';
+            
+            if (isLocal) {
+                connectionIcon.textContent = '🏠';
+                connectionText.textContent = 'Desarrollo Local - API en puerto 3001';
+                connectionStatus.className = 'connection-status local';
+            } else {
+                connectionIcon.textContent = '🌍';
+                connectionText.textContent = `Producción - ${apiBaseUrl}`;
+                connectionStatus.className = 'connection-status production';
+            }
+        }
 
         // Configurar fecha por defecto (hoy) - Horario colombiano (UTC-5)
         function getFechaColombiana() {
@@ -555,6 +612,9 @@
         }
         
         fechaInput.value = getFechaColombiana();
+        
+        // Inicializar indicador de conexión
+        updateConnectionStatus();
 
         // Event listeners
         sedeSelect.addEventListener('change', cargarPuntosVenta);
@@ -606,6 +666,10 @@
             btnImprimir.disabled = true;
 
             try {
+                // Mostrar información de conexión
+                const apiBaseUrl = getApiBaseUrl();
+                console.log(`🌐 Entorno detectado: ${apiBaseUrl === 'http://localhost:3001' ? 'Desarrollo Local' : 'Producción'}`);
+                
                 // Consultar ventas reales desde la API
                 const ventas = await consultarVentasReales(sede, headquarterId, fecha);
                 
@@ -626,12 +690,29 @@
             }
         }
 
+        // Función para obtener la URL base de la API
+        function getApiBaseUrl() {
+            // Detectar si estamos en localhost o en producción
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // Desarrollo local
+                return 'http://localhost:3001';
+            } else {
+                // Producción - usar la misma URL base que el HTML
+                return `${protocol}//${hostname}`;
+            }
+        }
+
         // Función para consultar ventas reales desde la API
         async function consultarVentasReales(sede, headquarterId, fecha) {
             try {
-                // URL de la API (ajustar según la configuración del servidor)
-                const apiUrl = `http://localhost:3001/api/ventas-diarias?sede=${sede}&headquarterId=${headquarterId}&fecha=${fecha}`;
+                // URL de la API (detecta automáticamente el entorno)
+                const apiBaseUrl = getApiBaseUrl();
+                const apiUrl = `${apiBaseUrl}/api/ventas-diarias?sede=${sede}&headquarterId=${headquarterId}&fecha=${fecha}`;
                 
+                console.log(`🔗 Conectando a API: ${apiUrl}`);
                 const response = await fetch(apiUrl);
                 
                 if (!response.ok) {
@@ -649,8 +730,18 @@
             } catch (error) {
                 console.error('Error consultando API:', error);
                 
-                // Fallback: usar datos simulados si la API no está disponible
-                console.log('Usando datos simulados como fallback...');
+                // Determinar el tipo de error
+                const isNetworkError = error.name === 'TypeError' && error.message.includes('fetch');
+                const isServerError = error.message.includes('HTTP');
+                
+                if (isNetworkError) {
+                    console.warn('⚠️ Error de red - API no disponible. Usando datos simulados...');
+                } else if (isServerError) {
+                    console.warn('⚠️ Error del servidor - API no responde. Usando datos simulados...');
+                } else {
+                    console.warn('⚠️ Error desconocido - Usando datos simulados como fallback...');
+                }
+                
                 return await simularConsultaVentas(sede, headquarterId, fecha);
             }
         }
