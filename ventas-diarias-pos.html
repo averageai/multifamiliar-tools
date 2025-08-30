@@ -342,8 +342,8 @@
             color: #000000;
             padding: 15px;
             font-family: 'Courier New', monospace;
-            font-size: 11px;
-            line-height: 1.2;
+            font-size: 13px;
+            line-height: 1.0;
             max-width: 80mm;
             margin: 20px auto;
             border: 2px solid #000;
@@ -357,27 +357,27 @@
 
         .print-header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #000;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
 
         .print-title {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             color: #000000;
         }
 
         .print-subtitle {
-            font-size: 10px;
-            margin-bottom: 3px;
+            font-size: 12px;
+            margin-bottom: 2px;
             color: #000000;
             font-weight: 600;
         }
 
         .print-date {
-            font-size: 10px;
+            font-size: 12px;
             color: #000000;
             font-weight: 600;
         }
@@ -391,15 +391,15 @@
         .print-table th {
             background: #000000;
             color: #ffffff;
-            padding: 4px 5px;
-            font-size: 10px;
+            padding: 2px 5px;
+            font-size: 12px;
             border-bottom: 2px solid #000;
             font-weight: bold;
         }
 
                  .print-table td {
-             padding: 4px 5px;
-             font-size: 10px;
+             padding: 2px 5px;
+             font-size: 12px;
              border-bottom: none;
              color: #000000;
              font-weight: 500;
@@ -407,10 +407,10 @@
 
         .print-footer {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 8px;
             border-top: 2px solid #000;
-            padding-top: 8px;
-            font-size: 10px;
+            padding-top: 6px;
+            font-size: 12px;
             color: #000000;
             font-weight: 600;
         }
@@ -470,14 +470,39 @@
             </a>
             <div class="logo">M</div>
             <div class="header-text">
-                <h1>Ventas Diarias POS</h1>
-                <p>Impresión en formato POS 80mm</p>
+                <h1>Productos por Surtir POS</h1>
+                <p>Ventas - Movimientos + Productos sin Relacionar</p>
             </div>
         </div>
 
         <div class="content">
+            <!-- Instructivo para operarios -->
+            <div class="form-section" style="background: #1e3a8a; border-color: #3b82f6;">
+                <h2 style="color: #ffffff;">📋 INSTRUCTIVO PARA OPERARIOS DE BODEGA</h2>
+                <div style="color: #e0e7ff; font-size: 13px; line-height: 1.5;">
+                    <p><strong>¿Qué hace esta herramienta?</strong></p>
+                    <p>• Te muestra qué productos necesitas surtir a los puntos de venta</p>
+                    <p>• Te dice qué productos fueron surtidos pero no se vendieron</p>
+                    
+                    <p><strong>¿Cómo interpretar los resultados?</strong></p>
+                    <p>• <span style="color: #22c55e; font-weight: bold;">Números con signo - (negativo):</span> Productos que necesitas surtir</p>
+                    <p>• <span style="color: #ff6b6b; font-weight: bold;">Números con signo + (positivo):</span> Productos que fueron surtidos pero no se vendieron</p>
+                    
+                    <p><strong>Ejemplo:</strong></p>
+                    <p>• <span style="color: #22c55e;">-3</span> = Necesitas surtir 3 unidades de ese producto</p>
+                    <p>• <span style="color: #ff6b6b;">+2</span> = Se surtieron 2 unidades pero no se vendieron</p>
+                    
+                    <p><strong>Pasos para usar:</strong></p>
+                    <p>1. Selecciona la sede (Manizales o La Dorada)</p>
+                    <p>2. Selecciona el punto de venta</p>
+                    <p>3. Selecciona la fecha</p>
+                    <p>4. Haz clic en "Consultar Productos por Surtir"</p>
+                    <p>5. Imprime la lista para trabajar</p>
+                </div>
+            </div>
+
             <div class="form-section">
-                <h2>📊 Configuración de Reporte</h2>
+                <h2>📊 Configuración de Productos por Surtir</h2>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="sede">Sede:</label>
@@ -498,7 +523,7 @@
                         <input type="date" id="fecha" required>
                     </div>
                 </div>
-                <button id="btnConsultar" class="btn-primary">🔍 Consultar Ventas</button>
+                <button id="btnConsultar" class="btn-primary">🔍 Consultar Productos por Surtir</button>
                 <button id="btnImprimir" class="btn-print" disabled>🖨️ Imprimir</button>
             </div>
             
@@ -510,7 +535,7 @@
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Consultando ventas...</p>
+                <p>Consultando productos por surtir...</p>
             </div>
 
             <div class="error-message" id="errorMessage"></div>
@@ -518,7 +543,7 @@
 
             <div class="results-section" id="resultsSection">
                 <div class="results-header">
-                    <h3>📋 Resultados de Ventas</h3>
+                    <h3>📋 Productos por Surtir</h3>
                     <div class="results-info" id="resultsInfo"></div>
                 </div>
                 <div class="table-container">
@@ -539,7 +564,7 @@
                          <div class="print-preview" id="printPreview">
                  <div class="print-header">
                      <div class="print-title" id="printTitle"><strong>MULTIFAMILIAR</strong></div>
-                     <div class="print-subtitle"><strong>Reporte de Ventas Diarias</strong></div>
+                     <div class="print-subtitle"><strong>Productos por Surtir</strong></div>
                      <div class="print-date" id="printDate"></div>
                  </div>
                 <table class="print-table" id="printTable">
@@ -696,16 +721,16 @@
 
             try {
                 // Consultar ventas reales desde la API
-                const ventas = await consultarVentasReales(sede, headquarterId, fecha);
+                const datos = await consultarVentasReales(sede, headquarterId, fecha);
                 
-                if (ventas.length === 0) {
-                    showMessage(errorMessage, 'No se encontraron ventas para la fecha seleccionada', true);
+                if (datos.ventas.length === 0 && datos.productosSinRelacionar.length === 0) {
+                    showMessage(errorMessage, 'No se encontraron productos para la fecha seleccionada', true);
                     return;
                 }
 
                 // Procesar y mostrar resultados
-                mostrarResultados(ventas, sede, headquarterId, fecha);
-                showMessage(successMessage, `Se encontraron ${ventas.length} productos vendidos`);
+                mostrarResultados(datos, sede, headquarterId, fecha);
+                showMessage(successMessage, `Se encontraron ${datos.ventas.length} productos vendidos y ${datos.productosSinRelacionar.length} sin relacionar`);
 
             } catch (error) {
                 showMessage(errorMessage, `Error al consultar ventas: ${error.message}`, true);
@@ -740,7 +765,16 @@
                     throw new Error(result.message || 'Error en la respuesta de la API');
                 }
                 
-                return result.data.ventas;
+                // Validar que result.data exista y tenga las propiedades necesarias
+                if (!result.data) {
+                    throw new Error('La respuesta de la API no contiene datos');
+                }
+                
+                return {
+                    ventas: result.data.ventas || [],
+                    movimientos: result.data.movimientos || [],
+                    productosSinRelacionar: result.data.productosSinRelacionar || []
+                };
                 
             } catch (error) {
                 console.error('Error consultando API:', error);
@@ -803,35 +837,162 @@
                 return seed % 3 !== 0; // Simular que no todos los productos están en todos los headquarters
             });
 
-            return productosFiltrados.map(producto => ({
+            // Simular ventas (negativas)
+            const ventas = productosFiltrados.map(producto => ({
                 ...producto,
-                cantidad: Math.floor(producto.cantidad * randomFactor * dateFactor)
-            })).filter(p => p.cantidad > 0);
+                cantidad: -Math.floor(producto.cantidad * randomFactor * dateFactor) // Convertir a negativos
+            })).filter(p => p.cantidad < 0); // Filtrar solo productos con cantidad negativa
+
+            // Simular movimientos
+            const movimientos = [
+                { codigo: '11166', nombre: 'AZAFATE MET 10CM 350-2', cantidad: 2, cantidad_ajustada: 2, sourceId: 2, receiverId: parseInt(headquarterId) },
+                { codigo: '208', nombre: 'AZUCARERA DOCIFICADORA GRANDE', cantidad: 1, cantidad_ajustada: -1, sourceId: parseInt(headquarterId), receiverId: 3 }
+            ];
+
+                         // Simular productos sin relacionar
+             const productosSinRelacionar = [
+                 { codigo: '9999', nombre: 'PRODUCTO SIN RELACIONAR 1', cantidad: 1 },
+                 { codigo: '8888', nombre: 'PRODUCTO SIN RELACIONAR 2', cantidad: 1 }
+             ];
+
+            return {
+                ventas,
+                movimientos,
+                productosSinRelacionar
+            };
+        }
+
+        // Función para procesar movimientos y calcular inventario final
+        function procesarMovimientos(ventas, movimientos, productosSinRelacionar) {
+            // Crear mapa para almacenar el inventario final por producto
+            const inventarioFinal = new Map();
+            
+            // Validar que los parámetros sean arrays
+            const ventasArray = Array.isArray(ventas) ? ventas : [];
+            const movimientosArray = Array.isArray(movimientos) ? movimientos : [];
+            const productosSinRelacionarArray = Array.isArray(productosSinRelacionar) ? productosSinRelacionar : [];
+            
+            // Inicializar con ventas (negativas)
+            ventasArray.forEach(venta => {
+                inventarioFinal.set(venta.productId, {
+                    codigo: venta.codigo,
+                    nombre: venta.nombre,
+                    cantidad: -venta.cantidad, // Convertir a negativo (necesitan resurtir)
+                    tipo: 'venta',
+                    productId: venta.productId
+                });
+            });
+            
+            // Aplicar movimientos
+            movimientosArray.forEach(movimiento => {
+                const producto = inventarioFinal.get(movimiento.productId);
+                if (producto) {
+                    // Si el producto ya existe en el inventario, ajustar cantidad
+                    producto.cantidad += movimiento.cantidad_ajustada;
+                } else {
+                    // Si no existe, agregarlo
+                    inventarioFinal.set(movimiento.productId, {
+                        codigo: movimiento.codigo,
+                        nombre: movimiento.nombre,
+                        cantidad: movimiento.cantidad_ajustada,
+                        tipo: 'movimiento',
+                        productId: movimiento.productId
+                    });
+                }
+            });
+            
+            // Agregar productos sin relacionar (positivos)
+            productosSinRelacionarArray.forEach(producto => {
+                                 inventarioFinal.set(producto.productId, {
+                     codigo: producto.codigo,
+                     nombre: producto.nombre,
+                     cantidad: producto.cantidad, // Usar la cantidad real del producto
+                     tipo: 'sin_relacionar',
+                     productId: producto.productId
+                 });
+            });
+            
+            return Array.from(inventarioFinal.values());
         }
 
         // Función para mostrar resultados
-        function mostrarResultados(ventas, sede, headquarterId, fecha) {
-            ventasData = ventas;
-
-            // Ordenar por nombre de producto (A-Z)
-            ventas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        function mostrarResultados(datos, sede, headquarterId, fecha) {
+            // Validar que datos sea un objeto válido
+            if (!datos || typeof datos !== 'object') {
+                console.error('Error: datos no es un objeto válido:', datos);
+                showMessage(errorMessage, 'Error: datos inválidos recibidos de la API', true);
+                return;
+            }
+            
+            const { ventas, movimientos, productosSinRelacionar } = datos;
+            
+            // Validar que los datos necesarios existan
+            if (!ventas && !movimientos && !productosSinRelacionar) {
+                console.error('Error: No se encontraron datos válidos en la respuesta:', datos);
+                showMessage(errorMessage, 'Error: No se encontraron datos válidos en la respuesta', true);
+                return;
+            }
+            
+            // Procesar movimientos y calcular inventario final
+            const inventarioFinal = procesarMovimientos(ventas, movimientos, productosSinRelacionar);
+            
+            // Separar productos por surtir y productos sin relacionar
+            const productosPorSurtir = inventarioFinal.filter(p => p.cantidad < 0);
+            const productosSinRelacionarFinal = inventarioFinal.filter(p => p.tipo === 'sin_relacionar');
+            
+            // Ordenar productos por surtir por nombre (A-Z)
+            productosPorSurtir.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            
+            // Ordenar productos sin relacionar por nombre (A-Z)
+            productosSinRelacionarFinal.sort((a, b) => a.nombre.localeCompare(b.nombre));
+            
+            // Combinar todos los productos para mostrar
+            const todosLosProductos = [...productosPorSurtir, ...productosSinRelacionarFinal];
+            
+            ventasData = todosLosProductos;
 
             // Calcular totales
-            const totalProductos = ventas.length;
-            const totalCantidad = ventas.reduce((sum, v) => sum + v.cantidad, 0);
+            const totalProductos = todosLosProductos.length;
+            const totalCantidad = productosPorSurtir.reduce((sum, p) => sum + Math.abs(p.cantidad), 0);
 
             // Mostrar información
             const headquarterName = headquarterIds[sede].find(hq => hq.id == headquarterId)?.name || 'N/A';
-            resultsInfo.textContent = `${sede.toUpperCase()} - ${headquarterName} | ${fecha} | ${totalProductos} productos | ${totalCantidad} unidades`;
+            resultsInfo.textContent = `${sede.toUpperCase()} - ${headquarterName} | ${fecha} | ${productosPorSurtir.length} productos por surtir | ${productosSinRelacionarFinal.length} sin relacionar | ${totalCantidad} unidades`;
 
             // Llenar tabla
             resultsTableBody.innerHTML = '';
-            ventas.forEach(venta => {
+            
+            // Agregar productos por surtir
+            if (productosPorSurtir.length > 0) {
+                productosPorSurtir.forEach(producto => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${producto.codigo}</td>
+                        <td>${producto.nombre}</td>
+                        <td style="color: #22c55e; font-weight: bold;">-${Math.abs(producto.cantidad)}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+            }
+            
+            // Agregar separador si hay productos sin relacionar
+            if (productosSinRelacionarFinal.length > 0 && productosPorSurtir.length > 0) {
+                const separatorRow = document.createElement('tr');
+                separatorRow.innerHTML = `
+                    <td colspan="3" style="background: #2a2a2a; color: #3498db; font-weight: bold; text-align: center; padding: 10px;">
+                        --- PRODUCTOS SIN RELACIONAR ---
+                    </td>
+                `;
+                resultsTableBody.appendChild(separatorRow);
+            }
+            
+            // Agregar productos sin relacionar
+            productosSinRelacionarFinal.forEach(producto => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${venta.codigo}</td>
-                    <td>${venta.nombre}</td>
-                    <td>${venta.cantidad}</td>
+                    <td>${producto.codigo}</td>
+                    <td>${producto.nombre}</td>
+                    <td style="color: #ff6b6b; font-weight: bold;">+${producto.cantidad}</td>
                 `;
                 resultsTableBody.appendChild(row);
             });
@@ -841,32 +1002,62 @@
             btnImprimir.disabled = false;
 
             // Preparar vista previa de impresión
-            prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad);
+            prepararVistaPrevia(todosLosProductos, sede, headquarterName, fecha, totalProductos, totalCantidad);
         }
 
                  // Función para preparar vista previa de impresión
-         function prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad) {
+         function prepararVistaPrevia(productos, sede, headquarterName, fecha, totalProductos, totalCantidad) {
              // Configurar título con el nombre del headquarter
              printTitle.innerHTML = `<strong>${headquarterName}</strong>`;
              
-             // Configurar fecha de impresión
-             const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+             // Configurar fecha de impresión (corregido para zona horaria colombiana)
+             const fechaObj = new Date(fecha + 'T00:00:00-05:00'); // Especificar zona horaria colombiana
+             const fechaFormateada = fechaObj.toLocaleDateString('es-ES', {
                  weekday: 'short',
                  year: 'numeric',
                  month: 'short',
                  day: 'numeric'
              });
-             printDate.innerHTML = `<strong>${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}</strong>`;
+             printDate.innerHTML = `<strong>${fechaFormateada} - ${sede.toUpperCase()}</strong>`;
+
+                           // Separar productos por surtir y productos sin relacionar
+              const productosPorSurtir = productos.filter(p => p.cantidad < 0);
+              const productosSinRelacionar = productos.filter(p => p.tipo === 'sin_relacionar');
 
                          // Llenar tabla de impresión
              printTableBody.innerHTML = '';
-             ventas.forEach(venta => {
+             
+             // Agregar productos por surtir
+             productosPorSurtir.forEach(producto => {
                  const row = document.createElement('tr');
-                 const nombreLimitado = venta.nombre.length > 35 ? venta.nombre.substring(0, 32) + '...' : venta.nombre;
+                 const nombreLimitado = producto.nombre.length > 35 ? producto.nombre.substring(0, 32) + '...' : producto.nombre;
                  row.innerHTML = `
-                     <td><strong>${venta.codigo}</strong></td>
+                     <td><strong>${producto.codigo}</strong></td>
                      <td><strong>${nombreLimitado}</strong></td>
-                     <td><strong>${venta.cantidad}</strong></td>
+                     <td><strong>-${Math.abs(producto.cantidad)}</strong></td>
+                 `;
+                 printTableBody.appendChild(row);
+             });
+
+             // Agregar separador si hay productos sin relacionar
+             if (productosSinRelacionar.length > 0 && productosPorSurtir.length > 0) {
+                 const separatorRow = document.createElement('tr');
+                 separatorRow.innerHTML = `
+                     <td colspan="3" style="background: #000000; color: #ffffff; font-weight: bold; text-align: center; padding: 2px 5px; font-size: 10px;">
+                         <strong>PRODUCTOS SIN RELACIONAR</strong>
+                     </td>
+                 `;
+                 printTableBody.appendChild(separatorRow);
+             }
+
+             // Agregar productos sin relacionar
+             productosSinRelacionar.forEach(producto => {
+                 const row = document.createElement('tr');
+                 const nombreLimitado = producto.nombre.length > 35 ? producto.nombre.substring(0, 32) + '...' : producto.nombre;
+                 row.innerHTML = `
+                     <td><strong>${producto.codigo}</strong></td>
+                     <td><strong>${nombreLimitado}</strong></td>
+                     <td><strong>+${producto.cantidad}</strong></td>
                  `;
                  printTableBody.appendChild(row);
              });
@@ -875,7 +1066,7 @@
             const totalRow = document.createElement('tr');
             totalRow.className = 'total-row';
             totalRow.innerHTML = `
-                <td colspan="2"><strong>TOTAL</strong></td>
+                <td colspan="2"><strong>TOTAL POR SURTIR</strong></td>
                 <td><strong>${totalCantidad}</strong></td>
             `;
             printTableBody.appendChild(totalRow);

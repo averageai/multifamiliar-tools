@@ -37,3 +37,6 @@ bases_datos/~$productos_dorada.xlsx
 
 # Carpeta de backup con archivos legacy
 backup/
+
+# Carpeta de tests y archivos de prueba
+testings/

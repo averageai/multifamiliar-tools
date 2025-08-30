@@ -45,7 +45,7 @@ const path = require('path');
 const { dbConfig, sedesConfig, queries } = require('./db-config');
 
 // Importar funciones de ventas diarias
-const { getVentasDiarias, getHeadquarterInfo, getHeadquarters, headquarterIds, dbConfigs } = require('./ventas-diarias-api.js');
+const { getVentasDiarias, getMovimientosDia, getProductosSinRelacionar, getHeadquarterInfo, getHeadquarters, headquarterIds, dbConfigs } = require('./ventas-diarias-api.js');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -490,18 +490,26 @@ app.get('/api/ventas-diarias', async (req, res) => {
             });
         }
         
-        const ventas = await getVentasDiarias(sede, headquarterId, fecha);
+        // Obtener ventas, movimientos y productos sin relacionar
+        const [ventas, movimientos, productosSinRelacionar] = await Promise.all([
+            getVentasDiarias(sede, headquarterId, fecha),
+            getMovimientosDia(sede, headquarterId, fecha),
+            getProductosSinRelacionar(sede, headquarterId, fecha)
+        ]);
+        
         const headquarterInfo = getHeadquarterInfo(sede, headquarterId);
         
         res.json({
             success: true,
             data: {
                 ventas,
+                movimientos,
+                productosSinRelacionar,
                 headquarter: headquarterInfo,
                 sede,
                 fecha,
-                total_productos: ventas.length,
-                total_cantidad: ventas.reduce((sum, v) => sum + v.cantidad, 0)
+                total_productos: ventas.length + productosSinRelacionar.length,
+                total_cantidad: ventas.reduce((sum, v) => sum + v.cantidad, 0) + productosSinRelacionar.reduce((sum, p) => sum + p.cantidad, 0)
             }
         });
         
