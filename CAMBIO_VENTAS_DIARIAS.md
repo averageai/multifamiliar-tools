@@ -191,4 +191,47 @@
 
 ---
 
+## 🖨️ **MEJORA DE CONTRASTE Y VISIBILIDAD**
+
+### ✅ **Cambios Realizados:**
+
+#### **1. Contraste mejorado:**
+- ✅ **Fondo blanco puro**: `#ffffff` para máximo contraste
+- ✅ **Texto negro puro**: `#000000` para máxima legibilidad
+- ✅ **Bordes negros**: `2px solid #000` para mejor definición
+- ✅ **Encabezados negros**: Fondo negro con texto blanco
+
+#### **2. Tamaños de fuente aumentados:**
+- ✅ **Texto general**: De 10px a 11px
+- ✅ **Títulos**: De 12px a 13px
+- ✅ **Subtítulos**: De 9px a 10px
+- ✅ **Tabla**: De 9px a 10px
+- ✅ **Pie de página**: De 9px a 10px
+
+#### **3. Peso de fuente reforzado:**
+- ✅ **Texto general**: `font-weight: 500`
+- ✅ **Elementos importantes**: `font-weight: 600`
+- ✅ **Títulos y totales**: `font-weight: bold`
+- ✅ **Todos los datos**: Envuelto en `<strong>`
+
+#### **4. Estilos de impresión optimizados:**
+- ✅ **CSS específico para print**: `!important` para forzar estilos
+- ✅ **Contraste máximo**: Negro puro sobre blanco puro
+- ✅ **Peso de fuente forzado**: `font-weight: bold !important`
+- ✅ **Colores forzados**: `color: black !important`
+
+ #### **5. Nombres de productos optimizados:**
+ - ✅ **Límite aumentado**: De 18 a 35 caracteres
+ - ✅ **Mejor legibilidad**: Más información visible del producto
+ - ✅ **Todo en negrita**: Nombres también en `<strong>`
+
+### 📊 **Resultado Final:**
+- ✅ **Máximo contraste**: Negro puro sobre blanco puro
+- ✅ **Texto más grande**: Mejor legibilidad en impresión
+- ✅ **Peso de fuente reforzado**: No más texto grisáceo
+- ✅ **Formato profesional**: Ideal para impresoras térmicas
+- ✅ **Visibilidad garantizada**: Estilos forzados para impresión
+
+---
+
 *Registro completado el 29/08/2025 - Integración Ventas Diarias Exitosa*

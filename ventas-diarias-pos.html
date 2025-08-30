@@ -339,15 +339,16 @@
 
         .print-preview {
             background: white;
-            color: black;
+            color: #000000;
             padding: 15px;
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            line-height: 1.1;
+            font-size: 11px;
+            line-height: 1.2;
             max-width: 80mm;
             margin: 20px auto;
-            border: 1px solid #ccc;
+            border: 2px solid #000;
             display: none;
+            font-weight: 500;
         }
 
         .print-preview.active {
@@ -362,18 +363,23 @@
         }
 
         .print-title {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             margin-bottom: 3px;
+            color: #000000;
         }
 
         .print-subtitle {
-            font-size: 9px;
+            font-size: 10px;
             margin-bottom: 3px;
+            color: #000000;
+            font-weight: 600;
         }
 
         .print-date {
-            font-size: 9px;
+            font-size: 10px;
+            color: #000000;
+            font-weight: 600;
         }
 
         .print-table {
@@ -383,29 +389,36 @@
         }
 
         .print-table th {
-            background: #f0f0f0;
-            padding: 3px 4px;
-            font-size: 9px;
-            border-bottom: 1px solid #000;
+            background: #000000;
+            color: #ffffff;
+            padding: 4px 5px;
+            font-size: 10px;
+            border-bottom: 2px solid #000;
+            font-weight: bold;
         }
 
-        .print-table td {
-            padding: 3px 4px;
-            font-size: 9px;
-            border-bottom: 1px solid #ccc;
-        }
+                 .print-table td {
+             padding: 4px 5px;
+             font-size: 10px;
+             border-bottom: none;
+             color: #000000;
+             font-weight: 500;
+         }
 
         .print-footer {
             text-align: center;
             margin-top: 10px;
-            border-top: 1px solid #000;
+            border-top: 2px solid #000;
             padding-top: 8px;
-            font-size: 9px;
+            font-size: 10px;
+            color: #000000;
+            font-weight: 600;
         }
 
         .total-row {
             font-weight: bold;
-            background: #f0f0f0;
+            background: #000000;
+            color: #ffffff;
         }
 
         @media print {
@@ -421,6 +434,30 @@
                 top: 0;
                 width: 80mm;
                 border: none;
+                background: white !important;
+                color: black !important;
+            }
+            .print-preview * {
+                color: black !important;
+                font-weight: bold !important;
+            }
+            .print-table th {
+                background: black !important;
+                color: white !important;
+                font-weight: bold !important;
+            }
+            .print-table td {
+                color: black !important;
+                font-weight: bold !important;
+            }
+            .total-row {
+                background: black !important;
+                color: white !important;
+                font-weight: bold !important;
+            }
+            .print-footer {
+                color: black !important;
+                font-weight: bold !important;
             }
         }
     </style>
@@ -499,12 +536,12 @@
                 </div>
             </div>
 
-            <div class="print-preview" id="printPreview">
-                <div class="print-header">
-                    <div class="print-title"><strong>MULTIFAMILIAR</strong></div>
-                    <div class="print-subtitle"><strong>Reporte de Ventas Diarias</strong></div>
-                    <div class="print-date" id="printDate"></div>
-                </div>
+                         <div class="print-preview" id="printPreview">
+                 <div class="print-header">
+                     <div class="print-title" id="printTitle"><strong>MULTIFAMILIAR</strong></div>
+                     <div class="print-subtitle"><strong>Reporte de Ventas Diarias</strong></div>
+                     <div class="print-date" id="printDate"></div>
+                 </div>
                 <table class="print-table" id="printTable">
                     <thead>
                         <tr>
@@ -519,7 +556,7 @@
                 <div class="print-footer">
                     <div><strong>Total productos:</strong> <span id="printTotalProducts">0</span></div>
                     <div><strong>Total cantidad:</strong> <span id="printTotalQuantity">0</span></div>
-                    <div><strong>--- Fin del Reporte ---</strong></div>
+                    <div><strong>--- Desarrollado por average ---</strong></div>
                 </div>
             </div>
         </div>
@@ -573,11 +610,12 @@
         const resultsSection = document.getElementById('resultsSection');
         const resultsInfo = document.getElementById('resultsInfo');
         const resultsTableBody = document.getElementById('resultsTableBody');
-        const printPreview = document.getElementById('printPreview');
-        const printTableBody = document.getElementById('printTableBody');
-        const printDate = document.getElementById('printDate');
-        const printTotalProducts = document.getElementById('printTotalProducts');
-        const printTotalQuantity = document.getElementById('printTotalQuantity');
+                 const printPreview = document.getElementById('printPreview');
+         const printTitle = document.getElementById('printTitle');
+         const printTableBody = document.getElementById('printTableBody');
+         const printDate = document.getElementById('printDate');
+         const printTotalProducts = document.getElementById('printTotalProducts');
+         const printTotalQuantity = document.getElementById('printTotalQuantity');
         const connectionStatus = document.getElementById('connectionStatus');
         const connectionIcon = document.getElementById('connectionIcon');
         const connectionText = document.getElementById('connectionText');
@@ -806,29 +844,32 @@
             prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad);
         }
 
-        // Función para preparar vista previa de impresión
-        function prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad) {
-            // Configurar fecha de impresión
-            const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-            printDate.innerHTML = `<strong>${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}</strong>`;
+                 // Función para preparar vista previa de impresión
+         function prepararVistaPrevia(ventas, sede, headquarterName, fecha, totalProductos, totalCantidad) {
+             // Configurar título con el nombre del headquarter
+             printTitle.innerHTML = `<strong>${headquarterName}</strong>`;
+             
+             // Configurar fecha de impresión
+             const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+                 weekday: 'short',
+                 year: 'numeric',
+                 month: 'short',
+                 day: 'numeric'
+             });
+             printDate.innerHTML = `<strong>${fechaFormateada} - ${sede.toUpperCase()} - ${headquarterName}</strong>`;
 
-            // Llenar tabla de impresión
-            printTableBody.innerHTML = '';
-            ventas.forEach(venta => {
-                const row = document.createElement('tr');
-                const nombreLimitado = venta.nombre.length > 20 ? venta.nombre.substring(0, 17) + '...' : venta.nombre;
-                row.innerHTML = `
-                    <td><strong>${venta.codigo}</strong></td>
-                    <td>${nombreLimitado}</td>
-                    <td><strong>${venta.cantidad}</strong></td>
-                `;
-                printTableBody.appendChild(row);
-            });
+                         // Llenar tabla de impresión
+             printTableBody.innerHTML = '';
+             ventas.forEach(venta => {
+                 const row = document.createElement('tr');
+                 const nombreLimitado = venta.nombre.length > 35 ? venta.nombre.substring(0, 32) + '...' : venta.nombre;
+                 row.innerHTML = `
+                     <td><strong>${venta.codigo}</strong></td>
+                     <td><strong>${nombreLimitado}</strong></td>
+                     <td><strong>${venta.cantidad}</strong></td>
+                 `;
+                 printTableBody.appendChild(row);
+             });
 
             // Agregar fila de totales
             const totalRow = document.createElement('tr');
